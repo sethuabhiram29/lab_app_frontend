@@ -106,13 +106,13 @@ function PatientEntry() {
           selectedTests: newSelectedTests
         };
       } else {
-        // Initialize subtests and packs selection - default subtests to selected: true
-        const subtests = (test.subtests || []).map((s, idx) => ({ ...s, id: s._id || idx + '' + test._id, selected: true }));
+        // Initialize subtests and packs selection - keep selected: false for UI display
+        const subtests = (test.subtests || []).map((s, idx) => ({ ...s, id: s._id || idx + '' + test._id, selected: false }));
         const packs = (test.packs || []).map((p, pIdx) => ({
           ...p,
           id: p._id || pIdx + '' + test._id,
-          selected: true,
-          subtests: (p.subtests || []).map((s, sIdx) => ({ ...s, id: s._id || pIdx + '' + sIdx + '_' + test._id, selected: true }))
+          selected: false,
+          subtests: (p.subtests || []).map((s, sIdx) => ({ ...s, id: s._id || pIdx + '' + sIdx + '_' + test._id, selected: false }))
         }));
         const newTest = {
           test,
@@ -201,17 +201,19 @@ function PatientEntry() {
       // Prepare selected subtests for each test
       console.log('Preparing test payload from formData:', formData.selectedTests);
       const selectedTestsPayload = formData.selectedTests.map(t => {
-        // Directly selected subtests (or fallback to all if none explicitly unchecked)
-        let directSubtests = (t.subtests || []).filter(s => s.selected !== false);
-        if (directSubtests.length === 0 && (t.subtests || []).length > 0) {
-          directSubtests = t.subtests;
-        }
+        // Explicitly checked subtests
+        let directSubtests = (t.subtests || []).filter(s => s.selected === true);
         
-        // Selected packs and their subtests
-        const selectedPacks = (t.packs || []).filter(p => p.selected !== false).map(p => ({
+        // Explicitly checked packs
+        const selectedPacks = (t.packs || []).filter(p => p.selected === true).map(p => ({
           name: p.name,
           subtests: (p.subtests || []).map(s => ({ name: s.name, unit: s.unit, reference: s.reference, _id: s._id }))
         }));
+
+        // If no individual subtests or packs were explicitly checked, include all subtests by default
+        if (directSubtests.length === 0 && selectedPacks.length === 0 && (t.subtests || []).length > 0) {
+          directSubtests = t.subtests;
+        }
 
         return {
           test: t.test._id,
