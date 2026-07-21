@@ -19,7 +19,6 @@ import AccountsBalance from './components/AccountsBalance';
 import { PinProvider } from './contexts/PinContext';
 import { GoogleDriveProvider } from './contexts/GoogleDriveContext';
 import withPinProtection from './components/withPinProtection';
-import ParticleBackground from './components/ParticleBackground';
 
 const theme = createTheme({
   palette: {
