@@ -1,0 +1,378 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Paper,
+  Typography,
+  Box,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Alert,
+  Grid,
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+} from '@mui/icons-material';
+import * as api from '../api';
+
+const Commission = () => {
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [summary, setSummary] = useState({
+    totalAmount: 0,
+    count: 0
+  });
+  const [formData, setFormData] = useState({
+    amount: '',
+    notes: ''
+  });
+
+  const clearMessages = () => {
+    setError('');
+    setSuccess('');
+  };
+
+  const fetchEntries = async (date) => {
+    try {
+      setLoading(true);
+      clearMessages();
+      
+      if (!date) {
+        setEntries([]);
+        setSummary({ totalAmount: 0, count: 0 });
+        return;
+      }
+      
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999);
+      
+      const response = await api.getCommissions({ 
+        startDate: startDate.toISOString(), 
+        endDate: endDate.toISOString() 
+      });
+
+      // Ensure proper data handling with numeric values
+      const { entries = [], totalAmount = 0, count = 0 } = response.data || {};
+
+      // Format commission values and ensure all numbers
+      const formattedEntries = entries.map(entry => ({
+        ...entry,
+        totalAmount: Number(entry.totalAmount || 0),
+        commission: Number(entry.commission || 0),
+        age: Number(entry.age || 0),
+        commissionNotes: String(entry.commissionNotes || ''),
+        patientName: String(entry.patientName || 'N/A'),
+        gender: String(entry.gender || 'N/A'),
+        doctorInfo: {
+          name: String(entry.doctorInfo?.name || 'N/A')
+        }
+      }));
+
+      // Calculate totals - only include positive commission values
+      const calculatedTotal = formattedEntries.reduce((sum, entry) => {
+        const commission = Number(entry.commission || 0);
+        return sum + (commission > 0 ? commission : 0);
+      }, 0);
+
+      const calculatedCount = formattedEntries.filter(
+        entry => Number(entry.commission || 0) > 0
+      ).length;
+
+      setEntries(formattedEntries);
+      setSummary({ 
+        totalAmount: calculatedTotal,
+        count: calculatedCount
+      });
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError(err.response?.data?.message || 'Failed to fetch data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEntries(selectedDate);
+  }, [selectedDate]);
+
+  const handleDateChange = (newDate) => {
+    if (newDate) {
+      console.log('Date changed to:', newDate);
+      setSelectedDate(newDate);
+      fetchEntries(newDate);
+    }
+  };
+
+  const handleAddCommission = (entry) => {
+    if (!entry) return;
+    
+    setSelectedEntry(entry);
+    setFormData({
+      amount: typeof entry.commission === 'number' ? entry.commission : '',
+      notes: typeof entry.commissionNotes === 'string' ? entry.commissionNotes : ''
+    });
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    clearMessages();
+
+    try {
+      const amount = Number(formData.amount);
+      if (isNaN(amount) || amount < 0) {
+        setError('Please enter a valid commission amount');
+        return;
+      }
+
+      setLoading(true);
+
+      const response = await api.updateCommission({
+        patientId: selectedEntry._id,
+        commission: amount,
+        commissionNotes: formData.notes?.trim() || ''
+      });
+
+      if (response.data) {
+        setSuccess('Commission updated successfully');
+        setDialogOpen(false);
+        
+        // Format and update the entries list with the new data
+        const updatedEntry = {
+          ...response.data,
+          totalAmount: Number(response.data.totalAmount || 0),
+          commission: Number(response.data.commission || 0),
+          age: Number(response.data.age || 0)
+        };
+        
+        setEntries(prevEntries => {
+          return prevEntries.map(entry => 
+            entry._id === updatedEntry._id ? updatedEntry : entry
+          );
+        });
+        
+        // Update summary with new commission value
+        setSummary(prev => {
+          const oldCommission = Number(selectedEntry.commission || 0);
+          const newCommission = Number(amount || 0);
+          
+          // Only count positive commission values in total
+          const totalChange = 
+            (oldCommission > 0 ? -oldCommission : 0) + 
+            (newCommission > 0 ? newCommission : 0);
+          
+          // Update count - only consider positive commissions
+          const newCount = 
+            prev.count + 
+            (newCommission > 0 ? (oldCommission > 0 ? 0 : 1) : (oldCommission > 0 ? -1 : 0));
+
+          return {
+            totalAmount: Math.max(0, Number(prev.totalAmount) + totalChange),
+            count: Math.max(0, Number(newCount))
+          };
+        });
+      }
+    } catch (err) {
+      console.error('Error updating commission:', err);
+      setError(err.response?.data?.message || 'Failed to update commission');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show loading state only when we're actually loading data
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Typography>Loading...</Typography>
+      </Container>
+    );
+  }
+
+  return (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1">
+          Commission Management
+        </Typography>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <Box display="flex" alignItems="center" gap={2}>
+            <DatePicker
+              label="Select Date"
+              value={selectedDate}
+              onChange={handleDateChange}
+              inputFormat="dd-MM-yyyy"
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  inputProps: {
+                    placeholder: "DD-MM-YYYY"
+                  }
+                }
+              }}
+            />
+            <Button 
+              variant="outlined" 
+              size="small" 
+              onClick={() => handleDateChange(new Date())}
+              sx={{ height: 'fit-content' }}
+            >
+              Today
+            </Button>
+          </Box>
+        </LocalizationProvider>
+      </Box>
+
+      {/* Analytics Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={6}>
+          <Card>
+            <CardContent>
+              <Typography color="textSecondary" gutterBottom>
+                Total Commission Amount
+              </Typography>
+              <Typography variant="h4">
+                ₹{Number(summary.totalAmount || 0).toLocaleString()}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={6}>
+          <Card>
+            <CardContent>
+              <Typography color="textSecondary" gutterBottom>
+                Number of Entries with Commission
+              </Typography>
+              <Typography variant="h4">
+                {Number(summary.count || 0)}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
+
+      {/* Entries Table */}
+      <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Patient Name</TableCell>
+                <TableCell>Doctor</TableCell>
+                <TableCell align="right">Age</TableCell>
+                <TableCell>Gender</TableCell>
+                <TableCell align="right">Amount</TableCell>
+                <TableCell align="right">Commission</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {entries.map((entry) => (
+                <TableRow key={entry._id}>
+                  <TableCell>{entry.patientName}</TableCell>
+                  <TableCell>{entry.doctorInfo?.name}</TableCell>
+                  <TableCell align="right">{entry.age > 0 ? entry.age : 'N/A'}</TableCell>
+                  <TableCell>{entry.gender}</TableCell>
+                  <TableCell align="right">₹{Number(entry.totalAmount).toLocaleString()}</TableCell>
+                  <TableCell align="right">
+                    {Number(entry.commission) > 0 ? `₹${Number(entry.commission).toLocaleString()}` : '-'}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleAddCommission(entry)}
+                      disabled={loading}
+                      title={Number(entry.commission) > 0 ? 'Edit Commission' : 'Add Commission'}
+                    >
+                      {Number(entry.commission) > 0 ? <EditIcon /> : <AddIcon />}
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {entries.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    No entries found for this date
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+
+      {/* Add/Edit Commission Dialog */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {selectedEntry?.commission ? 'Edit Commission' : 'Add Commission'}
+        </DialogTitle>
+        <DialogContent>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Commission Amount"
+              type="number"
+              value={formData.amount}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              margin="normal"
+              required
+              inputProps={{ min: 0, step: "0.01" }}
+            />
+            <TextField
+              fullWidth
+              label="Notes (Optional)"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              margin="normal"
+              multiline
+              rows={3}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained" disabled={loading}>
+            {selectedEntry?.commission ? 'Update' : 'Add'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
+  );
+};
+
+export default Commission;

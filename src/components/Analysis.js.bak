@@ -1,0 +1,428 @@
+
+import React, { useState, useEffect } from 'react';
+import {
+  Container, Typography, Paper, Box, Autocomplete, TextField, Button, Table,
+  TableBody, TableCell, TableContainer, TableHead, TableRow, Alert
+} from '@mui/material';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { getDoctors, getAgents, getDoctorAnalysis, getAgentAnalysis } from '../api';
+
+function Analysis() {
+  const [mode, setMode] = useState('doctor');
+  const [doctors, setDoctors] = useState([]);
+  const [agents, setAgents] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(() => new Date());
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [summary, setSummary] = useState({ 
+    totalAmount: 0, 
+    totalCommission: 0, 
+    netAmount: 0, 
+    testCounts: {} 
+  });
+
+  // Reset data when mode changes
+  useEffect(() => {
+    setPatients([]);
+    setSummary({ 
+      totalAmount: 0, 
+      totalCommission: 0, 
+      netAmount: 0, 
+      testCounts: {} 
+    });
+  }, [mode]);
+
+  useEffect(() => {
+    getDoctors().then(res => setDoctors(res.data || res)).catch(() => {});
+    getAgents().then(res => setAgents(res.data || res)).catch(() => {});
+  }, []);
+
+  const handleFetch = async () => {
+    setError('');
+    setPatients([]);
+    setSummary({ 
+      totalAmount: 0, 
+      totalCommission: 0, 
+      netAmount: 0, 
+      testCounts: {} 
+    });
+
+    if (mode === 'doctor' && !selectedDoctor) {
+      setError('Please select a doctor');
+      return;
+    }
+    if (mode === 'agent' && !selectedAgent) {
+      setError('Please select an agent');
+      return;
+    }
+    if (!startDate || !endDate) {
+      setError('Please select a date range');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const formatDate = d => d instanceof Date ? d.toISOString().slice(0, 10) : d;
+      let res;
+      if (mode === 'doctor') {
+        res = await getDoctorAnalysis(selectedDoctor._id, formatDate(startDate), formatDate(endDate));
+      } else {
+        res = await getAgentAnalysis(selectedAgent._id, formatDate(startDate), formatDate(endDate));
+      }
+      
+      // Ensure we have valid data structure
+      const responseData = res.data || res || [];
+      console.log('Analysis API response:', responseData);
+      
+      // Handle both old and new response formats
+      const patientData = Array.isArray(responseData) ? responseData : (responseData.patients || []);
+      setPatients(patientData);
+
+      // Calculate totals and test counts
+      const testCounts = {};
+      let totalAmount = 0;
+      let totalCommission = 0;
+
+      patientData.forEach(p => {
+        if (p) {
+          totalAmount += p.totalAmount || 0;
+          totalCommission += p.commission || 0;
+          
+          (p.selectedTests || []).forEach(st => {
+            if (st && st.test) {
+              const testName = st.test.name || 'Unknown';
+              testCounts[testName] = (testCounts[testName] || 0) + 1;
+            }
+          });
+        }
+      });
+
+      // Update summary with calculated values
+      setSummary({ 
+        totalAmount: responseData.summary?.totalAmount || totalAmount,
+        totalCommission: responseData.summary?.totalCommission || totalCommission,
+        netAmount: responseData.summary?.netAmount || 0,
+        testCounts 
+      });
+    } catch (err) {
+      setError('Failed to fetch analysis data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderPatientTable = () => (
+    <TableContainer component={Paper}>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Patient ID</TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell>Gender</TableCell>
+            <TableCell>Phone</TableCell>
+            <TableCell align="right">Total Amount</TableCell>
+            <TableCell align="right">Commission</TableCell>
+            <TableCell align="right">Net Amount</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {patients.map((p) => (
+            <TableRow key={p._id}>
+              <TableCell>{p.regNo || p.patientId || '-'}</TableCell>
+              <TableCell>{p.name}</TableCell>
+              <TableCell>{p.gender}</TableCell>
+              <TableCell>{p.mobileNumber}</TableCell>
+              <TableCell align="right">₹{p.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+              <TableCell align="right" sx={{ color: 'error.main' }}>
+                {p.commission ? `₹${p.commission.toFixed(2)}` : '-'}
+              </TableCell>
+              <TableCell align="right" sx={{ color: 'success.main' }}>
+                ₹{(p.totalAmount - (p.commission || 0)).toFixed(2)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
+  const renderFinancialSummary = () => (
+    <Paper sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
+      <Typography variant="h6" gutterBottom>Financial Summary</Typography>
+      <Box display="flex" gap={4}>
+        <Box>
+          <Typography variant="subtitle2" color="text.secondary">Total Amount</Typography>
+          <Typography variant="h6">₹{summary.totalAmount.toFixed(2)}</Typography>
+        </Box>
+        <Box>
+          <Typography variant="subtitle2" color="text.secondary">Total Commission</Typography>
+          <Typography variant="h6" color="error.main">₹{summary.totalCommission.toFixed(2)}</Typography>
+        </Box>
+        <Box>
+          <Typography variant="subtitle2" color="text.secondary">Net Amount</Typography>
+          <Typography variant="h6" color="success.main">₹{summary.netAmount.toFixed(2)}</Typography>
+        </Box>
+      </Box>
+    </Paper>
+  );
+
+  const renderTestSummary = () => (
+    <Box sx={{ mt: 4 }}>
+      <Typography variant="h6" gutterBottom>Test Summary</Typography>
+      <TableContainer component={Paper} sx={{ maxWidth: 400 }}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Test/Pack Name</TableCell>
+              <TableCell align="right">Count</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {Object.entries(summary.testCounts).map(([test, count]) => (
+              <TableRow key={test}>
+                <TableCell>{test}</TableCell>
+                <TableCell align="right">{count}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+
+  return (
+    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Analysis
+        </Typography>
+        
+        {/* Mode Selection */}
+        <Box sx={{ mb: 3 }}>
+          <Button
+            variant={mode === 'doctor' ? 'contained' : 'outlined'}
+            onClick={() => setMode('doctor')}
+            sx={{ mr: 2 }}
+          >
+            By Doctor
+          </Button>
+          <Button
+            variant={mode === 'agent' ? 'contained' : 'outlined'}
+            onClick={() => setMode('agent')}
+          >
+            By Agent
+          </Button>
+        </Box>
+                {/* Filter Controls */}
+        <Box display="flex" gap={2} alignItems="center" sx={{ mb: 2 }}>
+          <Box flex={1}>
+            {mode === 'doctor' ? (
+              <Autocomplete
+                options={doctors}
+                getOptionLabel={option => option.name}
+                value={selectedDoctor}
+                onChange={(_, v) => setSelectedDoctor(v)}
+                renderInput={params => <TextField {...params} label="Select Doctor" fullWidth />}
+              />
+            ) : (
+              <Autocomplete
+                options={agents}
+                getOptionLabel={option => option.name}
+                value={selectedAgent}
+                onChange={(_, v) => setSelectedAgent(v)}
+                renderInput={params => <TextField {...params} label="Select Agent" fullWidth />}
+              />
+            )}
+          </Box>
+          <Box flex={1}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Start Date"
+                value={startDate}
+                onChange={setStartDate}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </LocalizationProvider>
+          </Box>
+          <Box flex={1}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="End Date"
+                value={endDate}
+                onChange={setEndDate}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </LocalizationProvider>
+          </Box>
+          <Box flex={1}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleFetch}
+              disabled={loading}
+              fullWidth
+              sx={{ height: 56 }}
+            >
+              {loading ? 'Loading...' : 'Fetch'}
+            </Button>
+          </Box>
+        </Box>
+
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+        {!loading && patients && (
+          <>
+            {patients.length === 0 ? (
+              <Box sx={{ mt: 3, textAlign: 'center' }}>
+                <Typography variant="subtitle1" color="text.secondary">
+                  No entries found for the selected criteria
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                {/* Financial Summary */}
+                <Box sx={{ mt: 3, mb: 3 }}>
+                  {renderFinancialSummary()}
+                </Box>
+
+                {/* Patient Table */}
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="h6" sx={{ mb: 2 }}>Patient Entries ({patients.length})</Typography>
+                  {renderPatientTable()}
+                </Box>
+
+                {/* Test Summary */}
+                {renderTestSummary()}
+              </>
+            )}
+          </>
+        )}
+      </Paper>
+    </Container>
+  );
+
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+        {/* Summary Section */}
+        {!loading && patients && patients.length > 0 && (
+          <Box sx={{ mt: 3, mb: 3 }}>
+            <Paper sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
+              <Typography variant="h6" gutterBottom>Financial Summary</Typography>
+              <Box display="flex" gap={4}>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Total Amount</Typography>
+                  <Typography variant="h6">₹{summary.totalAmount.toFixed(2)}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Total Commission</Typography>
+                  <Typography variant="h6" color="error.main">₹{summary.totalCommission.toFixed(2)}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Net Amount</Typography>
+                  <Typography variant="h6" color="success.main">₹{summary.netAmount.toFixed(2)}</Typography>
+                </Box>
+              </Box>
+            </Paper>
+          </Box>
+        )}
+
+        {/* Patient Entries Table */}
+        {!loading && patients && (
+          <>
+            {patients.length === 0 ? (
+              <Box sx={{ mt: 3, textAlign: 'center' }}>
+                <Typography variant="subtitle1" color="text.secondary">
+                  No entries found for the selected criteria
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Patient Entries ({patients.length})</Typography>
+                <TableContainer component={Paper}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Patient ID</TableCell>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Gender</TableCell>
+                        <TableCell>Phone</TableCell>
+                        <TableCell align="right">Total Amount</TableCell>
+                        <TableCell align="right">Commission</TableCell>
+                        <TableCell align="right">Net Amount</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {patients.map((p) => (
+                    <TableRow key={p._id}>
+                      <TableCell>{p.regNo || p.patientId || '-'}</TableCell>
+                      <TableCell>{p.name}</TableCell>
+                      <TableCell>{p.gender}</TableCell>
+                      <TableCell>{p.mobileNumber}</TableCell>
+                      <TableCell align="right">₹{p.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell align="right" sx={{ color: 'error.main' }}>
+                        {p.commission ? `₹${p.commission.toFixed(2)}` : '-'}
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: 'success.main' }}>
+                        ₹{p.netAmount?.toFixed(2) || '0.00'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {/* Total Amount Section */}
+            <Box sx={{ mt: 3, mb: 3 }}>
+              <Paper sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
+                <Typography variant="h6" gutterBottom>Financial Summary</Typography>
+                <Box display="flex" gap={4}>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Total Amount</Typography>
+                    <Typography variant="h6">₹{summary.totalAmount.toFixed(2)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Total Commission</Typography>
+                    <Typography variant="h6" color="error.main">₹{summary.totalCommission.toFixed(2)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Net Amount</Typography>
+                    <Typography variant="h6" color="success.main">₹{summary.netAmount.toFixed(2)}</Typography>
+                  </Box>
+                </Box>
+              </Paper>
+            </Box>
+            {/* Summary Section */}
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6">Summary</Typography>
+              <Typography sx={{ mt: 2 }}>Number of Each Test/Pack Performed:</Typography>
+              <TableContainer component={Paper} sx={{ maxWidth: 400, mt: 1 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Test/Pack Name</TableCell>
+                      <TableCell>Count</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.entries(summary.testCounts).map(([test, count]) => (
+                      <TableRow key={test}>
+                        <TableCell>{test}</TableCell>
+                        <TableCell>{count}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          </Box>
+        )}
+      </Paper>
+    </Container>
+  );
+}
+
+export default Analysis;

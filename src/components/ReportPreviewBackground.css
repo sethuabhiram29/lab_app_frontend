@@ -1,0 +1,27 @@
+.report-preview-bg {
+  position: relative;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: top center;
+}
+.report-preview-bg img.bg {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0.2;
+  z-index: 0;
+  pointer-events: none;
+}
+.report-preview-bg .content {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+}
+@media print {
+  .report-preview-bg {
+    background: none !important;
+    background-image: none !important;
+  }
+  .report-preview-bg img.bg {
+    display: none !important;
+  }
+} 

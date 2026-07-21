@@ -1,0 +1,44 @@
+import React, { useState, useEffect } from 'react';
+import { usePin } from '../contexts/PinContext';
+import PinVerification from './PinVerification';
+import { Box, Container } from '@mui/material';
+
+const withPinProtection = (WrappedComponent) => {
+    const ComponentWithPin = (props) => {
+        const { pinVerified, setPinVerified } = usePin();
+        const [showPinDialog, setShowPinDialog] = useState(!pinVerified);
+
+        useEffect(() => {
+            // Reset PIN verification when component unmounts
+            return () => setPinVerified(false);
+        }, [setPinVerified]);
+
+        if (!pinVerified) {
+            return (
+                <PinVerification
+                    open={showPinDialog}
+                    onClose={() => {
+                        setShowPinDialog(false);
+                        setPinVerified(false);
+                    }}
+                />
+            );
+        }
+
+        // If PIN is verified, render the actual component with proper layout
+        return (
+            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                <Box sx={{ width: '100%', minHeight: 'calc(100vh - 64px)' }}>
+                    <WrappedComponent {...props} />
+                </Box>
+            </Container>
+        );
+    };
+
+    // Copy static methods and display name
+    ComponentWithPin.displayName = `WithPinProtection(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+    
+    return ComponentWithPin;
+};
+
+export default withPinProtection;

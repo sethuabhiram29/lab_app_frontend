@@ -1,0 +1,287 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Typography,
+  Paper,
+  Box,
+  Autocomplete,
+  TextField,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Alert
+} from '@mui/material';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { getDoctors, getAgents, getDoctorAnalysis, getAgentAnalysis } from '../api';
+
+function Analysis() {
+  const [mode, setMode] = useState('doctor');
+  const [doctors, setDoctors] = useState([]);
+  const [agents, setAgents] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(() => new Date());
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const defaultSummary = {
+    totalAmount: 0,
+    totalCommission: 0,
+    netAmount: 0,
+    testCounts: {}
+  };
+  const [summary, setSummary] = useState(defaultSummary);
+
+  useEffect(() => {
+    getDoctors().then(res => setDoctors(res.data || res)).catch(() => {});
+    getAgents().then(res => setAgents(res.data || res)).catch(() => {});
+  }, []);
+
+  const handleFetch = async () => {
+    setError('');
+    setPatients([]);
+    setSummary(defaultSummary);
+
+    if (mode === 'doctor' && !selectedDoctor) {
+      setError('Please select a doctor');
+      return;
+    }
+    if (mode === 'agent' && !selectedAgent) {
+      setError('Please select an agent');
+      return;
+    }
+    if (!startDate || !endDate) {
+      setError('Please select a date range');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Convert to ISO string for API calls
+      const formatDate = d => d instanceof Date ? d.toISOString() : d;
+      
+      let res;
+      if (mode === 'doctor') {
+        res = await getDoctorAnalysis(selectedDoctor._id, formatDate(startDate), formatDate(endDate));
+      } else {
+        res = await getAgentAnalysis(selectedAgent._id, formatDate(startDate), formatDate(endDate));
+      }
+
+      // Process the response data
+      if (!res?.data?.patients) {
+        console.warn('Unexpected response format:', res);
+        setError('Received invalid data format from server');
+        return;
+      }
+
+      console.log('Setting data from response:', res.data);
+      
+      const responseData = res.data;
+      setPatients(responseData.patients);
+      setSummary({
+        ...defaultSummary,
+        ...responseData.summary,
+        testCounts: responseData.summary?.testCounts || {}
+      });
+
+      // No need to calculate summary as it's provided by the server
+      console.log('Data set successfully:', {
+        patientCount: responseData.patients.length,
+        summary: responseData.summary
+      });
+
+    } catch (err) {
+      console.error('Analysis fetch error:', err);
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message;
+      setError(`Failed to fetch analysis data: ${errorMessage}`);
+      setPatients([]);
+      setSummary(defaultSummary);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Analysis
+        </Typography>
+        <Box sx={{ mb: 3 }}>
+          <Button
+            variant={mode === 'doctor' ? 'contained' : 'outlined'}
+            onClick={() => setMode('doctor')}
+            sx={{ mr: 2 }}
+          >
+            By Doctor
+          </Button>
+          <Button
+            variant={mode === 'agent' ? 'contained' : 'outlined'}
+            onClick={() => setMode('agent')}
+          >
+            By Agent
+          </Button>
+        </Box>
+        <Box display="flex" gap={2} alignItems="center" sx={{ mb: 2 }}>
+          <Box flex={1}>
+            {mode === 'doctor' ? (
+              <Autocomplete
+                options={doctors}
+                getOptionLabel={option => option?.name || ''}
+                value={selectedDoctor}
+                onChange={(_, v) => setSelectedDoctor(v)}
+                renderInput={params => <TextField {...params} label="Select Doctor" fullWidth />}
+              />
+            ) : (
+              <Autocomplete
+                options={agents}
+                getOptionLabel={option => option?.name || ''}
+                value={selectedAgent}
+                onChange={(_, v) => setSelectedAgent(v)}
+                renderInput={params => <TextField {...params} label="Select Agent" fullWidth />}
+              />
+            )}
+          </Box>
+          <Box flex={1}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Start Date"
+                value={startDate}
+                onChange={setStartDate}
+                format="dd-MM-yyyy"
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    inputProps: {
+                      placeholder: "DD-MM-YYYY"
+                    }
+                  }
+                }}
+              />
+            </LocalizationProvider>
+          </Box>
+          <Box flex={1}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="End Date"
+                value={endDate}
+                onChange={setEndDate}
+                format="dd-MM-yyyy"
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    inputProps: {
+                      placeholder: "DD-MM-YYYY"
+                    }
+                  }
+                }}
+              />
+            </LocalizationProvider>
+          </Box>
+          <Box flex={1}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleFetch}
+              disabled={loading}
+              fullWidth
+              sx={{ height: 56 }}
+            >
+              {loading ? 'Loading...' : 'Fetch'}
+            </Button>
+          </Box>
+        </Box>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {/* Patient Entries Table */}
+        {patients.length > 0 && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Patient Entries</Typography>
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Patient ID</TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Gender</TableCell>
+                    <TableCell>Phone</TableCell>
+                    <TableCell>Date</TableCell>
+                    <TableCell>Total Amount</TableCell>
+                    <TableCell>Commission</TableCell>
+                    <TableCell>Net Amount</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {patients.map((p) => (
+                    <TableRow key={p._id}>
+                      <TableCell>{p.regNo || '-'}</TableCell>
+                      <TableCell>{p.name || '-'}</TableCell>
+                      <TableCell>{p.gender || '-'}</TableCell>
+                      <TableCell>{p.mobileNumber || '-'}</TableCell>
+                      <TableCell>
+                        {p.createdAt ? (() => {
+                          const d = new Date(p.createdAt);
+                          return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+                        })() : '-'}
+                      </TableCell>
+                      <TableCell>₹{(Number(p.totalAmount) || 0).toFixed(2)}</TableCell>
+                      <TableCell>₹{(Number(p.commission) || 0).toFixed(2)}</TableCell>
+                      <TableCell>₹{((Number(p.totalAmount) || 0) - (Number(p.commission) || 0)).toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {/* Total Amount Section */}
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle1">
+                <b>Total Amount Charged: ₹{(summary.totalAmount || 0).toFixed(2)}</b>
+              </Typography>
+              <Typography variant="subtitle1" sx={{ mt: 1, color: 'text.secondary' }}>
+                <b>Total Commission: ₹{(summary.totalCommission || 0).toFixed(2)}</b>
+              </Typography>
+              <Typography variant="subtitle1" sx={{ mt: 1, color: 'success.main' }}>
+                <b>Net Amount: ₹{(summary.netAmount || 0).toFixed(2)}</b>
+              </Typography>
+            </Box>
+            {/* Summary Section */}
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6">Summary</Typography>
+              <Typography sx={{ mt: 2 }}>Number of Each Test/Pack Performed:</Typography>
+              <TableContainer component={Paper} sx={{ maxWidth: 400, mt: 1 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Test/Pack Name</TableCell>
+                      <TableCell>Count</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {summary.testCounts && Object.entries(summary.testCounts || {}).map(([test, count]) => (
+                      <TableRow key={test}>
+                        <TableCell>{test}</TableCell>
+                        <TableCell>{count}</TableCell>
+                      </TableRow>
+                    ))}
+                    {(!summary.testCounts || Object.keys(summary.testCounts).length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={2} align="center">No tests found</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          </Box>
+        )}
+      </Paper>
+    </Container>
+  );
+}
+
+export default Analysis;
