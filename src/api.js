@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL || 
   (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5001/api'
-    : 'https://lab-app-backend.onrender.com/api');
+    : 'https://lab-app-backend-e243.onrender.com/api');
 
 // Create axios instance with default config
 const api = axios.create({
