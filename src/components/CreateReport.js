@@ -1186,7 +1186,8 @@ function CreateReport() {
           initializeTokenClient({
             client_id: GOOGLE_CLIENT_ID,
             scope: 'https://www.googleapis.com/auth/drive.file',
-            ux_mode: 'popup'
+            ux_mode: 'popup',
+            prompt: 'select_account'
           });
           
           setDriveAuthChecked(true);
