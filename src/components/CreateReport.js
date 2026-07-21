@@ -1851,7 +1851,7 @@ function CreateReport() {
                 variant="outlined"
                 color="primary"
                 startIcon={<GoogleIcon />}
-                onClick={() => tokenClient?.requestAccessToken()}
+                onClick={() => tokenClient?.requestAccessToken({ prompt: 'select_account' })}
                 disabled={gisLoading}
               >
                 {gisLoading ? 'Loading...' : 'Connect Google Drive'}

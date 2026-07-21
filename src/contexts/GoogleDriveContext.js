@@ -35,7 +35,7 @@ export const GoogleDriveProvider = ({ children }) => {
     }
 
     try {
-      const response = await tokenClient.requestAccessToken();
+      const response = await tokenClient.requestAccessToken({ prompt: 'select_account' });
       if (response?.access_token) {
         localStorage.setItem('googleDriveAccessToken', response.access_token);
         localStorage.setItem('googleDriveTokenTimestamp', Date.now().toString());
@@ -76,6 +76,7 @@ export const GoogleDriveProvider = ({ children }) => {
   const initializeTokenClient = (clientConfig) => {
     if (window.google?.accounts?.oauth2) {
       const client = window.google.accounts.oauth2.initTokenClient({
+        prompt: 'select_account',
         ...clientConfig,
         callback: (response) => {
           if (response.error) {
