@@ -44,6 +44,7 @@ function PatientEntry() {
   const [agents, setAgents] = useState([]);
   const [tests, setTests] = useState([]);
 
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTestId, setActiveTestId] = useState(null);
