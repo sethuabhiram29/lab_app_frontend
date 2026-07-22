@@ -1186,8 +1186,7 @@ function CreateReport() {
           initializeTokenClient({
             client_id: GOOGLE_CLIENT_ID,
             scope: 'https://www.googleapis.com/auth/drive.file',
-            ux_mode: 'popup',
-            prompt: 'select_account'
+            ux_mode: 'popup'
           });
           
           setDriveAuthChecked(true);
@@ -1852,7 +1851,7 @@ function CreateReport() {
                 variant="outlined"
                 color="primary"
                 startIcon={<GoogleIcon />}
-                onClick={() => tokenClient?.requestAccessToken({ prompt: 'select_account' })}
+                onClick={() => tokenClient?.requestAccessToken()}
                 disabled={gisLoading}
               >
                 {gisLoading ? 'Loading...' : 'Connect Google Drive'}

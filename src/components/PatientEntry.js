@@ -106,13 +106,13 @@ function PatientEntry() {
           selectedTests: newSelectedTests
         };
       } else {
-        // Initialize subtests and packs selection - keep selected: false for UI display
+        // Initialize subtests and packs selection
         const subtests = (test.subtests || []).map((s, idx) => ({ ...s, id: s._id || idx + '' + test._id, selected: false }));
         const packs = (test.packs || []).map((p, pIdx) => ({
           ...p,
           id: p._id || pIdx + '' + test._id,
           selected: false,
-          subtests: (p.subtests || []).map((s, sIdx) => ({ ...s, id: s._id || pIdx + '' + sIdx + '_' + test._id, selected: false }))
+          subtests: (p.subtests || []).map((s, sIdx) => ({ ...s, id: s._id || pIdx + '' + sIdx + '_' + test._id }))
         }));
         const newTest = {
           test,
@@ -194,33 +194,33 @@ function PatientEntry() {
       return;
     }
 
-    if (!formData.selectedTests || formData.selectedTests.length === 0) {
-      setError('Please select at least one test');
-      setLoading(false);
-      return;
-    }
-
     try {
       // Calculate due amount
       const dueAmount = formData.totalAmount - (formData.advancePaid || 0);
 
       // Prepare selected subtests for each test
       console.log('Preparing test payload from formData:', formData.selectedTests);
-      const selectedTestsPayload = formData.selectedTests.map(t => {
-        // Explicitly checked subtests
-        let directSubtests = (t.subtests || []).filter(s => s.selected === true);
-        
-        // Explicitly checked packs
-        const selectedPacks = (t.packs || []).filter(p => p.selected === true).map(p => ({
-          name: p.name,
-          subtests: (p.subtests || []).map(s => ({ name: s.name, unit: s.unit, reference: s.reference, _id: s._id }))
-        }));
-
-        // If no individual subtests or packs were explicitly checked, include all subtests by default
-        if (directSubtests.length === 0 && selectedPacks.length === 0 && (t.subtests || []).length > 0) {
-          directSubtests = t.subtests;
-        }
-
+      const selectedTestsPayload = formData.selectedTests
+        .filter(t => {
+          // Only include tests that have something selected
+          const hasSelectedSubtest = t.subtests && t.subtests.some(s => s.selected);
+          const hasSelectedPack = t.packs && t.packs.some(p => p.selected);
+          return hasSelectedSubtest || hasSelectedPack;
+        })
+        .map(t => {
+          // Directly selected subtests
+          const directSubtests = (t.subtests || []).filter(s => s.selected);
+          // Selected packs and their subtests
+          const selectedPacks = (t.packs || []).filter(p => p.selected).map(p => ({
+            name: p.name,
+            subtests: (p.subtests || []).map(s => ({ name: s.name, unit: s.unit, reference: s.reference, _id: s._id }))
+          }));
+        console.log('Processing test:', {
+          testId: t.test._id,
+          testName: t.test.name,
+          selectedSubtests: directSubtests.length,
+          selectedPacks: selectedPacks.length
+        });
         return {
           test: t.test._id,
           subtests: directSubtests.map(s => ({ name: s.name, unit: s.unit, reference: s.reference, _id: s._id })),
@@ -349,6 +349,7 @@ function PatientEntry() {
                           }
                         }}
                         fullWidth
+                        required
                         placeholder="Enter full name"
                         size="small"
                       />
@@ -371,6 +372,7 @@ function PatientEntry() {
                           }
                         }}
                         fullWidth
+                        required
                         placeholder="Age"
                         size="small"
                       />
@@ -379,7 +381,7 @@ function PatientEntry() {
                       <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
                         Gender <span style={{ color: '#EF4444' }}>*</span>
                       </Typography>
-                      <FormControl fullWidth size="small">
+                      <FormControl fullWidth required size="small">
                         <Select
                           id="gender-select"
                           name="gender"
@@ -548,7 +550,7 @@ function PatientEntry() {
                             document.querySelector('input[name="advancePaid"]')?.focus();
                           }
                         }}
-                        fullWidth type="number" size="small" placeholder="₹ 0.00"
+                        fullWidth required type="number" size="small" placeholder="₹ 0.00"
                       />
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -590,7 +592,6 @@ function PatientEntry() {
                   <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
                     <Button
                       type="submit"
-                      onClick={handleSubmit}
                       variant="contained"
                       sx={{
                         bgcolor: '#1E293B',
