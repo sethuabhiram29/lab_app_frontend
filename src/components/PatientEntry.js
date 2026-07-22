@@ -349,7 +349,6 @@ function PatientEntry() {
                           }
                         }}
                         fullWidth
-                        required
                         placeholder="Enter full name"
                         size="small"
                       />
@@ -372,7 +371,6 @@ function PatientEntry() {
                           }
                         }}
                         fullWidth
-                        required
                         placeholder="Age"
                         size="small"
                       />
@@ -381,7 +379,7 @@ function PatientEntry() {
                       <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
                         Gender <span style={{ color: '#EF4444' }}>*</span>
                       </Typography>
-                      <FormControl fullWidth required size="small">
+                      <FormControl fullWidth size="small">
                         <Select
                           id="gender-select"
                           name="gender"
@@ -550,7 +548,7 @@ function PatientEntry() {
                             document.querySelector('input[name="advancePaid"]')?.focus();
                           }
                         }}
-                        fullWidth required type="number" size="small" placeholder="₹ 0.00"
+                        fullWidth type="number" size="small" placeholder="₹ 0.00"
                       />
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -592,6 +590,7 @@ function PatientEntry() {
                   <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
                     <Button
                       type="submit"
+                      onClick={handleSubmit}
                       variant="contained"
                       sx={{
                         bgcolor: '#1E293B',
