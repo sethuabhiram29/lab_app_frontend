@@ -74,8 +74,8 @@ export const GoogleDriveProvider = ({ children }) => {
   const initializeTokenClient = (clientConfig) => {
     if (window.google?.accounts?.oauth2) {
       const client = window.google.accounts.oauth2.initTokenClient({
-        prompt: 'select_account',
         ...clientConfig,
+        prompt: 'select_account',
         callback: (response) => {
           if (response.error) {
             setDriveAuthError(response.error);

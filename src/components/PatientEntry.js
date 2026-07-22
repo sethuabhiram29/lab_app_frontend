@@ -194,6 +194,12 @@ function PatientEntry() {
       return;
     }
 
+    if (!formData.selectedTests || formData.selectedTests.length === 0) {
+      setError('Please select at least one test');
+      setLoading(false);
+      return;
+    }
+
     try {
       // Calculate due amount
       const dueAmount = formData.totalAmount - (formData.advancePaid || 0);
