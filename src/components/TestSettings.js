@@ -501,13 +501,13 @@ const TestSettings = () => {
                 {activeTab === idx && !prefersReduced && (
                   <motion.div
                     layoutId="settingsTabBg"
-                    style={{ position: 'absolute', inset: 0, background: 'var(--color-primary)', borderRadius: 'var(--radius-full)', zIndex: -1, boxShadow: '0 4px 12px rgba(15,110,86,0.2)' }}
+                    style={{ position: 'absolute', inset: 0, background: '#0F172A', borderRadius: 'var(--radius-full)', zIndex: -1, boxShadow: '0 4px 12px rgba(15,23,42,0.25)' }}
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}
                 <tab.icon sx={{ fontSize: 20 }} />
                 <Typography sx={{ fontWeight: 'inherit', fontSize: '0.9rem' }}>{tab.label}</Typography>
-                <Box sx={{ background: activeTab === idx ? 'rgba(255,255,255,0.2)' : 'rgba(15,110,86,0.1)', color: activeTab === idx ? '#fff' : 'var(--color-primary)', px: 1.2, py: 0.2, borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>
+                <Box sx={{ background: activeTab === idx ? 'rgba(255,255,255,0.15)' : 'rgba(15,23,42,0.06)', color: activeTab === idx ? '#fff' : '#475569', px: 1.2, py: 0.2, borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>
                   {tab.count}
                 </Box>
               </Box>
