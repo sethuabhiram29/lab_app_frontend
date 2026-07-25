@@ -1049,8 +1049,8 @@ function PatientEntry() {
 // ── Reusable Styles ──────────────────────────────────────────────────────────
 
 const darkCardSx = {
-  p: { xs: 2, sm: 3 },
-  borderRadius: 'var(--radius-2xl)',
+  p: { xs: 1.5, sm: 2 },
+  borderRadius: 'var(--radius-xl)',
   background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
   backdropFilter: 'blur(24px)',
   border: '1px solid rgba(255,255,255,0.06)',
