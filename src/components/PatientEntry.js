@@ -281,16 +281,16 @@ function PatientEntry() {
       <Box sx={{
         position: 'fixed',
         top: 0, left: 0, right: 0, bottom: 0,
-        backgroundImage: 'url(/patient_entry_bg.png)',
+        backgroundImage: 'url(/patient_entry_bg_light.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        opacity: 0.55,
+        opacity: 0.85,
         zIndex: 0,
         '&::after': {
           content: '""',
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, rgba(248,250,252,0.4) 0%, rgba(248,250,252,0.85) 60%, rgba(248,250,252,1) 100%)',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.6) 60%, rgba(255,255,255,0.95) 100%)',
         }
       }} />
 
@@ -354,8 +354,8 @@ function PatientEntry() {
                       <PersonIcon sx={{ color: '#10B981', fontSize: 20 }} />
                     </Box>
                     <Box>
-                      <Typography sx={{ fontWeight: 800, color: '#1E293B', fontSize: '1.05rem' }}>Patient Information</Typography>
-                      <Typography sx={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 500 }}>Identity, contact & collection metadata.</Typography>
+                      <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '1rem' }}>Patient Information</Typography>
+                      <Typography sx={{ fontSize: '0.75rem', color: '#64748B' }}>Identity, contact & collection metadata.</Typography>
                     </Box>
                   </Box>
 
@@ -488,7 +488,7 @@ function PatientEntry() {
                 </Paper>
               </motion.div>
 
-{/* ── Financial Details Card ── */}
+              {/* ── Financial Details Card ── */}
               <motion.div
                 variants={sectionReveal}
                 initial="hidden"
@@ -498,12 +498,12 @@ function PatientEntry() {
               >
                 <Paper elevation={0} sx={darkCardSx}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-                    <Box sx={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <AttachMoneyIcon sx={{ color: '#3B82F6', fontSize: 20 }} />
+                    <Box sx={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <MoneyIcon sx={{ color: '#818CF8', fontSize: 20 }} />
                     </Box>
                     <Box>
-                      <Typography sx={{ fontWeight: 800, color: '#1E293B', fontSize: '1.05rem' }}>Financial Details</Typography>
-                      <Typography sx={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 500 }}>Live balance sheet for this visit.</Typography>
+                      <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '1rem' }}>Financial Details</Typography>
+                      <Typography sx={{ fontSize: '0.75rem', color: '#64748B' }}>Line-balance sheet for this visit.</Typography>
                     </Box>
                   </Box>
 
@@ -595,20 +595,19 @@ function PatientEntry() {
                         <ScienceIcon sx={{ color: '#10B981', fontSize: 20 }} />
                       </Box>
                       <Box>
-                        <Typography sx={{ fontWeight: 800, color: '#1E293B', fontSize: '1.05rem' }}>Selected Tests</Typography>
-                        <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>PANEL SNAPSHOT</Typography>
+                        <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '1rem' }}>Selected Tests</Typography>
+                        <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>PANEL SNAPSHOT</Typography>
                       </Box>
                     </Box>
-                    <Chip 
-                      label={`${selectedTestCount} Tests`} 
-                      size="small"
-                      sx={{ 
-                        bgcolor: 'rgba(16,185,129,0.15)', 
-                        color: '#059669', 
-                        fontWeight: 700, 
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid rgba(16,185,129,0.3)'
-                      }} 
+                    <Chip
+                      label={`${selectedTestCount} Tests`}
+                      sx={{
+                        bgcolor: 'rgba(16,185,129,0.15)',
+                        color: '#10B981',
+                        fontWeight: 700,
+                        fontSize: '0.75rem',
+                        border: '1px solid rgba(16,185,129,0.25)',
+                      }}
                     />
                   </Box>
 
@@ -645,10 +644,8 @@ function PatientEntry() {
                       {selectedTestCount === 0 ? (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                           <Box sx={{ textAlign: 'center', py: 8, opacity: 0.5 }}>
-                            <TestIcon sx={{ color: '#94A3B8', fontSize: 40, mb: 1, opacity: 0.5 }} />
-                            <Typography sx={{ color: '#94A3B8', fontSize: '0.85rem', fontWeight: 500 }}>
-                              No tests selected yet
-                            </Typography>
+                            <TestIcon sx={{ fontSize: 48, color: '#334155', mb: 1 }} />
+                            <Typography variant="body2" sx={{ color: '#475569' }}>No tests selected yet</Typography>
                           </Box>
                         </motion.div>
                       ) : (
@@ -672,7 +669,7 @@ function PatientEntry() {
                               }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                   <CheckCircleOutlineIcon sx={{ color: '#10B981', fontSize: 18, mr: 1 }} />
-                                  <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#334155' }}>
+                                  <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#E2E8F0' }}>
                                     {st.test.name}
                                   </Typography>
                                 </Box>
@@ -689,7 +686,7 @@ function PatientEntry() {
                                           size="small"
                                           sx={{
                                             bgcolor: 'rgba(16,185,129,0.1)',
-                                            color: '#334155',
+                                            color: '#94A3B8',
                                             fontSize: '0.7rem',
                                             fontWeight: 500,
                                             height: 24,
@@ -713,7 +710,7 @@ function PatientEntry() {
                                           size="small"
                                           sx={{
                                             bgcolor: 'rgba(99,102,241,0.1)',
-                                            color: '#334155',
+                                            color: '#94A3B8',
                                             fontSize: '0.7rem',
                                             fontWeight: 500,
                                             height: 24,
@@ -734,8 +731,8 @@ function PatientEntry() {
                   {/* Estimated Total & Proceed */}
                   <Box sx={{ borderTop: '1px solid rgba(255,255,255,0.06)', mt: 2, pt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
-                      <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.05em', mb: 0.5 }}>ESTIMATED TOTAL</Typography>
-                      <Typography sx={{ fontSize: '1.75rem', fontWeight: 800, color: '#1E293B', lineHeight: 1 }}>₹ {Number(formData.totalAmount || 0).toFixed(2)}</Typography>
+                      <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#475569', letterSpacing: '0.1em', textTransform: 'uppercase' }}>ESTIMATED TOTAL</Typography>
+                      <Typography sx={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A' }}>₹ {Number(formData.totalAmount || 0).toFixed(2)}</Typography>
                     </Box>
                     <motion.div whileHover={{ scale: 1.02, x: 4 }} whileTap={{ scale: 0.98 }}>
                       <Button
@@ -826,28 +823,28 @@ function PatientEntry() {
         PaperProps={{
           sx: {
             borderRadius: 'var(--radius-2xl)',
-            background: '#FFFFFF',
-            boxShadow: '0 32px 64px rgba(0,0,0,0.1)',
+            background: '#111827',
+            boxShadow: '0 32px 64px rgba(0,0,0,0.5)',
             minHeight: '70vh',
             overflow: 'hidden',
-            border: '1px solid rgba(0,0,0,0.08)',
+            border: '1px solid rgba(255,255,255,0.08)',
           }
         }}
         sx={{
           backdropFilter: 'blur(8px)',
-          '& .MuiBackdrop-root': { backgroundColor: 'rgba(15,23,42,0.4)' },
+          '& .MuiBackdrop-root': { backgroundColor: 'rgba(0,0,0,0.7)' },
         }}
       >
-        <Box sx={{ px: 4, py: 3, borderBottom: '1px solid rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.02)' }}>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#1E293B' }}>Select Diagnostic Tests</Typography>
-          <IconButton onClick={() => setShowTestSelection(false)} sx={{ color: '#64748B', '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' } }}>
+        <Box sx={{ px: 4, py: 3, borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)' }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>Select Diagnostic Tests</Typography>
+          <IconButton onClick={() => setShowTestSelection(false)} sx={{ color: '#94A3B8', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' } }}>
             <CloseIcon />
           </IconButton>
         </Box>
-        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: '#F8FAFC' }}>
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: '#0F172A' }}>
           
           {/* Col 1: Tests */}
-          <Box sx={{ flex: 1, width: '100%', borderRight: { xs: 'none', md: '1px solid rgba(0,0,0,0.06)' }, borderBottom: { xs: '1px solid rgba(0,0,0,0.06)', md: 'none' } }}>
+          <Box sx={{ flex: 1, width: '100%', borderRight: { xs: 'none', md: '1px solid rgba(255,255,255,0.06)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.06)', md: 'none' } }}>
             <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
               <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>1. Select a Test</Typography>
             </Box>
@@ -1054,25 +1051,25 @@ function PatientEntry() {
 const darkCardSx = {
   p: { xs: 1.5, sm: 2 },
   borderRadius: 'var(--radius-xl)',
-  background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%)',
+  background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%)',
   backdropFilter: 'blur(24px)',
-  border: '1px solid rgba(255,255,255,1)',
-  boxShadow: '0 12px 36px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)',
+  border: '1px solid rgba(255,255,255,0.9)',
+  boxShadow: '0 12px 36px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9)',
 };
 
 const darkFieldSx = {
   '& .MuiFilledInput-root': {
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: 'rgba(255,255,255,0.6)',
     borderRadius: 'var(--radius-md)',
-    border: '1px solid rgba(0,0,0,0.06)',
+    border: '1px solid rgba(0,0,0,0.08)',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     minHeight: '2.5rem',
     '&:hover': {
       backgroundColor: 'rgba(255,255,255,0.9)',
-      borderColor: 'rgba(16,185,129,0.4)',
+      borderColor: 'rgba(16,185,129,0.3)',
     },
     '&.Mui-focused': {
-      backgroundColor: '#FFFFFF',
+      backgroundColor: 'rgba(255,255,255,1)',
       borderColor: '#10B981',
       boxShadow: '0 0 0 3px rgba(16,185,129,0.15)',
     },
@@ -1085,8 +1082,8 @@ const darkFieldSx = {
     '&::placeholder': { color: '#64748B', opacity: 1 },
   },
   '& .MuiInputLabel-root': {
-    color: '#64748B',
-    fontWeight: 500,
+    color: '#475569',
+    fontWeight: 600,
     fontSize: '0.85rem',
   },
   '& .MuiInputLabel-root.Mui-focused': {
@@ -1108,7 +1105,7 @@ const darkFieldSx = {
 const fieldLabelSx = {
   fontSize: '0.6rem',
   fontWeight: 700,
-  color: '#475569',
+  color: '#64748B',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   mb: 0.4,

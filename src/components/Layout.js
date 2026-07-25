@@ -296,12 +296,12 @@ function Layout() {
         position="fixed"
         elevation={0}
         sx={{
-          background: isFullBleed ? 'rgba(248,250,252,0.85)' : 'rgba(255,255,255,0.88)',
+          background: isFullBleed ? 'rgba(248, 250, 252, 0.85)' : 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: isFullBleed ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(30,41,59,0.08)',
+          borderBottom: '1px solid rgba(30,41,59,0.08)',
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          color: isFullBleed ? '#1E293B' : 'var(--text-primary)',
+          color: 'var(--text-primary)',
           left: 0,
           width: isHome ? '100%' : { sm: `calc(100% - ${currentDrawerWidth}px)` },
           ml: isHome ? 0 : { sm: `${currentDrawerWidth}px` },
