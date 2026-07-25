@@ -842,15 +842,14 @@ function PatientEntry() {
           <IconButton onClick={() => setShowTestSelection(false)} sx={{ color: '#94A3B8', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' } }}>
             <CloseIcon />
           </IconButton>
-        </Box>
-        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: '#0F172A', overflow: { xs: 'auto', md: 'hidden' }, flex: 1, minHeight: 0 }}>
+        <DialogContent data-lenis-prevent="true" sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: '#0F172A', overflow: { xs: 'auto', md: 'hidden' }, flex: 1, minHeight: 0 }}>
           
           {/* Col 1: Tests */}
           <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, borderRight: { xs: 'none', md: '1px solid rgba(255,255,255,0.06)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.06)', md: 'none' } }}>
             <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
               <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>1. Select a Test</Typography>
             </Box>
-            <Box sx={{ flex: 1, overflowY: 'auto', height: 0, overscrollBehavior: 'contain' }}>
+            <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain' }}>
               <List sx={{ p: 0 }}>
               {tests.map((test) => {
                 const selectedTest = formData.selectedTests.find(t => t.test._id === test._id);
@@ -901,7 +900,7 @@ function PatientEntry() {
                 <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
                   <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>2. Direct Subtests & Packs</Typography>
                 </Box>
-                <Box sx={{ flex: 1, overflowY: 'auto', height: 0, overscrollBehavior: 'contain' }}>
+                <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain' }}>
                   <List sx={{ p: 0 }}>
                   {(() => {
                     const test = tests.find(t => t._id === activeTestId);
@@ -1009,7 +1008,7 @@ function PatientEntry() {
                         {allSelected ? 'Deselect All' : 'Select All'}
                       </Button>
                     </Box>
-                    <Box sx={{ flex: 1, overflowY: 'auto', height: 0, overscrollBehavior: 'contain' }}>
+                    <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain' }}>
                       <List sx={{ p: 0 }}>
                       {(pack.subtests || []).map((sub) => (
                         <ListItem 
