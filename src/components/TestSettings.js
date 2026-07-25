@@ -531,8 +531,8 @@ const TestSettings = () => {
                 </Box>
                 <Grid container spacing={4}>
                   {filteredDoctors.map(doctor => (
-                    <Grid item xs={12} md={6} lg={6} key={doctor._id}>
-                      <Box sx={{ width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'scale(1.02) translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 }, boxSizing: 'border-box' }}>
+                    <Grid item xs={12} md={4} lg={4} key={doctor._id} sx={{ display: 'flex' }}>
+                      <Box sx={{ flex: 1, width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'scale(1.02) translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 }, boxSizing: 'border-box' }}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>{doctor.name.charAt(0)}</Avatar>
                           <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
@@ -574,8 +574,8 @@ const TestSettings = () => {
                 </Box>
                 <Grid container spacing={4}>
                   {filteredAgents.map(agent => (
-                    <Grid item xs={12} md={6} lg={6} key={agent._id}>
-                      <Box sx={{ width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'scale(1.02) translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 }, boxSizing: 'border-box' }}>
+                    <Grid item xs={12} md={4} lg={4} key={agent._id} sx={{ display: 'flex' }}>
+                      <Box sx={{ flex: 1, width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'scale(1.02) translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 }, boxSizing: 'border-box' }}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar sx={{ width: 64, height: 64, background: '#0F172A', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,23,42,0.2)' }}>{agent.name?.charAt(0) || 'A'}</Avatar>
                           <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
