@@ -1,20 +1,9 @@
+/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Box,
-  Drawer,
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Button,
-  Menu,
-  MenuItem,
-  Avatar,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText
+  Box, AppBar, Toolbar, Typography, IconButton, Button,
+  Menu, MenuItem, Avatar, Drawer, List, ListItem, ListItemIcon, ListItemText,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -28,22 +17,37 @@ import {
   MedicationOutlined as BuildIcon,
   AccountBalanceWalletOutlined as AccountBalanceIcon,
   RequestQuoteOutlined as MonetizationOnIcon,
+  LogoutOutlined as LogoutIcon,
 } from '@mui/icons-material';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 const drawerWidth = 260;
 
 const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-  { text: 'Patient Entry', icon: <PersonAddIcon />, path: '/patient-entry' },
-  { text: 'Create Report', icon: <DescriptionIcon />, path: '/create-report' },
-  { text: 'Share Report', icon: <PrintIcon />, path: '/share-report' },
-  { text: 'Analysis', icon: <AnalyticsIcon />, path: '/analysis' },
-  { text: 'History', icon: <HistoryIcon />, path: '/history' },
-  { text: 'Test Settings', icon: <SettingsIcon />, path: '/test-settings' },
-  { text: 'Equipment & Kits', icon: <BuildIcon />, path: '/equipment' },
-  { text: 'Commission', icon: <MonetizationOnIcon />, path: '/commission' },
+  { text: 'Dashboard',        icon: <DashboardIcon />,    path: '/' },
+  { text: 'Patient Entry',    icon: <PersonAddIcon />,    path: '/patient-entry' },
+  { text: 'Create Report',    icon: <DescriptionIcon />,  path: '/create-report' },
+  { text: 'Share Report',     icon: <PrintIcon />,        path: '/share-report' },
+  { text: 'Analysis',         icon: <AnalyticsIcon />,    path: '/analysis' },
+  { text: 'History',          icon: <HistoryIcon />,      path: '/history' },
+  { text: 'Test Settings',    icon: <SettingsIcon />,     path: '/test-settings' },
+  { text: 'Equipment & Kits', icon: <BuildIcon />,        path: '/equipment' },
+  { text: 'Commission',       icon: <MonetizationOnIcon />, path: '/commission' },
   { text: 'Accounts & Balance', icon: <AccountBalanceIcon />, path: '/accounts-balance' },
 ];
+
+// Page transition variants
+const pageVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: {
+    opacity: 1, y: 0,
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+  },
+  exit: {
+    opacity: 0, y: -8,
+    transition: { duration: 0.2, ease: [0.4, 0, 1, 1] },
+  },
+};
 
 function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -51,6 +55,7 @@ function Layout() {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const prefersReduced = useReducedMotion();
 
   const isHome = location.pathname === '/';
 
@@ -62,161 +67,474 @@ function Layout() {
   }, []);
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
-  
-  const handleNavigation = (path) => { 
-    navigate(path); 
-    setMobileOpen(false); 
-  };
-
+  const handleNavigation = (path) => { navigate(path); setMobileOpen(false); };
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/login');
   };
-
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   if (user === null) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <Typography variant="h5" color="error" gutterBottom sx={{ fontWeight: 700 }}>Session Expired</Typography>
+      <Box sx={{ p: 4, textAlign: 'center', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'var(--surface-dark)' }}>
+        <Typography variant="h5" sx={{ color: '#F1F5F9', fontWeight: 700 }} gutterBottom>Session Expired</Typography>
         <Button variant="contained" onClick={() => navigate('/login')} sx={{ mt: 2 }}>Go to Login</Button>
       </Box>
     );
   }
 
   const drawerContent = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#FFFFFF' }}>
-      <Toolbar /> {/* Spacer for AppBar */}
-      <List sx={{ px: 2, flex: 1, pt: 3 }}>
-        <Typography variant="overline" sx={{ px: 2, color: '#94A3B8', fontWeight: 700, letterSpacing: '0.1em', mb: 1, display: 'block' }}>
-          Menu
+    <Box sx={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      background: 'var(--surface-dark)',
+      borderRight: '1px solid rgba(255,255,255,0.06)',
+    }}>
+      {/* Sidebar header */}
+      <Box sx={{
+        px: 3,
+        py: 3,
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        minHeight: 'var(--appbar-height)',
+      }}>
+        <Box sx={{
+          width: 34, height: 34,
+          borderRadius: 'var(--radius-md)',
+          background: 'linear-gradient(135deg, #0F6E56 0%, #0B1F3A 100%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: '0 4px 12px rgba(15,110,86,0.35)',
+        }}>
+          <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: '0.8rem' }}>SSD</Typography>
+        </Box>
+        <Box>
+          <Typography sx={{
+            fontWeight: 700, fontSize: '0.82rem', color: '#F1F5F9', lineHeight: 1.2,
+            fontFamily: 'Inter, sans-serif',
+          }}>
+            Sri Sai Durga
+          </Typography>
+          <Typography sx={{ fontSize: '0.68rem', color: 'rgba(241,245,249,0.4)', fontWeight: 400 }}>
+            Diagnostic Centre
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Nav items */}
+      <List sx={{ px: 2, flex: 1, pt: 2, overflowY: 'auto' }}>
+        <Typography sx={{
+          px: 1.5, mb: 1.5, display: 'block',
+          fontSize: '0.65rem', fontWeight: 700,
+          color: 'rgba(241,245,249,0.25)',
+          letterSpacing: '0.1em', textTransform: 'uppercase',
+        }}>
+          Navigation
         </Typography>
+
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <ListItem
-              button
-              key={item.text}
-              onClick={() => handleNavigation(item.path)}
-              sx={{
-                borderRadius: '12px',
-                mb: 0.5,
-                py: 1,
-                px: 2,
-                backgroundColor: isActive ? '#EFF6FF' : 'transparent',
-                color: isActive ? '#2563EB' : '#4B5563',
-                '&:hover': {
-                  backgroundColor: '#F3F4F6',
-                  color: '#1F2937',
-                },
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <ListItemIcon sx={{ color: isActive ? '#2563EB' : '#9CA3AF', minWidth: 40 }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                primaryTypographyProps={{ fontWeight: isActive ? 700 : 500, fontSize: '0.9rem' }}
-              />
-            </ListItem>
+            <Box key={item.text} sx={{ position: 'relative', mb: 0.5 }}>
+              {/* Spring-animated active background pill */}
+              {isActive && (
+                <motion.div
+                  layoutId="sidebar-active-pill"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 12,
+                    background: 'linear-gradient(135deg, rgba(15,110,86,0.25) 0%, rgba(11,31,58,0.35) 100%)',
+                    border: '1px solid rgba(15,110,86,0.3)',
+                  }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                />
+              )}
+
+              <ListItem
+                button
+                onClick={() => handleNavigation(item.path)}
+                sx={{
+                  borderRadius: 'var(--radius-md)',
+                  py: 1,
+                  px: 1.5,
+                  position: 'relative',
+                  zIndex: 1,
+                  color: isActive ? '#5EEAD4' : 'rgba(241,245,249,0.5)',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(241,245,249,0.85)',
+                  },
+                  transition: 'color 0.2s ease',
+                }}
+              >
+                <ListItemIcon sx={{
+                  color: 'inherit',
+                  minWidth: 36,
+                  '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
+                  transition: 'transform 0.2s var(--ease-spring)',
+                  ...(isActive && { transform: 'scale(1.1)' }),
+                }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontWeight: isActive ? 700 : 500,
+                    fontSize: '0.85rem',
+                    letterSpacing: '-0.01em',
+                    color: 'inherit',
+                  }}
+                />
+                {isActive && (
+                  <Box sx={{
+                    width: 4, height: 4, borderRadius: '50%',
+                    bgcolor: '#5EEAD4',
+                    boxShadow: '0 0 6px rgba(94,234,212,0.8)',
+                  }} />
+                )}
+              </ListItem>
+            </Box>
           );
         })}
       </List>
+
+      {/* Sidebar user footer */}
+      <Box sx={{
+        p: 2,
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <Box sx={{
+          display: 'flex', alignItems: 'center', gap: 1.5,
+          px: 1.5, py: 1.2,
+          borderRadius: 'var(--radius-md)',
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          cursor: 'pointer',
+          '&:hover': { background: 'rgba(255,255,255,0.07)' },
+          transition: 'all 0.2s ease',
+        }}
+          onClick={handleLogout}
+        >
+          <Avatar sx={{
+            bgcolor: 'rgba(15,110,86,0.4)',
+            border: '1px solid rgba(15,110,86,0.5)',
+            width: 32, height: 32,
+            fontSize: '0.82rem',
+            fontWeight: 700,
+            color: '#5EEAD4',
+          }}>
+            {user.username.charAt(0).toUpperCase()}
+          </Avatar>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#F1F5F9', lineHeight: 1.2 }} noWrap>
+              {user.username}
+            </Typography>
+            <Typography sx={{ fontSize: '0.68rem', color: 'rgba(241,245,249,0.35)', textTransform: 'capitalize' }}>
+              {user.role || 'Staff'}
+            </Typography>
+          </Box>
+          <LogoutIcon sx={{ fontSize: '0.9rem', color: 'rgba(241,245,249,0.3)' }} />
+        </Box>
+      </Box>
     </Box>
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#F8FAFC' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: 'var(--surface-light)' }}>
+
+      {/* ── AppBar ──────────────────────────────────────────────────────── */}
       <AppBar
         position="fixed"
         elevation={0}
         sx={{
-          background: '#FFFFFF',
-          color: '#1F2937',
-          borderBottom: '1px solid #E5E7EB',
-          zIndex: (theme) => theme.zIndex.drawer + 1, // Keep appbar above drawer
+          background: 'rgba(255,255,255,0.88)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(30,41,59,0.08)',
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          color: 'var(--text-primary)',
         }}
       >
-        <Toolbar sx={{ minHeight: '80px !important', px: { xs: 2, md: 6 } }}>
+        <Toolbar sx={{ minHeight: 'var(--appbar-height) !important', px: { xs: 2, md: 4 } }}>
           {!isHome && (
             <IconButton
               color="inherit"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: 'none' } }}
+              sx={{ mr: 2, display: { sm: 'none' }, color: 'var(--color-primary)' }}
             >
               <MenuIcon />
             </IconButton>
           )}
 
           {/* Logo */}
-          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, mr: 6, cursor: 'pointer' }} onClick={() => navigate('/')}>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#1F2937', letterSpacing: '-0.02em' }}>
-              Sri Sai Durga <span style={{ color: '#2563EB' }}>Diagnostic Centre</span>
+          <Box
+            onClick={() => navigate('/')}
+            sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, cursor: 'pointer', gap: 1.5 }}
+          >
+            <Box sx={{
+              width: 32, height: 32,
+              borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, #0F6E56 0%, #0B1F3A 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow: '0 3px 10px rgba(15,110,86,0.3)',
+            }}>
+              <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: '0.7rem' }}>SSD</Typography>
+            </Box>
+            <Typography sx={{
+              fontWeight: 800,
+              fontSize: '1rem',
+              color: 'var(--color-primary)',
+              letterSpacing: '-0.02em',
+              fontFamily: 'Inter, sans-serif',
+              display: { xs: 'none', sm: 'block' },
+            }}>
+              Sri Sai Durga{' '}
+              <Box component="span" sx={{ color: 'var(--color-teal)' }}>Diagnostic Centre</Box>
             </Typography>
           </Box>
 
-          {/* User Profile */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handleMenu} sx={{ p: 0 }}>
-              <Avatar sx={{ bgcolor: '#2563EB', width: 40, height: 40, fontWeight: 700 }}>
-                {user.username.charAt(0).toUpperCase()}
-              </Avatar>
-            </IconButton>
+          {/* Right: User avatar */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <IconButton onClick={handleMenu} sx={{ p: 0.5 }}>
+                <Avatar sx={{
+                  background: 'linear-gradient(135deg, #0F6E56 0%, #0B1F3A 100%)',
+                  width: 36, height: 36,
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  boxShadow: '0 3px 10px rgba(15,110,86,0.3)',
+                }}>
+                  {user.username.charAt(0).toUpperCase()}
+                </Avatar>
+              </IconButton>
+            </motion.div>
+
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
               onClose={handleClose}
-              PaperProps={{ sx: { mt: 1, borderRadius: 2, minWidth: 150 } }}
+              PaperProps={{
+                sx: {
+                  mt: 1.5,
+                  borderRadius: 'var(--radius-lg)',
+                  minWidth: 180,
+                  boxShadow: '0 16px 40px rgba(0,0,0,0.12)',
+                  border: '1px solid rgba(30,41,59,0.08)',
+                  background: '#fff',
+                }
+              }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-              <MenuItem disabled sx={{ opacity: '1 !important', color: '#1F2937', fontWeight: 700 }}>
-                {user.username}
+              <MenuItem disabled sx={{ opacity: '1 !important' }}>
+                <Box>
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--color-primary)' }}>
+                    {user.username}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
+                    {user.role || 'Staff'}
+                  </Typography>
+                </Box>
               </MenuItem>
-              <MenuItem onClick={handleLogout} sx={{ color: '#EF4444' }}>Logout</MenuItem>
+              <Box sx={{ my: 0.5, borderTop: '1px solid rgba(30,41,59,0.07)' }} />
+              <MenuItem
+                onClick={handleLogout}
+                sx={{
+                  color: '#EF4444',
+                  fontWeight: 600,
+                  fontSize: '0.88rem',
+                  gap: 1,
+                  '&:hover': { background: 'rgba(239,68,68,0.06)' },
+                }}
+              >
+                <LogoutIcon sx={{ fontSize: '1rem' }} /> Logout
+              </MenuItem>
             </Menu>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Conditional Sidebar */}
+      {/* ── Sidebar ────────────────────────────────────────────────────── */}
       {!isHome && (
         <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
+          {/* Mobile drawer */}
           <Drawer
             variant="temporary"
             open={mobileOpen}
             onClose={handleDrawerToggle}
             ModalProps={{ keepMounted: true }}
-            sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: drawerWidth, borderRight: 'none' } }}
+            sx={{
+              display: { xs: 'block', sm: 'none' },
+              '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' },
+            }}
           >
             {drawerContent}
           </Drawer>
+
+          {/* Desktop permanent drawer */}
           <Drawer
             variant="permanent"
-            sx={{ display: { xs: 'none', sm: 'block' }, '& .MuiDrawer-paper': { width: drawerWidth, borderRight: '1px solid #E5E7EB' } }}
+            sx={{
+              display: { xs: 'none', sm: 'block' },
+              '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' },
+            }}
             open
           >
-            {drawerContent}
+            <Toolbar sx={{ minHeight: 'var(--appbar-height) !important' }} />
+            {/* Re-render nav items only (skip header repeat on desktop) */}
+            <Box sx={{
+              flex: 1, overflowY: 'auto',
+              background: 'var(--surface-dark)',
+              display: 'flex', flexDirection: 'column',
+            }}>
+              <List sx={{ px: 2, flex: 1, pt: 2 }}>
+                <Typography sx={{
+                  px: 1.5, mb: 1.5, display: 'block',
+                  fontSize: '0.65rem', fontWeight: 700,
+                  color: 'rgba(241,245,249,0.25)',
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                }}>
+                  Navigation
+                </Typography>
+
+                {menuItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Box key={item.text} sx={{ position: 'relative', mb: 0.5 }}>
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-active-pill-desktop"
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            borderRadius: 12,
+                            background: 'linear-gradient(135deg, rgba(15,110,86,0.22) 0%, rgba(11,31,58,0.32) 100%)',
+                            border: '1px solid rgba(15,110,86,0.28)',
+                          }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                        />
+                      )}
+                      <ListItem
+                        button
+                        onClick={() => handleNavigation(item.path)}
+                        sx={{
+                          borderRadius: 'var(--radius-md)',
+                          py: 1,
+                          px: 1.5,
+                          position: 'relative',
+                          zIndex: 1,
+                          color: isActive ? '#5EEAD4' : 'rgba(241,245,249,0.5)',
+                          '&:hover': {
+                            background: 'rgba(255,255,255,0.05)',
+                            color: 'rgba(241,245,249,0.85)',
+                          },
+                          transition: 'color 0.2s ease',
+                        }}
+                      >
+                        <ListItemIcon sx={{
+                          color: 'inherit',
+                          minWidth: 36,
+                          '& .MuiSvgIcon-root': { fontSize: '1.1rem' },
+                          transition: 'transform 0.2s var(--ease-spring)',
+                          ...(isActive && { transform: 'scale(1.12)' }),
+                        }}>
+                          {item.icon}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={item.text}
+                          primaryTypographyProps={{
+                            fontWeight: isActive ? 700 : 500,
+                            fontSize: '0.85rem',
+                            letterSpacing: '-0.01em',
+                            color: 'inherit',
+                          }}
+                        />
+                        {isActive && (
+                          <Box sx={{
+                            width: 4, height: 4, borderRadius: '50%',
+                            bgcolor: '#5EEAD4',
+                            boxShadow: '0 0 6px rgba(94,234,212,0.8)',
+                          }} />
+                        )}
+                      </ListItem>
+                    </Box>
+                  );
+                })}
+              </List>
+
+              {/* Desktop user footer */}
+              <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <Box
+                  onClick={handleLogout}
+                  sx={{
+                    display: 'flex', alignItems: 'center', gap: 1.5,
+                    px: 1.5, py: 1.2,
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    cursor: 'pointer',
+                    '&:hover': { background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.2)' },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <Avatar sx={{
+                    bgcolor: 'rgba(15,110,86,0.35)',
+                    border: '1px solid rgba(15,110,86,0.5)',
+                    width: 30, height: 30,
+                    fontSize: '0.78rem', fontWeight: 700, color: '#5EEAD4',
+                  }}>
+                    {user.username.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#F1F5F9', lineHeight: 1.2 }} noWrap>
+                      {user.username}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.65rem', color: 'rgba(241,245,249,0.35)', textTransform: 'capitalize' }}>
+                      {user.role || 'Staff'}
+                    </Typography>
+                  </Box>
+                  <LogoutIcon sx={{ fontSize: '0.9rem', color: 'rgba(241,245,249,0.25)' }} />
+                </Box>
+              </Box>
+            </Box>
           </Drawer>
         </Box>
       )}
 
-      {/* Main Content */}
-      <Box 
-        component="main" 
-        sx={{ 
-          flexGrow: 1, 
-          pt: '80px', 
+      {/* ── Main Content with page transition ──────────────────────────── */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          pt: 'var(--appbar-height)',
           width: isHome ? '100%' : { sm: `calc(100% - ${drawerWidth}px)` },
-          display: 'flex', 
+          display: 'flex',
           flexDirection: 'column',
-          transition: 'width 0.3s ease',
+          minHeight: '100vh',
+          background: 'var(--surface-light)',
         }}
       >
-        <Box sx={{ flex: 1, p: isHome ? 0 : { xs: 2, sm: 3, md: 4 } }} className="animate-fade-in">
-          <Outlet />
+        <Box sx={{ flex: 1, p: isHome ? 0 : { xs: 2, sm: 3, md: 4 } }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={prefersReduced ? {} : pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              style={{ height: '100%' }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </Box>
       </Box>
     </Box>
