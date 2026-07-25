@@ -2210,7 +2210,7 @@ function CreateReport() {
                             size="small" 
                             variant="outlined" 
                             color={removedImages.has(`${tableIndex}-test`) ? "primary" : "error"}
-                            onClick={() => handleToggleImage(tableIndex, 'test')}
+                            onClick={() => toggleImageRemoval(tableIndex, 'test')}
                             sx={{ borderRadius: '100px', fontWeight: 700, textTransform: 'none' }}
                           >
                             {removedImages.has(`${tableIndex}-test`) ? 'Add Image' : 'Remove Image'}
@@ -2256,7 +2256,7 @@ function CreateReport() {
                                 size="small" 
                                 variant="outlined" 
                                 color={removedImages.has(`${tableIndex}-pack-${packIndex}`) ? "primary" : "error"}
-                                onClick={() => handleToggleImage(tableIndex, 'pack', packIndex)}
+                                onClick={() => toggleImageRemoval(tableIndex, 'pack', packIndex)}
                                 sx={{ borderRadius: '100px', fontWeight: 700, textTransform: 'none' }}
                               >
                                 {removedImages.has(`${tableIndex}-pack-${packIndex}`) ? 'Add Image' : 'Remove Image'}
