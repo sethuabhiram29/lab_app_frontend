@@ -173,15 +173,8 @@ const History = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', background: 'var(--surface-light)', pb: 8 }}>
-      {/* Top Header Background Gradient */}
-      <Box sx={{
-        position: 'absolute',
-        top: 0, left: 0, right: 0, height: '40vh',
-        background: 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, rgba(220,38,38,0.1) 100%)',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }} />
+    <Box sx={{ minHeight: '100vh', background: 'url(/history_bg_light.png) center/cover no-repeat fixed', pb: 8 }}>
+
 
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 } }}>
         <AnimatePresence>
@@ -212,9 +205,9 @@ const History = () => {
               ].map((stat, idx) => (
                 <motion.div key={idx} variants={scaleUp} custom={stat.delay}>
                   <Box sx={{
-                    p: 3, borderRadius: '24px', background: 'rgba(255,255,255,0.7)',
-                    backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.8)',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)', position: 'relative', overflow: 'hidden'
+                    p: 3, borderRadius: '24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%)',
+                    backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)', position: 'relative', overflow: 'hidden'
                   }}>
                     <Box sx={{
                       position: 'absolute', top: 0, right: 0, bottom: 0, left: '50%',
@@ -234,8 +227,9 @@ const History = () => {
             {/* Main Table Container */}
             <motion.div variants={fadeUp}>
               <Box sx={{
-                borderRadius: '32px', background: '#fff', boxShadow: '0 24px 64px rgba(0,0,0,0.06)',
-                border: '1px solid rgba(30,41,59,0.05)', overflow: 'hidden', mb: 4
+                borderRadius: '32px', background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%)', backdropFilter: 'blur(24px)',
+                boxShadow: '0 24px 64px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)',
+                border: '1px solid rgba(255,255,255,0.6)', overflow: 'hidden', mb: 4
               }}>
                 {/* Table Toolbar */}
                 <Box sx={{ p: 3, px: 4, display: 'flex', flexDirection: 'column', borderBottom: '1px solid rgba(30,41,59,0.05)', gap: 3 }}>
