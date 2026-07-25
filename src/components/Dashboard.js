@@ -217,48 +217,22 @@ function Dashboard() {
           {/* Staggered character reveal heading */}
           <Typography component="div" sx={{ fontWeight: 900, lineHeight: 1.08, mb: 2.5 }}>
             <Box component="div" sx={{ overflow: 'hidden' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                {headingLine1.split(' ').map((word, wIdx) => (
+              <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'nowrap', gap: { xs: '0.5rem', md: '1rem' } }}>
+                {'Sri Sai Durga'.split(' ').map((word, wIdx) => (
                   <Box key={wIdx} sx={{ display: 'flex', whiteSpace: 'nowrap' }}>
                     {word.split('').map((char, i) => (
                       <motion.span
                         key={i}
-                        custom={i}
+                        custom={i + wIdx}
                         variants={charVariants}
                         initial="hidden"
                         animate="visible"
                         style={{
-                          fontSize: 'clamp(3rem, 8vw, 6rem)',
+                          fontSize: 'clamp(2.5rem, 7vw, 5.5rem)',
                           color: '#FFFFFF',
                           display: 'inline-block',
                           fontFamily: 'Inter, sans-serif',
                           letterSpacing: '-0.03em',
-                        }}
-                      >
-                        {char}
-                      </motion.span>
-                    ))}
-                  </Box>
-                ))}
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                {headingLine2.split(' ').map((word, wIdx) => (
-                  <Box key={wIdx} sx={{ display: 'flex', whiteSpace: 'nowrap' }}>
-                    {word.split('').map((char, i) => (
-                      <motion.span
-                        key={i}
-                        custom={headingLine1.length + i + 2 + wIdx}
-                        variants={charVariants}
-                        initial="hidden"
-                        animate="visible"
-                        style={{
-                          fontSize: 'clamp(3rem, 8vw, 6rem)',
-                          display: 'inline-block',
-                          fontFamily: 'Inter, sans-serif',
-                          letterSpacing: '-0.03em',
-                          background: 'linear-gradient(90deg, #10B981 0%, #F59E0B 100%)',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
                         }}
                       >
                         {char}

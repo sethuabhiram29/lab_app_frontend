@@ -452,7 +452,7 @@ function Layout() {
         component="main"
         sx={{
           flexGrow: 1,
-          pt: 'var(--appbar-height)',
+          pt: isHome ? 0 : 'var(--appbar-height)',
           width: isHome ? '100%' : { sm: `calc(100% - ${currentDrawerWidth}px)` },
           display: 'flex',
           flexDirection: 'column',
