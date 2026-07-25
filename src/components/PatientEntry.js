@@ -284,13 +284,13 @@ function PatientEntry() {
         backgroundImage: 'url(/patient_entry_bg_light.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        opacity: 0.85,
+        opacity: 1,
         zIndex: 0,
         '&::after': {
           content: '""',
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.6) 60%, rgba(255,255,255,0.95) 100%)',
+          background: 'rgba(255,255,255,0.2)', // Very subtle overall lightening, no heavy gradient
         }
       }} />
 
@@ -1051,7 +1051,7 @@ function PatientEntry() {
 const darkCardSx = {
   p: { xs: 1.5, sm: 2 },
   borderRadius: 'var(--radius-xl)',
-  background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%)',
+  background: 'rgba(255, 255, 255, 0.85)',
   backdropFilter: 'blur(24px)',
   border: '1px solid rgba(255,255,255,0.9)',
   boxShadow: '0 12px 36px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9)',
