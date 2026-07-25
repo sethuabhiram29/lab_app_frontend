@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Lenis from 'lenis';
@@ -145,6 +145,16 @@ function LenisProvider({ children }) {
   return children;
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  
+  return null;
+}
+
 const ProtectedEquipment = withPinProtection(Equipment);
 const ProtectedCommission = withPinProtection(Commission);
 const ProtectedAccountsBalance = withPinProtection(AccountsBalance);
@@ -157,6 +167,7 @@ function App() {
         <PinProvider>
           <GoogleDriveProvider>
             <BrowserRouter>
+              <ScrollToTop />
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/view-report/:reportId" element={<PublicReportView />} />
