@@ -523,18 +523,15 @@ function Layout() {
         }}
       >
         <Box sx={{ flex: 1, p: isHome ? 0 : { xs: 2, sm: 3, md: 4 } }}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              variants={prefersReduced ? {} : pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              style={{ height: '100%' }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            key={location.pathname}
+            variants={prefersReduced ? {} : pageVariants}
+            initial="initial"
+            animate="animate"
+            style={{ height: '100%' }}
+          >
+            <Outlet />
+          </motion.div>
         </Box>
       </Box>
     </Box>
