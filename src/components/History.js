@@ -153,10 +153,6 @@ const History = () => {
     else { setSortBy(column); setSortOrder('asc'); }
   };
 
-  // Calculate stats for the summary cards
-  const totalRecords = filteredPatients.length;
-  const recentRecords = filteredPatients.filter(p => new Date(p.sampleCollectionDate) > new Date(Date.now() - 30*24*60*60*1000)).length;
-  const matchCount = sortedPatients.length;
 
   // Animation variants
   const staggerContainer = {
