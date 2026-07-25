@@ -64,10 +64,10 @@ const History = () => {
   const [sortOrder, setSortOrder] = useState('desc');
   // Search/filter states
   const [searchPatient, setSearchPatient] = useState('');
-  const [searchRef, setSearchRef] = useState('');
   const [searchTest, setSearchTest] = useState('');
   const [searchStartDate, setSearchStartDate] = useState('');
   const [searchEndDate, setSearchEndDate] = useState('');
+  const [displayedPatients, setDisplayedPatients] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
 
@@ -119,23 +119,23 @@ const History = () => {
   };
 
   // Filtering logic
-  const filteredPatients = patients.filter((p) => {
-    const patientNameMatch = p.name.toLowerCase().includes(searchPatient.toLowerCase());
-    const refNameMatch = getRefName(p).toLowerCase().includes(searchRef.toLowerCase());
-    const testNameMatch = getTestNames(p).toLowerCase().includes(searchTest.toLowerCase());
-    const date = new Date(p.sampleCollectionDate);
-    const startDateMatch = searchStartDate ? date >= new Date(searchStartDate) : true;
-    const endDateMatch = searchEndDate ? date <= new Date(searchEndDate) : true;
-    return patientNameMatch && refNameMatch && testNameMatch && startDateMatch && endDateMatch;
-  });
+  const handleFetch = () => {
+    const filtered = patients.filter((p) => {
+      const patientNameMatch = p.name.toLowerCase().includes(searchPatient.toLowerCase());
+      const testNameMatch = getTestNames(p).toLowerCase().includes(searchTest.toLowerCase());
+      const date = new Date(p.sampleCollectionDate);
+      const startDateMatch = searchStartDate ? date >= new Date(searchStartDate) : true;
+      const endDateMatch = searchEndDate ? date <= new Date(searchEndDate) : true;
+      return patientNameMatch && testNameMatch && startDateMatch && endDateMatch;
+    });
+    setDisplayedPatients(filtered);
+  };
 
-  const sortedPatients = [...filteredPatients].sort((a, b) => {
+  const sortedPatients = [...displayedPatients].sort((a, b) => {
     let aValue, bValue;
     switch (sortBy) {
       case 'name':
         aValue = a.name?.toLowerCase() || ''; bValue = b.name?.toLowerCase() || ''; break;
-      case 'ref':
-        aValue = getRefName(a).toLowerCase(); bValue = getRefName(b).toLowerCase(); break;
       case 'date':
         aValue = new Date(a.sampleCollectionDate); bValue = new Date(b.sampleCollectionDate); break;
       case 'test':
@@ -195,34 +195,7 @@ const History = () => {
               </motion.div>
             </Box>
 
-            {/* Stats Cards Section */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 6 }}>
-              {[
-                { title: 'TOTAL RECORDS', value: totalRecords, delay: 0 },
-                { title: 'RECENT (30 DAYS)', value: recentRecords, delay: 0.1 },
-                { title: 'MATCHING SEARCH', value: matchCount, delay: 0.2 },
-                { title: 'PRINTED TODAY', value: '-', delay: 0.3 }
-              ].map((stat, idx) => (
-                <motion.div key={idx} variants={scaleUp} custom={stat.delay}>
-                  <Box sx={{
-                    p: 3, borderRadius: '24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%)',
-                    backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)', position: 'relative', overflow: 'hidden'
-                  }}>
-                    <Box sx={{
-                      position: 'absolute', top: 0, right: 0, bottom: 0, left: '50%',
-                      background: 'radial-gradient(circle at center right, rgba(239,68,68,0.1) 0%, transparent 70%)', zIndex: 0
-                    }} />
-                    <Typography sx={{ position: 'relative', zIndex: 1, fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em', textTransform: 'uppercase', mb: 1 }}>
-                      {stat.title}
-                    </Typography>
-                    <Typography sx={{ position: 'relative', zIndex: 1, fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', fontFamily: '"Plus Jakarta Sans", sans-serif', lineHeight: 1 }}>
-                      {stat.value}
-                    </Typography>
-                  </Box>
-                </motion.div>
-              ))}
-            </Box>
+            {/* Stats Cards Section Removed */}
 
             {/* Main Table Container */}
             <motion.div variants={fadeUp}>
@@ -233,7 +206,7 @@ const History = () => {
               }}>
                 {/* Table Toolbar */}
                 <Box sx={{ p: 3, px: 4, display: 'flex', flexDirection: 'column', borderBottom: '1px solid rgba(30,41,59,0.05)', gap: 3 }}>
-                  <Grid container spacing={2}>
+                  <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} sm={6} md={3}>
                       <OutlinedInput
                         fullWidth size="small" placeholder="Patient Name..."
@@ -243,14 +216,6 @@ const History = () => {
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={3}>
-                      <OutlinedInput
-                        fullWidth size="small" placeholder="Ref Doctor/Agent..."
-                        value={searchRef} onChange={e => setSearchRef(e.target.value)}
-                        startAdornment={<InputAdornment position="start"><SearchIcon sx={{ color: 'var(--text-secondary)' }} /></InputAdornment>}
-                        sx={{ borderRadius: '100px', background: '#F8FAFC' }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
                       <OutlinedInput
                         fullWidth size="small" placeholder="Test Name..."
                         value={searchTest} onChange={e => setSearchTest(e.target.value)}
@@ -273,6 +238,16 @@ const History = () => {
                         InputLabelProps={{ shrink: true }}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: '100px', background: '#F8FAFC' } }}
                       />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={2}>
+                      <Button 
+                        variant="contained" 
+                        fullWidth 
+                        onClick={handleFetch}
+                        sx={{ borderRadius: '100px', background: '#0F6E56', color: '#fff', fontWeight: 700, '&:hover': { background: '#0B5240' } }}
+                      >
+                        Fetch
+                      </Button>
                     </Grid>
                   </Grid>
                 </Box>
@@ -297,7 +272,7 @@ const History = () => {
                             <TableSortLabel active={sortBy === 'date'} direction={sortOrder} onClick={() => handleSort('date')}>DATE</TableSortLabel>
                           </TableCell>
                           <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em' }}>
-                            <TableSortLabel active={sortBy === 'ref'} direction={sortOrder} onClick={() => handleSort('ref')}>REF BY</TableSortLabel>
+                            <TableSortLabel active={sortBy === 'test'} direction={sortOrder} onClick={() => handleSort('test')}>TESTS</TableSortLabel>
                           </TableCell>
                           <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em', align: 'right', pr: 5 }}>ACTIONS</TableCell>
                         </TableRow>
@@ -346,7 +321,7 @@ const History = () => {
                                   <Typography sx={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{reportDate}</Typography>
                                 </TableCell>
                                 <TableCell sx={{ borderBottom: 'none' }}>
-                                  <Typography sx={{ fontWeight: 700, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{getRefName(patient)}</Typography>
+                                  <Typography sx={{ fontWeight: 700, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{getTestNames(patient)}</Typography>
                                 </TableCell>
                                 <TableCell align="right" sx={{ pr: 5, borderBottom: 'none' }}>
                                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
