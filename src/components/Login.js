@@ -1,52 +1,68 @@
-/* eslint-disable */
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Container, TextField, Button, Typography, Box, Alert, MenuItem,
+  Box, Typography, Button, TextField, Alert, Grid, IconButton, InputAdornment, CircularProgress
 } from '@mui/material';
 import {
-  FavoriteBorder as HeartIcon,
-  ArrowForwardRounded as ArrowIcon,
-  LoginOutlined as LoginIcon,
-  PersonAddOutlined as RegisterIcon,
+  Visibility, VisibilityOff,
+  SecurityOutlined as SecurityIcon,
+  TimelineOutlined as TimelineIcon,
+  BiotechOutlined as BiotechIcon,
+  WaterDrop as WaterDropIcon,
+  ArrowForward as ArrowIcon,
+  ScienceOutlined as ScienceIcon
 } from '@mui/icons-material';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { login, register } from '../api';
 
-// ── Framer Motion variants ────────────────────────────────────────────────────
-const pageVariants = {
-  initial:  { opacity: 0, scale: 0.96, y: 24 },
-  animate:  { opacity: 1, scale: 1,    y: 0,
-    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
-  exit:     { opacity: 0, scale: 0.96, y: -16,
-    transition: { duration: 0.3, ease: [0.4, 0, 1, 1] } },
-};
-
-const fieldVariants = {
-  hidden:  { opacity: 0, y: 16 },
-  visible: (i) => ({
+// ── Framer Motion Variants ───────────────────────────────────────────────────
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i = 0) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.07, duration: 0.4, ease: [0.16, 1, 0.3, 1] },
-  }),
+    transition: { delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+  })
 };
 
-const tabIndicatorVariants = {
-  initial: { scaleX: 0, opacity: 0 },
-  animate: { scaleX: 1, opacity: 1, transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] } },
+const slideLeft = {
+  hidden: { opacity: 0, x: -40 },
+  visible: (i = 0) => ({
+    opacity: 1, x: 0,
+    transition: { delay: i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+  })
 };
 
-// Floating ambient blobs (background)
-const blobs = [
-  { top: '8%',  left: '-5%', size: 480, color: 'rgba(15,110,86,0.12)',  delay: 0 },
-  { top: '60%', right: '-8%', size: 560, color: 'rgba(11,31,58,0.10)',  delay: 1 },
-  { top: '35%', left: '40%',  size: 320, color: 'rgba(216,161,59,0.07)', delay: 2 },
-];
+const slideRight = {
+  hidden: { opacity: 0, x: 40 },
+  visible: (i = 0) => ({
+    opacity: 1, x: 0,
+    transition: { delay: i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+  })
+};
+
+// ── SVG Heartbeat Animation ──────────────────────────────────────────────────
+const HeartbeatSVG = () => (
+  <Box sx={{ my: 5, overflow: 'hidden', width: '100%', maxWidth: '400px' }}>
+    <svg viewBox="0 0 400 60" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: 'auto' }}>
+      <motion.path
+        d="M 0 30 L 100 30 L 120 30 L 130 10 L 145 50 L 160 20 L 170 30 L 250 30 L 260 15 L 275 45 L 290 30 L 400 30"
+        fill="none"
+        stroke="#D31C3D"
+        strokeWidth="1.5"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 2, ease: "easeInOut", delay: 0.5 }}
+      />
+    </svg>
+  </Box>
+);
 
 function Login() {
   const navigate = useNavigate();
   const prefersReduced = useReducedMotion();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '', password: '', confirmPassword: '', role: 'staff',
   });
@@ -54,7 +70,7 @@ function Login() {
   const [success, setSuccess] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (localStorage.getItem('sessionExpired')) {
       setSessionExpired(true);
       localStorage.removeItem('sessionExpired');
@@ -71,6 +87,8 @@ function Login() {
     setIsLogin(toLogin);
     setError('');
     setSuccess('');
+    // Reset passwords when switching
+    setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
   };
 
   const handleSubmit = async (e) => {
@@ -113,430 +131,285 @@ function Login() {
       minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
+      backgroundColor: '#FDFBF7', // Warm cream background
       position: 'relative',
       overflow: 'hidden',
-      background: 'var(--surface-dark)',
-      p: 2,
     }}>
-
-      {/* ── Animated ambient background blobs ─────────────────────────── */}
-      {blobs.map((blob, i) => (
-        <motion.div
-          key={i}
-          initial={prefersReduced ? false : { opacity: 0, scale: 0.6 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, delay: blob.delay * 0.3, ease: 'easeOut' }}
-          style={{
-            position: 'absolute',
-            top: blob.top,
-            left: blob.left,
-            right: blob.right,
-            width: blob.size,
-            height: blob.size,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${blob.color} 0%, transparent 70%)`,
-            filter: 'blur(40px)',
-            pointerEvents: 'none',
-          }}
-        />
-      ))}
-
-      {/* ── Subtle grid overlay ────────────────────────────────────────── */}
+      {/* Background Ambient Glows */}
       <Box sx={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: `
-          linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
-        `,
-        backgroundSize: '60px 60px',
-        pointerEvents: 'none',
+        position: 'absolute', top: 0, right: 0, bottom: 0, width: '50%',
+        background: 'radial-gradient(circle at 60% 50%, rgba(211,28,61,0.08) 0%, transparent 70%)',
+        zIndex: 0, pointerEvents: 'none'
       }} />
 
-      {/* ── Login card ────────────────────────────────────────────────── */}
-      <Container component="main" maxWidth="xs" sx={{ position: 'relative', zIndex: 2 }}>
-        <motion.div
-          variants={pageVariants}
-          initial={prefersReduced ? false : 'initial'}
-          animate="animate"
-          exit="exit"
-        >
-          <Box sx={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 100%)',
-            backdropFilter: 'blur(32px)',
-            WebkitBackdropFilter: 'blur(32px)',
-            borderRadius: 'var(--radius-3xl)',
-            border: '1px solid rgba(255,255,255,0.14)',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.14)',
-            p: { xs: 4, sm: 5.5 },
-            overflow: 'hidden',
-            position: 'relative',
-          }}>
-
-            {/* Subtle top glow line */}
-            <Box sx={{
-              position: 'absolute',
-              top: 0, left: '20%', right: '20%',
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, rgba(15,110,86,0.8), rgba(216,161,59,0.6), transparent)',
-            }} />
-
-            {/* ── Brand logo ──────────────────────────────────────────── */}
-            <motion.div
-              initial={prefersReduced ? false : { opacity: 0, y: -12, scale: 0.8 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
-            >
-              <Box sx={{ textAlign: 'center', mb: 4 }}>
-                <Box sx={{
-                  width: 62, height: 62,
-                  borderRadius: 'var(--radius-xl)',
-                  background: 'linear-gradient(135deg, #0F6E56 0%, #0B1F3A 100%)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  mx: 'auto', mb: 2.5,
-                  boxShadow: '0 8px 24px rgba(15,110,86,0.45)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                }}>
-                  <HeartIcon sx={{ color: 'white', fontSize: 28 }} />
-                </Box>
-
-                <Typography component="h1" sx={{
-                  fontWeight: 800,
-                  fontSize: '1.6rem',
-                  color: '#F1F5F9',
-                  letterSpacing: '-0.03em',
-                  fontFamily: 'Inter, sans-serif',
-                  mb: 0.5,
-                }}>
-                  Sri Sai Durga
-                </Typography>
-                <Typography sx={{ color: 'rgba(241,245,249,0.5)', fontSize: '0.85rem', fontWeight: 400 }}>
-                  Diagnostic Centre Portal
-                </Typography>
-              </Box>
-            </motion.div>
-
-            {/* ── Mode toggle (sliding pill) ───────────────────────────── */}
-            <Box sx={{
-              display: 'flex',
-              background: 'rgba(0,0,0,0.3)',
-              borderRadius: 'var(--radius-pill)',
-              p: '4px',
-              mb: 4,
-              border: '1px solid rgba(255,255,255,0.08)',
-              position: 'relative',
+      <Grid container sx={{ position: 'relative', zIndex: 1, minHeight: '100vh' }}>
+        
+        {/* ── LEFT PANEL (Branding) ──────────────────────────────────────────────── */}
+        <Grid item xs={12} md={6} sx={{ 
+          display: 'flex', flexDirection: 'column', justifyContent: 'center', 
+          p: { xs: 4, md: 8, lg: 12 } 
+        }}>
+          <motion.div variants={prefersReduced ? false : slideLeft} initial="hidden" animate="visible" custom={0}>
+            {/* Pill Badge */}
+            <Box sx={{ 
+              display: 'inline-flex', alignItems: 'center', gap: 1, 
+              px: 2, py: 0.5, borderRadius: '100px', 
+              border: '1px solid rgba(211,28,61,0.3)',
+              mb: 4
             }}>
-              {/* Sliding pill indicator */}
-              <AnimatePresence initial={false}>
-                <motion.div
-                  key={isLogin ? 'login' : 'register'}
-                  layoutId="tab-pill"
-                  style={{
-                    position: 'absolute',
-                    top: 4,
-                    left: isLogin ? 4 : 'calc(50% + 2px)',
-                    width: 'calc(50% - 6px)',
-                    height: 'calc(100% - 8px)',
-                    background: 'linear-gradient(135deg, #0F6E56 0%, #0D4A7A 100%)',
-                    borderRadius: 100,
-                    boxShadow: '0 4px 12px rgba(15,110,86,0.35)',
-                  }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              </AnimatePresence>
+              <ScienceIcon sx={{ color: '#D31C3D', fontSize: '1rem' }} />
+              <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#D31C3D', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                Precision Blood Diagnostics
+              </Typography>
+            </Box>
 
+            {/* Typography */}
+            <Typography sx={{ 
+              fontFamily: '"Playfair Display", "Times New Roman", serif', 
+              fontSize: { xs: '3rem', md: '4.5rem' }, 
+              fontWeight: 700, lineHeight: 1.1, color: '#D31C3D', mb: 1 
+            }}>
+              Sri Sai Durga
+            </Typography>
+            <Typography sx={{ 
+              fontFamily: '"Playfair Display", "Times New Roman", serif', 
+              fontSize: { xs: '2.5rem', md: '3.5rem' }, 
+              fontWeight: 400, fontStyle: 'italic', lineHeight: 1.1, color: '#4A3B39', mb: 4 
+            }}>
+              Diagnostic Centre
+            </Typography>
+
+            <Typography sx={{ 
+              fontSize: '1.05rem', color: '#6B5E5B', lineHeight: 1.7, maxWidth: '450px',
+              fontFamily: '"Plus Jakarta Sans", sans-serif'
+            }}>
+              A next-generation portal engineered around the science of blood. Live analytics, secure reports, and clinical precision — rendered in real time.
+            </Typography>
+
+            {/* Heartbeat Graphic */}
+            <HeartbeatSVG />
+
+            {/* Features Row */}
+            <Box sx={{ display: 'flex', gap: { xs: 2, sm: 4 }, flexWrap: 'wrap' }}>
               {[
-                { label: 'Sign In',        icon: <LoginIcon sx={{ fontSize: 16 }} />, active: isLogin,  onClick: () => switchMode(true) },
-                { label: 'Create Account', icon: <RegisterIcon sx={{ fontSize: 16 }} />, active: !isLogin, onClick: () => switchMode(false) },
-              ].map((tab) => (
-                <Box
-                  key={tab.label}
-                  onClick={tab.onClick}
-                  sx={{
-                    flex: 1,
-                    py: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 0.75,
-                    cursor: 'pointer',
-                    position: 'relative',
-                    zIndex: 1,
-                    borderRadius: 100,
-                    transition: 'color 0.3s ease',
-                    color: tab.active ? '#fff' : 'rgba(241,245,249,0.45)',
-                  }}
-                >
-                  {tab.icon}
-                  <Typography sx={{
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.01em',
-                    color: 'inherit',
-                  }}>
-                    {tab.label}
+                { icon: <SecurityIcon sx={{ fontSize: '1.2rem', color: '#D31C3D' }}/>, text: 'NABL Secured' },
+                { icon: <TimelineIcon sx={{ fontSize: '1.2rem', color: '#D31C3D' }}/>, text: 'Real-time Reports' },
+                { icon: <BiotechIcon sx={{ fontSize: '1.2rem', color: '#D31C3D' }}/>, text: 'Clinical Precision' }
+              ].map((feature, idx) => (
+                <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {feature.icon}
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#6B5E5B' }}>
+                    {feature.text}
                   </Typography>
                 </Box>
               ))}
             </Box>
 
-            {/* ── Alerts ──────────────────────────────────────────────── */}
-            <AnimatePresence>
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <Alert
-                    severity="error"
-                    sx={{
-                      background: 'rgba(239,68,68,0.12)',
-                      border: '1px solid rgba(239,68,68,0.3)',
-                      color: '#FCA5A5',
-                      '& .MuiAlert-icon': { color: '#EF4444' },
-                      borderRadius: 'var(--radius-md)',
-                    }}
-                  >
-                    {error}
-                  </Alert>
-                </motion.div>
-              )}
-              {success && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <Alert
-                    severity="success"
-                    sx={{
-                      background: 'rgba(16,185,129,0.12)',
-                      border: '1px solid rgba(16,185,129,0.3)',
-                      color: '#6EE7B7',
-                      '& .MuiAlert-icon': { color: '#10B981' },
-                      borderRadius: 'var(--radius-md)',
-                    }}
-                  >
-                    {success}
-                  </Alert>
-                </motion.div>
-              )}
-              {sessionExpired && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                >
-                  <Alert
-                    severity="warning"
-                    sx={{
-                      background: 'rgba(245,158,11,0.12)',
-                      border: '1px solid rgba(245,158,11,0.3)',
-                      color: '#FCD34D',
-                      '& .MuiAlert-icon': { color: '#F59E0B' },
-                      borderRadius: 'var(--radius-md)',
-                    }}
-                  >
-                    Your session has expired. Please log in again.
-                  </Alert>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          </motion.div>
+        </Grid>
 
-            {/* ── Form ────────────────────────────────────────────────── */}
-            <form onSubmit={handleSubmit}>
-              <AnimatePresence mode="wait">
-                <motion.div key={isLogin ? 'login-form' : 'register-form'}>
+        {/* ── RIGHT PANEL (Login Card) ────────────────────────────────────────────── */}
+        <Grid item xs={12} md={6} sx={{ 
+          display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+          p: { xs: 4, md: 8 } 
+        }}>
+          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ width: '100%', maxWidth: '480px' }}>
+            
+            {/* Glassmorphism Card */}
+            <Box sx={{
+              background: 'rgba(255, 255, 255, 0.6)',
+              backdropFilter: 'blur(30px)',
+              border: '1px solid rgba(255, 255, 255, 0.8)',
+              borderRadius: '32px',
+              p: { xs: 4, md: 6 },
+              boxShadow: '0 24px 64px rgba(0,0,0,0.04)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              {/* Background accent inside card */}
+              <Box sx={{
+                position: 'absolute', top: '-10%', right: '-10%', width: '200px', height: '200px',
+                background: 'radial-gradient(circle, rgba(211,28,61,0.05) 0%, transparent 70%)',
+                filter: 'blur(20px)', zIndex: 0
+              }} />
 
-                  {/* Username */}
-                  <motion.div
-                    custom={0} variants={fieldVariants}
-                    initial={prefersReduced ? false : 'hidden'} animate="visible"
+              <Box sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                
+                {/* Logo Box */}
+                <Box sx={{ 
+                  width: 64, height: 64, borderRadius: '20px', 
+                  background: 'linear-gradient(135deg, #E12A45 0%, #B8152F 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto', mb: 3,
+                  boxShadow: '0 8px 24px rgba(211,28,61,0.25)'
+                }}>
+                  <WaterDropIcon sx={{ color: '#fff', fontSize: '2rem' }} />
+                </Box>
+
+                <Typography sx={{ fontFamily: '"Playfair Display", serif', fontSize: '1.75rem', fontWeight: 700, color: '#30201D', mb: 0.5 }}>
+                  Sri Sai Durga
+                </Typography>
+                <Typography sx={{ fontSize: '0.85rem', color: '#887A77', fontWeight: 500, mb: 4 }}>
+                  Diagnostic Centre Portal
+                </Typography>
+
+                {/* Toggle Switch */}
+                <Box sx={{ 
+                  display: 'flex', background: 'rgba(253,251,247,0.8)', 
+                  borderRadius: '100px', p: 0.5, mb: 4,
+                  border: '1px solid rgba(0,0,0,0.03)'
+                }}>
+                  <Button 
+                    fullWidth 
+                    disableElevation
+                    onClick={() => switchMode(true)}
+                    sx={{ 
+                      borderRadius: '100px', py: 1.5, textTransform: 'none', fontWeight: 700, fontSize: '0.9rem',
+                      background: isLogin ? 'linear-gradient(135deg, #E12A45 0%, #B8152F 100%)' : 'transparent',
+                      color: isLogin ? '#fff' : '#887A77',
+                      transition: 'all 0.3s ease',
+                      boxShadow: isLogin ? '0 4px 12px rgba(211,28,61,0.2)' : 'none',
+                      '&:hover': { background: isLogin ? 'linear-gradient(135deg, #E12A45 0%, #B8152F 100%)' : 'rgba(0,0,0,0.02)' }
+                    }}
                   >
+                    Sign In
+                  </Button>
+                  <Button 
+                    fullWidth 
+                    disableElevation
+                    onClick={() => switchMode(false)}
+                    sx={{ 
+                      borderRadius: '100px', py: 1.5, textTransform: 'none', fontWeight: 700, fontSize: '0.9rem',
+                      background: !isLogin ? 'linear-gradient(135deg, #E12A45 0%, #B8152F 100%)' : 'transparent',
+                      color: !isLogin ? '#fff' : '#887A77',
+                      transition: 'all 0.3s ease',
+                      boxShadow: !isLogin ? '0 4px 12px rgba(211,28,61,0.2)' : 'none',
+                      '&:hover': { background: !isLogin ? 'linear-gradient(135deg, #E12A45 0%, #B8152F 100%)' : 'rgba(0,0,0,0.02)' }
+                    }}
+                  >
+                    Create Account
+                  </Button>
+                </Box>
+
+                <AnimatePresence mode="wait">
+                  {(error || success || sessionExpired) && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ marginBottom: 16 }}>
+                      {sessionExpired && <Alert severity="warning" sx={{ borderRadius: '16px' }}>Your session expired. Please login again.</Alert>}
+                      {error && <Alert severity="error" sx={{ borderRadius: '16px' }}>{error}</Alert>}
+                      {success && <Alert severity="success" sx={{ borderRadius: '16px' }}>{success}</Alert>}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                     <TextField
-                      margin="normal" required fullWidth
-                      label="Username" name="username"
+                      fullWidth
+                      name="username"
+                      placeholder="Username *"
                       value={formData.username}
                       onChange={handleChange}
-                      autoFocus
-                      autoComplete="username"
-                      InputLabelProps={{ sx: { color: 'rgba(241,245,249,0.5)' } }}
-                      sx={darkFieldSx}
+                      required
+                      variant="outlined"
+                      InputProps={{
+                        sx: { 
+                          borderRadius: '16px', background: 'rgba(253,251,247,0.8)',
+                          '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' },
+                          '&:hover fieldset': { borderColor: 'rgba(211,28,61,0.2)' },
+                          '&.Mui-focused fieldset': { borderColor: '#D31C3D', borderWidth: '1px' },
+                        }
+                      }}
                     />
-                  </motion.div>
-
-                  {/* Password */}
-                  <motion.div
-                    custom={1} variants={fieldVariants}
-                    initial={prefersReduced ? false : 'hidden'} animate="visible"
-                  >
+                    
                     <TextField
-                      margin="normal" required fullWidth
-                      label="Password" name="password" type="password"
+                      fullWidth
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Password *"
                       value={formData.password}
                       onChange={handleChange}
-                      autoComplete={isLogin ? 'current-password' : 'new-password'}
-                      InputLabelProps={{ sx: { color: 'rgba(241,245,249,0.5)' } }}
-                      sx={darkFieldSx}
+                      required
+                      variant="outlined"
+                      InputProps={{
+                        sx: { 
+                          borderRadius: '16px', background: 'rgba(253,251,247,0.8)',
+                          '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' },
+                          '&:hover fieldset': { borderColor: 'rgba(211,28,61,0.2)' },
+                          '&.Mui-focused fieldset': { borderColor: '#D31C3D', borderWidth: '1px' },
+                        },
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: '#887A77' }}>
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
                     />
-                  </motion.div>
 
-                  {/* Register-only fields */}
-                  <AnimatePresence>
                     {!isLogin && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                      >
-                        <motion.div
-                          custom={2} variants={fieldVariants}
-                          initial={prefersReduced ? false : 'hidden'} animate="visible"
-                        >
-                          <TextField
-                            margin="normal" required fullWidth
-                            label="Confirm Password" name="confirmPassword" type="password"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            autoComplete="new-password"
-                            InputLabelProps={{ sx: { color: 'rgba(241,245,249,0.5)' } }}
-                            sx={darkFieldSx}
-                          />
-                        </motion.div>
-                        <motion.div
-                          custom={3} variants={fieldVariants}
-                          initial={prefersReduced ? false : 'hidden'} animate="visible"
-                        >
-                          <TextField
-                            margin="normal" required fullWidth select
-                            label="Role" name="role"
-                            value={formData.role}
-                            onChange={handleChange}
-                            InputLabelProps={{ sx: { color: 'rgba(241,245,249,0.5)' } }}
-                            sx={darkFieldSx}
-                          >
-                            <MenuItem value="staff">Staff</MenuItem>
-                            <MenuItem value="doctor">Doctor</MenuItem>
-                            <MenuItem value="admin">Admin</MenuItem>
-                          </TextField>
-                        </motion.div>
+                      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                        <TextField
+                          fullWidth
+                          name="confirmPassword"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="Confirm Password *"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          required
+                          variant="outlined"
+                          InputProps={{
+                            sx: { 
+                              borderRadius: '16px', background: 'rgba(253,251,247,0.8)',
+                              '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' },
+                              '&:hover fieldset': { borderColor: 'rgba(211,28,61,0.2)' },
+                              '&.Mui-focused fieldset': { borderColor: '#D31C3D', borderWidth: '1px' },
+                            }
+                          }}
+                        />
                       </motion.div>
                     )}
-                  </AnimatePresence>
 
-                  {/* Submit button */}
-                  <motion.div
-                    custom={4} variants={fieldVariants}
-                    initial={prefersReduced ? false : 'hidden'} animate="visible"
-                  >
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        disabled={loading}
-                        className="btn-sheen"
-                        sx={{
-                          mt: 3, py: 1.7,
-                          fontSize: '0.95rem',
-                          fontWeight: 700,
-                          borderRadius: 'var(--radius-pill)',
-                          background: loading
-                            ? 'rgba(15,110,86,0.5)'
-                            : 'linear-gradient(135deg, #0F6E56 0%, #0B1F3A 100%)',
-                          boxShadow: loading ? 'none' : '0 8px 28px rgba(15,110,86,0.40)',
-                          border: '1px solid rgba(255,255,255,0.12)',
-                          letterSpacing: '0.02em',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          '&:hover': {
-                            background: 'linear-gradient(135deg, #0F6E56 0%, #0D4A7A 100%)',
-                            boxShadow: '0 12px 36px rgba(15,110,86,0.52)',
-                          },
-                          '&:disabled': { color: 'rgba(255,255,255,0.4)' },
-                        }}
-                      >
-                        {loading ? (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                              style={{
-                                width: 16, height: 16,
-                                border: '2px solid rgba(255,255,255,0.3)',
-                                borderTopColor: '#fff',
-                                borderRadius: '50%',
-                              }}
-                            />
-                            {isLogin ? 'Signing in...' : 'Creating account...'}
-                          </Box>
-                        ) : (
-                          <>
-                            {isLogin ? 'Sign In' : 'Create Account'}
-                            <ArrowIcon sx={{ fontSize: 18 }} />
-                          </>
-                        )}
-                      </Button>
-                    </motion.div>
-                  </motion.div>
-                </motion.div>
-              </AnimatePresence>
-            </form>
-
-            {/* Bottom branding */}
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography sx={{ fontSize: '0.72rem', color: 'rgba(241,245,249,0.25)', letterSpacing: '0.04em' }}>
-                SECURE PORTAL · SRI SAI DURGA DIAGNOSTIC CENTRE
-              </Typography>
+                    <Button
+                      type="submit"
+                      fullWidth
+                      disabled={loading}
+                      endIcon={!loading && <ArrowIcon />}
+                      sx={{
+                        mt: 2, py: 2, borderRadius: '100px', textTransform: 'none',
+                        fontSize: '1rem', fontWeight: 700, color: '#fff',
+                        background: 'linear-gradient(135deg, #E12A45 0%, #B8152F 100%)',
+                        boxShadow: '0 12px 24px rgba(211,28,61,0.25)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #D31C3D 0%, #A01229 100%)',
+                          boxShadow: '0 16px 32px rgba(211,28,61,0.35)',
+                          transform: 'translateY(-2px)'
+                        },
+                        '&:disabled': {
+                          background: '#E5E5E5',
+                          color: '#A3A3A3'
+                        }
+                      }}
+                    >
+                      {loading ? <CircularProgress size={24} color="inherit" /> : (isLogin ? 'Sign In' : 'Create Account')}
+                    </Button>
+                  </Box>
+                </form>
+              </Box>
             </Box>
-          </Box>
-        </motion.div>
-      </Container>
+
+            {/* Footer Text */}
+            <Typography sx={{ textAlign: 'center', mt: 4, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', color: '#9D928F', textTransform: 'uppercase' }}>
+              SECURE PORTAL - SRI SAI DURGA DIAGNOSTIC CENTRE
+            </Typography>
+
+          </motion.div>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
-
-// Dark glass text field styles (reusable)
-const darkFieldSx = {
-  '& .MuiOutlinedInput-root': {
-    borderRadius: 'var(--radius-md)',
-    backgroundColor: 'rgba(0,0,0,0.25)',
-    color: '#F1F5F9',
-    transition: 'all 0.25s ease',
-    '& fieldset': {
-      borderColor: 'rgba(255,255,255,0.12)',
-      borderWidth: '1.5px',
-    },
-    '&:hover fieldset': {
-      borderColor: 'rgba(15,110,86,0.6)',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#0F6E56',
-      borderWidth: '2px',
-    },
-    '&.Mui-focused': {
-      backgroundColor: 'rgba(0,0,0,0.35)',
-      boxShadow: '0 0 0 3px rgba(15,110,86,0.15)',
-    },
-  },
-  '& .MuiInputLabel-root': {
-    color: 'rgba(241,245,249,0.45)',
-  },
-  '& .MuiInputLabel-root.Mui-focused': {
-    color: '#5EEAD4',
-  },
-  '& .MuiSelect-icon': {
-    color: 'rgba(241,245,249,0.5)',
-  },
-  '& .MuiMenuItem-root': {
-    color: '#1E293B',
-  },
-};
 
 export default Login;
