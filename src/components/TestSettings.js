@@ -437,7 +437,7 @@ const TestSettings = () => {
               <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: 1, mb: 1, background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(10px)', px: 2, py: 0.5, borderRadius: 'var(--radius-full)', width: 'fit-content', border: '1px solid rgba(255,255,255,0.8)' }}>
                 <AutoAwesomeIcon sx={{ fontSize: 14 }} /> Test Settings · Live
               </Typography>
-              <Typography variant="h2" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-1px' }}>
+              <Typography variant="h3" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-1px' }}>
                 Settings<Typography component="span" sx={{ color: 'var(--color-primary)', fontSize: 'inherit', fontWeight: 'inherit' }}>.</Typography>
               </Typography>
               <Typography variant="body1" sx={{ color: 'var(--text-secondary)', mt: 1, maxWidth: 600 }}>
@@ -516,17 +516,17 @@ const TestSettings = () => {
               <Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                   <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>Doctors</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A' }}>Doctors</Typography>
                     <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 0.5 }}>Panel of referring & in-house physicians.</Typography>
                   </Box>
                   <Button variant="contained" color="primary" startIcon={<AddIcon />} sx={{ borderRadius: 'var(--radius-full)', px: 3, py: 1.2, fontWeight: 600, boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }} onClick={() => { setSelectedDoctor(null); setDoctorFormData({ name: '', specialization: '', contact: '', email: '' }); setDoctorDialogOpen(true); }}>
                     Add doctor
                   </Button>
                 </Box>
-                <Grid container spacing={3}>
+                <Grid container spacing={2}>
                   {filteredDoctors.map(doctor => (
-                    <Grid item xs={12} md={6} key={doctor._id}>
-                      <Box sx={{ p: 3, borderRadius: '24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,250,220,0.4) 100%)', border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.1)' }, '&:hover .actions': { opacity: 1 } }}>
+                    <Grid item xs={12} sm={6} key={doctor._id}>
+                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ p: 3, borderRadius: '24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,250,220,0.4) 100%)', border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
                         <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>{doctor.name.charAt(0)}</Avatar>
                         <Box sx={{ flex: 1 }}>
                           <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>{doctor.name}</Typography>
@@ -556,17 +556,17 @@ const TestSettings = () => {
               <Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                   <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>Agents</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A' }}>Agents</Typography>
                     <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 0.5 }}>External collection & referral agents.</Typography>
                   </Box>
                   <Button variant="contained" color="primary" startIcon={<AddIcon />} sx={{ borderRadius: 'var(--radius-full)', px: 3, py: 1.2, fontWeight: 600, boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }} onClick={() => { setSelectedAgent(null); setAgentFormData({ name: '', contactNumber: '', email: '', address: '', commission: 0 }); setAgentDialogOpen(true); }}>
                     Add agent
                   </Button>
                 </Box>
-                <Grid container spacing={3}>
+                <Grid container spacing={2}>
                   {filteredAgents.map(agent => (
-                    <Grid item xs={12} md={6} key={agent._id}>
-                      <Box sx={{ p: 3, borderRadius: '24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,250,220,0.4) 100%)', border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.1)' }, '&:hover .actions': { opacity: 1 } }}>
+                    <Grid item xs={12} sm={6} key={agent._id}>
+                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ p: 3, borderRadius: '24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,250,220,0.4) 100%)', border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
                         <Avatar sx={{ width: 64, height: 64, background: '#0F172A', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,23,42,0.2)' }}>{agent.name?.charAt(0) || 'A'}</Avatar>
                         <Box sx={{ flex: 1 }}>
                           <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>{agent.name}</Typography>
@@ -598,7 +598,7 @@ const TestSettings = () => {
               <Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                   <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>Tests</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A' }}>Tests</Typography>
                     <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 0.5 }}>Diagnostic catalogue with sub-tests and packs.</Typography>
                   </Box>
                   <Button variant="contained" color="primary" startIcon={<AddIcon />} sx={{ borderRadius: 'var(--radius-full)', px: 3, py: 1.2, fontWeight: 600, boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }} onClick={() => { setSelectedTest(null); setTestFormData({ name: '', code: '', description: '', image: '', subtests: [], packs: [], requiresSeparatePage: false }); setTestDialogOpen(true); }}>
@@ -607,7 +607,7 @@ const TestSettings = () => {
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {filteredTests.map((test, index) => (
-                    <Box key={test._id} sx={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,250,220,0.3) 100%)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.9)', overflow: 'hidden', transition: 'all 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.1)' } }}>
+                    <Box component={motion.div} whileHover={{ scale: 1.01, rotate: 0.5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} key={test._id} sx={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,250,220,0.3) 100%)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.9)', overflow: 'hidden', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' } }}>
                       <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer' }} onClick={() => setExpandedTest(expandedTest === test._id ? null : test._id)}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>
