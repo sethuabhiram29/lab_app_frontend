@@ -146,7 +146,7 @@ function Login() {
         zIndex: 0, pointerEvents: 'none'
       }} />
 
-      <Grid container sx={{ position: 'relative', zIndex: 1, minHeight: '100vh', margin: '0 auto', px: { xs: 2, md: 6, lg: 12 } }}>
+      <Grid container sx={{ position: 'relative', zIndex: 1, minHeight: '100vh', maxWidth: '1600px', margin: '0 auto' }}>
         
         {/* ── LEFT PANEL (Branding) ──────────────────────────────────────────────── */}
         <Grid item xs={12} md={6} sx={{ 
