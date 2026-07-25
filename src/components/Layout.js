@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box, AppBar, Toolbar, Typography, IconButton, Button,
-  Menu, MenuItem, Avatar, Drawer, List, ListItem, ListItemIcon, ListItemText,
+  Menu, MenuItem, Avatar, Drawer, List, ListItem, ListItemIcon, ListItemText, Tooltip
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -18,10 +18,13 @@ import {
   AccountBalanceWalletOutlined as AccountBalanceIcon,
   RequestQuoteOutlined as MonetizationOnIcon,
   LogoutOutlined as LogoutIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
-const drawerWidth = 260;
+const drawerWidthExpanded = 260;
+const drawerWidthCollapsed = 88;
 
 const menuItems = [
   { text: 'Dashboard',        icon: <DashboardIcon />,    path: '/' },
@@ -51,6 +54,7 @@ const pageVariants = {
 
 function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
@@ -58,6 +62,7 @@ function Layout() {
   const prefersReduced = useReducedMotion();
 
   const isHome = location.pathname === '/';
+  const currentDrawerWidth = isSidebarCollapsed ? drawerWidthCollapsed : drawerWidthExpanded;
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -95,152 +100,189 @@ function Layout() {
     }}>
       {/* Sidebar header */}
       <Box sx={{
-        px: 3,
+        px: isSidebarCollapsed ? 1 : 3,
         py: 3,
         borderBottom: '1px solid rgba(255,255,255,0.06)',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
         gap: 1.5,
         minHeight: 'var(--appbar-height)',
+        position: 'relative',
       }}>
-        <Box sx={{
-          width: 34, height: 34,
-          borderRadius: 'var(--radius-md)',
-          background: 'linear-gradient(135deg, #0F6E56 0%, #0B1F3A 100%)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-          boxShadow: '0 4px 12px rgba(15,110,86,0.35)',
-        }}>
-          <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: '0.8rem' }}>SSD</Typography>
-        </Box>
-        <Box>
-          <Typography sx={{
-            fontWeight: 700, fontSize: '0.82rem', color: '#F1F5F9', lineHeight: 1.2,
-            fontFamily: 'Inter, sans-serif',
-          }}>
-            Sri Sai Durga
-          </Typography>
-          <Typography sx={{ fontSize: '0.68rem', color: 'rgba(241,245,249,0.4)', fontWeight: 400 }}>
-            Diagnostic Centre
-          </Typography>
-        </Box>
+        {!isSidebarCollapsed && (
+          <>
+            <Box sx={{
+              width: 34, height: 34,
+              borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, #0F6E56 0%, #0B1F3A 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow: '0 4px 12px rgba(15,110,86,0.35)',
+            }}>
+              <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: '0.8rem' }}>SSD</Typography>
+            </Box>
+            <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+              <Typography sx={{
+                fontWeight: 700, fontSize: '0.82rem', color: '#F1F5F9', lineHeight: 1.2,
+                fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap'
+              }}>
+                Sri Sai Durga
+              </Typography>
+              <Typography sx={{ fontSize: '0.68rem', color: 'rgba(241,245,249,0.4)', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                Diagnostic Centre
+              </Typography>
+            </Box>
+          </>
+        )}
+        <IconButton
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          sx={{
+            color: 'rgba(255,255,255,0.5)',
+            '&:hover': { color: '#fff', background: 'rgba(255,255,255,0.1)' }
+          }}
+        >
+          {isSidebarCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
+        </IconButton>
       </Box>
 
       {/* Nav items */}
-      <List sx={{ px: 2, flex: 1, pt: 2, overflowY: 'auto' }}>
-        <Typography sx={{
-          px: 1.5, mb: 1.5, display: 'block',
-          fontSize: '0.65rem', fontWeight: 700,
-          color: 'rgba(241,245,249,0.25)',
-          letterSpacing: '0.1em', textTransform: 'uppercase',
-        }}>
-          Navigation
-        </Typography>
+      <List sx={{ px: isSidebarCollapsed ? 1 : 2, flex: 1, pt: 2, overflowY: 'auto' }}>
+        {!isSidebarCollapsed && (
+          <Typography sx={{
+            px: 1.5, mb: 1.5, display: 'block',
+            fontSize: '0.65rem', fontWeight: 700,
+            color: 'rgba(241,245,249,0.25)',
+            letterSpacing: '0.1em', textTransform: 'uppercase',
+          }}>
+            Navigation
+          </Typography>
+        )}
 
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <Box key={item.text} sx={{ position: 'relative', mb: 0.5 }}>
-              {/* Spring-animated active background pill */}
-              {isActive && !prefersReduced && (
-                <motion.div
-                  layoutId="sidebar-active-pill"
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    borderRadius: 12,
-                    background: 'linear-gradient(135deg, rgba(15,110,86,0.25) 0%, rgba(11,31,58,0.35) 100%)',
-                    border: '1px solid rgba(15,110,86,0.3)',
-                  }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                />
-              )}
-
-              <ListItem
-                button
-                onClick={() => handleNavigation(item.path)}
-                sx={{
-                  borderRadius: 'var(--radius-md)',
-                  py: 1,
-                  px: 1.5,
-                  position: 'relative',
-                  zIndex: 1,
-                  color: isActive ? '#5EEAD4' : 'rgba(241,245,249,0.5)',
-                  '&:hover': {
-                    background: 'rgba(255,255,255,0.05)',
-                    color: 'rgba(241,245,249,0.85)',
-                  },
-                  transition: 'color 0.2s ease',
-                }}
-              >
-                <ListItemIcon sx={{
-                  color: 'inherit',
-                  minWidth: 36,
-                  '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
-                  transition: 'transform 0.2s var(--ease-spring)',
-                  ...(isActive && { transform: 'scale(1.1)' }),
-                }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontWeight: isActive ? 700 : 500,
-                    fontSize: '0.85rem',
-                    letterSpacing: '-0.01em',
-                    color: 'inherit',
-                  }}
-                />
-                {isActive && (
-                  <Box sx={{
-                    width: 4, height: 4, borderRadius: '50%',
-                    bgcolor: '#5EEAD4',
-                    boxShadow: '0 0 6px rgba(94,234,212,0.8)',
-                  }} />
+            <Tooltip title={isSidebarCollapsed ? item.text : ""} placement="right" arrow key={item.text}>
+              <Box sx={{ position: 'relative', mb: 0.5 }}>
+                {/* Spring-animated active background pill */}
+                {isActive && !prefersReduced && (
+                  <motion.div
+                    layoutId="sidebar-active-pill"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: 12,
+                      background: 'linear-gradient(135deg, rgba(15,110,86,0.25) 0%, rgba(11,31,58,0.35) 100%)',
+                      border: '1px solid rgba(15,110,86,0.3)',
+                    }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                  />
                 )}
-              </ListItem>
-            </Box>
+
+                <ListItem
+                  button
+                  onClick={() => handleNavigation(item.path)}
+                  sx={{
+                    borderRadius: 'var(--radius-md)',
+                    py: 1,
+                    px: isSidebarCollapsed ? 0 : 1.5,
+                    justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
+                    position: 'relative',
+                    zIndex: 1,
+                    color: isActive ? '#5EEAD4' : 'rgba(241,245,249,0.5)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.05)',
+                      color: 'rgba(241,245,249,0.85)',
+                    },
+                    transition: 'color 0.2s ease, padding 0.2s',
+                  }}
+                >
+                  <ListItemIcon sx={{
+                    color: 'inherit',
+                    minWidth: isSidebarCollapsed ? 0 : 36,
+                    mr: isSidebarCollapsed ? 0 : 1,
+                    justifyContent: 'center',
+                    '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
+                    transition: 'transform 0.2s var(--ease-spring), margin 0.2s',
+                    ...(isActive && { transform: 'scale(1.1)' }),
+                  }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  
+                  {!isSidebarCollapsed && (
+                    <ListItemText
+                      primary={item.text}
+                      primaryTypographyProps={{
+                        fontWeight: isActive ? 700 : 500,
+                        fontSize: '0.85rem',
+                        letterSpacing: '-0.01em',
+                        color: 'inherit',
+                        whiteSpace: 'nowrap'
+                      }}
+                    />
+                  )}
+
+                  {isActive && !isSidebarCollapsed && (
+                    <Box sx={{
+                      width: 4, height: 4, borderRadius: '50%',
+                      bgcolor: '#5EEAD4',
+                      boxShadow: '0 0 6px rgba(94,234,212,0.8)',
+                    }} />
+                  )}
+                </ListItem>
+              </Box>
+            </Tooltip>
           );
         })}
       </List>
 
       {/* Sidebar user footer */}
       <Box sx={{
-        p: 2,
+        p: isSidebarCollapsed ? 1 : 2,
         borderTop: '1px solid rgba(255,255,255,0.06)',
       }}>
-        <Box sx={{
-          display: 'flex', alignItems: 'center', gap: 1.5,
-          px: 1.5, py: 1.2,
-          borderRadius: 'var(--radius-md)',
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          cursor: 'pointer',
-          '&:hover': { background: 'rgba(255,255,255,0.07)' },
-          transition: 'all 0.2s ease',
-        }}
-          onClick={handleLogout}
-        >
-          <Avatar sx={{
-            bgcolor: 'rgba(15,110,86,0.4)',
-            border: '1px solid rgba(15,110,86,0.5)',
-            width: 32, height: 32,
-            fontSize: '0.82rem',
-            fontWeight: 700,
-            color: '#5EEAD4',
-          }}>
-            {user.username.charAt(0).toUpperCase()}
-          </Avatar>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#F1F5F9', lineHeight: 1.2 }} noWrap>
-              {user.username}
-            </Typography>
-            <Typography sx={{ fontSize: '0.68rem', color: 'rgba(241,245,249,0.35)', textTransform: 'capitalize' }}>
-              {user.role || 'Staff'}
-            </Typography>
+        <Tooltip title={isSidebarCollapsed ? "Logout" : ""} placement="right" arrow>
+          <Box sx={{
+            display: 'flex', alignItems: 'center', gap: 1.5,
+            px: isSidebarCollapsed ? 0 : 1.5, 
+            py: 1.2,
+            justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            cursor: 'pointer',
+            '&:hover': { background: 'rgba(255,255,255,0.07)' },
+            transition: 'all 0.2s ease',
+          }}
+            onClick={handleLogout}
+          >
+            {isSidebarCollapsed ? (
+              <LogoutIcon sx={{ color: 'rgba(241,245,249,0.5)' }} />
+            ) : (
+              <>
+                <Avatar sx={{
+                  bgcolor: 'rgba(15,110,86,0.4)',
+                  border: '1px solid rgba(15,110,86,0.5)',
+                  width: 32, height: 32,
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  color: '#5EEAD4',
+                }}>
+                  {user.username.charAt(0).toUpperCase()}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#F1F5F9', lineHeight: 1.2 }} noWrap>
+                    {user.username}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.65rem', color: 'rgba(241,245,249,0.35)', textTransform: 'capitalize' }} noWrap>
+                    {user.role || 'Staff'}
+                  </Typography>
+                </Box>
+                <LogoutIcon sx={{ fontSize: '0.9rem', color: 'rgba(241,245,249,0.25)' }} />
+              </>
+            )}
           </Box>
-          <LogoutIcon sx={{ fontSize: '0.9rem', color: 'rgba(241,245,249,0.3)' }} />
-        </Box>
+        </Tooltip>
       </Box>
     </Box>
   );
@@ -259,6 +301,9 @@ function Layout() {
           borderBottom: '1px solid rgba(30,41,59,0.08)',
           zIndex: (theme) => theme.zIndex.drawer + 1,
           color: 'var(--text-primary)',
+          width: isHome ? '100%' : { sm: `calc(100% - ${currentDrawerWidth}px)` },
+          ml: isHome ? 0 : { sm: `${currentDrawerWidth}px` },
+          transition: 'width 0.2s, margin-left 0.2s',
         }}
       >
         <Toolbar sx={{ minHeight: 'var(--appbar-height) !important', px: { xs: 2, md: 4 } }}>
@@ -276,7 +321,7 @@ function Layout() {
           {/* Logo */}
           <Box
             onClick={() => navigate('/')}
-            sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, cursor: 'pointer', gap: 1.5 }}
+            sx={{ display: isHome ? 'flex' : { xs: 'flex', sm: 'none' }, alignItems: 'center', flexGrow: 1, cursor: 'pointer', gap: 1.5 }}
           >
             <Box sx={{
               width: 32, height: 32,
@@ -294,12 +339,12 @@ function Layout() {
               color: 'var(--color-primary)',
               letterSpacing: '-0.02em',
               fontFamily: 'Inter, sans-serif',
-              display: { xs: 'none', sm: 'block' },
             }}>
               Sri Sai Durga{' '}
               <Box component="span" sx={{ color: 'var(--color-teal)' }}>Diagnostic Centre</Box>
             </Typography>
           </Box>
+          {!isHome && <Box sx={{ flexGrow: { xs: 0, sm: 1 } }} />}
 
           {/* Right: User avatar */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -373,7 +418,7 @@ function Layout() {
             ModalProps={{ keepMounted: true }}
             sx={{
               display: { xs: 'block', sm: 'none' },
-              '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' },
+              '& .MuiDrawer-paper': { width: drawerWidthExpanded, border: 'none' },
             }}
           >
             {drawerContent}
@@ -384,152 +429,16 @@ function Layout() {
             variant="permanent"
             sx={{
               display: { xs: 'none', sm: 'block' },
-              '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' },
+              '& .MuiDrawer-paper': { 
+                width: currentDrawerWidth, 
+                border: 'none',
+                transition: 'width 0.2s',
+                overflowX: 'hidden'
+              },
             }}
             open
           >
-            <Toolbar sx={{ minHeight: 'var(--appbar-height) !important' }} />
-            {/* Re-render nav items only (skip header repeat on desktop) */}
-            <Box sx={{
-              flex: 1, overflowY: 'auto',
-              background: 'var(--surface-dark)',
-              display: 'flex', flexDirection: 'column',
-            }}>
-                            <List sx={{ px: isCollapsed ? 1 : 2, flex: 1, pt: 2, overflowX: 'hidden' }}>
-                {!isCollapsed && (
-                  <Typography sx={{
-                    px: 1.5, mb: 1.5, display: 'block',
-                    fontSize: '0.65rem', fontWeight: 700,
-                    color: 'rgba(241,245,249,0.25)',
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                  }}>
-                    Navigation
-                  </Typography>
-                )}
-
-                {menuItems.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <Box key={item.text} sx={{ position: 'relative', mb: 0.5 }}>
-                      {isActive && !prefersReduced && (
-                        <motion.div
-                          layoutId="sidebar-active-pill-desktop"
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            borderRadius: 12,
-                            background: 'linear-gradient(135deg, rgba(15,110,86,0.22) 0%, rgba(11,31,58,0.32) 100%)',
-                            border: '1px solid rgba(15,110,86,0.28)',
-                          }}
-                          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                        />
-                      )}
-                      <ListItem
-                        button
-                        onClick={() => handleNavigation(item.path)}
-                        sx={{
-                          borderRadius: 'var(--radius-md)',
-                          py: 1,
-                          px: isCollapsed ? 0 : 1.5,
-                          justifyContent: isCollapsed ? 'center' : 'flex-start',
-                          position: 'relative',
-                          zIndex: 1,
-                          color: isActive ? '#5EEAD4' : 'rgba(241,245,249,0.5)',
-                          '&:hover': {
-                            background: 'rgba(255,255,255,0.05)',
-                            color: 'rgba(241,245,249,0.85)',
-                          },
-                          transition: 'all 0.2s ease',
-                        }}
-                        title={isCollapsed ? item.text : ''}
-                      >
-                        <ListItemIcon sx={{
-                          color: 'inherit',
-                          minWidth: isCollapsed ? 'auto' : 36,
-                          '& .MuiSvgIcon-root': { fontSize: '1.1rem' },
-                          transition: 'transform 0.2s var(--ease-spring)',
-                          ...(isActive && { transform: 'scale(1.12)' }),
-                        }}>
-                          {item.icon}
-                        </ListItemIcon>
-                        {!isCollapsed && (
-                          <ListItemText
-                            primary={item.text}
-                            primaryTypographyProps={{
-                              fontWeight: isActive ? 700 : 500,
-                              fontSize: '0.85rem',
-                              letterSpacing: '-0.01em',
-                              color: 'inherit',
-                            }}
-                          />
-                        )}
-                        {isActive && !isCollapsed && (
-                          <Box sx={{
-                            width: 4, height: 4, borderRadius: '50%',
-                            bgcolor: '#5EEAD4',
-                            boxShadow: '0 0 6px rgba(94,234,212,0.8)',
-                          }} />
-                        )}
-                      </ListItem>
-                    </Box>
-                  );
-                })}
-              </List>
-
-              {/* Desktop user footer */}
-              <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                <Box
-                  onClick={handleLogout}
-                  sx={{
-                    display: 'flex', alignItems: 'center', gap: 1.5,
-                    px: isCollapsed ? 0 : 1.5, py: 1.2,
-                    justifyContent: isCollapsed ? 'center' : 'flex-start',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'rgba(241,245,249,0.6)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    '&:hover': { background: 'rgba(239,68,68,0.1)', color: '#EF4444' }
-                  }}
-                  title={isCollapsed ? 'Logout' : ''}
-                >
-                  {isCollapsed ? (
-                    <LogoutIcon sx={{ fontSize: '1.1rem' }} />
-                  ) : (
-                    <>
-                      <Avatar sx={{
-                        bgcolor: 'rgba(241,245,249,0.05)',
-                        border: '1px solid rgba(15,110,86,0.5)',
-                        width: 30, height: 30,
-                        fontSize: '0.78rem', fontWeight: 700, color: '#5EEAD4',
-                      }}>
-                        {user.username.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#F1F5F9', lineHeight: 1.2 }} noWrap>
-                          {user.username}
-                        </Typography>
-                        <Typography sx={{ fontSize: '0.65rem', color: 'rgba(241,245,249,0.35)', textTransform: 'capitalize' }}>
-                          {user.role || 'Staff'}
-                        </Typography>
-                      </Box>
-                      <LogoutIcon sx={{ fontSize: '0.9rem', color: 'rgba(241,245,249,0.25)' }} />
-                    </>
-                  )}
-                </Box>
-                <IconButton 
-                  onClick={() => setIsCollapsed(!isCollapsed)}
-                  sx={{ 
-                    color: 'rgba(255,255,255,0.5)', 
-                    mt: 1, 
-                    width: '100%', 
-                    borderRadius: 'var(--radius-md)',
-                    '&:hover': { color: '#fff', background: 'rgba(255,255,255,0.05)' } 
-                  }}
-                >
-                  {isCollapsed ? <MenuOpenIcon /> : <ChevronLeftIcon />}
-                </IconButton>
-              </Box>
-            </Box>
+            {drawerContent}
           </Drawer>
         </Box>
       )}
@@ -541,11 +450,12 @@ function Layout() {
           flexGrow: 1,
           pt: 'var(--appbar-height)',
           width: isHome ? '100%' : { sm: `calc(100% - ${currentDrawerWidth}px)` },
-          transition: 'width 0.3s ease',
+          ml: isHome ? 0 : { sm: `${currentDrawerWidth}px` },
           display: 'flex',
           flexDirection: 'column',
           minHeight: '100vh',
           background: 'var(--surface-light)',
+          transition: 'width 0.2s, margin-left 0.2s',
         }}
       >
         <Box sx={{ flex: 1, p: isHome ? 0 : { xs: 2, sm: 3, md: 4 } }}>

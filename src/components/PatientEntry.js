@@ -286,7 +286,7 @@ function PatientEntry() {
         <Grid container spacing={4}>
           
           {/* ═══════ LEFT COLUMN: Form Area ═══════ */}
-          <Grid item xs={12} md={7} lg={8}>
+          <Grid item xs={12} lg={8}>
             <motion.div variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible">
               <Paper
                 elevation={0}
@@ -498,7 +498,7 @@ function PatientEntry() {
           </Grid>
 
           {/* ═══════ RIGHT COLUMN: Selected Tests ═══════ */}
-          <Grid item xs={12} md={5} lg={4}>
+          <Grid item xs={12} lg={4}>
             <motion.div
               initial={prefersReduced ? false : { opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -513,7 +513,8 @@ function PatientEntry() {
                   background: 'linear-gradient(180deg, var(--surface-paper) 0%, rgba(255,255,255,0.4) 100%)',
                   border: '1px solid var(--border-light)',
                   boxShadow: 'var(--shadow-sm)',
-                  height: 'calc(100vh - 140px)',
+                  height: { xs: 'auto', lg: 'calc(100vh - 140px)' },
+                  maxHeight: { xs: '600px', lg: 'none' },
                   display: 'flex', flexDirection: 'column'
                 }}
               >

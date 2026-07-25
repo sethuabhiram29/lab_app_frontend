@@ -440,10 +440,16 @@ function Dashboard() {
             </motion.div>
           </Box>
 
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, 
-            gap: 3 
+          {/* Card Grid */}
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(auto-fill, minmax(280px, 1fr))',
+              md: 'repeat(auto-fill, minmax(320px, 1fr))'
+            },
+            gap: 3,
+            alignItems: 'stretch'
           }}>
             {menuItems.map((item, index) => (
               <motion.div
@@ -451,36 +457,36 @@ function Dashboard() {
                 initial={{ opacity: 0, y: 40, scale: 0.96 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.55, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.55, delay: (index % 4) * 0.1, ease: [0.16, 1, 0.3, 1] }}
                 style={{ height: '100%' }}
               >
                 <Tilt
-                      tiltMaxAngleX={8}
-                      tiltMaxAngleY={8}
-                      glareEnable={true}
-                      glareMaxOpacity={0.08}
-                      glareColor="#ffffff"
-                      glarePosition="all"
-                      glareBorderRadius="20px"
-                      transitionSpeed={600}
-                      style={{ height: '100%', borderRadius: '20px' }}
-                    >
-                      <Box
-                        onClick={() => navigate(item.path)}
-                        sx={{
-                          background: '#FFFFFF',
-                          borderRadius: 'var(--radius-2xl)',
-                          p: { xs: 3, md: 4 },
-                          height: '100%',
-                          minHeight: '240px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-start',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          border: '1px solid rgba(226, 232, 240, 0.8)',
-                          boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-                          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  tiltMaxAngleX={8}
+                  tiltMaxAngleY={8}
+                  glareEnable={true}
+                  glareMaxOpacity={0.08}
+                  glareColor="#ffffff"
+                  glarePosition="all"
+                  glareBorderRadius="20px"
+                  transitionSpeed={600}
+                  style={{ height: '100%', borderRadius: '20px' }}
+                >
+                  <Box
+                    onClick={() => navigate(item.path)}
+                    sx={{
+                      background: '#FFFFFF',
+                      borderRadius: 'var(--radius-2xl)',
+                      p: { xs: 3, md: 4 },
+                      height: '100%',
+                      minHeight: '240px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      border: '1px solid rgba(226, 232, 240, 0.8)',
+                      boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                           position: 'relative',
                           overflow: 'hidden',
                           '&::before': {
@@ -564,8 +570,8 @@ function Dashboard() {
                         </Box>
                       </Box>
                     </Tilt>
-                  </motion.div>
-              ))}
+              </motion.div>
+            ))}
           </Box>
         </Container>
       </Box>
