@@ -21,14 +21,36 @@ import {
   FormControlLabel,
   RadioGroup,
   Radio,
-  Switch
+  Radio,
+  Switch,
+  Slide
 } from '@mui/material';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+
+// ── Framer Motion Variants ───────────────────────────────────────────────────
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+  }
+};
+
+const rowVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }
+};
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import * as api from '../api';
 
 const TestSettings = () => {
+  const prefersReduced = useReducedMotion();
   const [activeTab, setActiveTab] = useState(0);
   const [doctors, setDoctors] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -364,8 +386,9 @@ const TestSettings = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h4" gutterBottom>
+      <motion.div initial={prefersReduced ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 'var(--radius-2xl)', background: 'var(--surface-paper)' }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, color: 'var(--text-primary)', mb: 1 }}>
           Settings
         </Typography>
 
@@ -381,12 +404,41 @@ const TestSettings = () => {
           </Alert>
         )}
 
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-            <Tab label="Doctors" />
-            <Tab label="Agents" />
-            <Tab label="Tests" />
-          </Tabs>
+        <Box sx={{ display: 'flex', gap: 4, mb: 4, borderBottom: '1px solid var(--border-light)' }}>
+          {['Doctors', 'Agents', 'Tests'].map((tabLabel, idx) => (
+            <Box
+              key={tabLabel}
+              onClick={() => setActiveTab(idx)}
+              sx={{
+                position: 'relative',
+                py: 2,
+                cursor: 'pointer',
+                color: activeTab === idx ? 'var(--color-primary)' : 'var(--text-secondary)',
+                fontWeight: activeTab === idx ? 700 : 500,
+                transition: 'color 0.2s',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                fontSize: '0.875rem'
+              }}
+            >
+              {tabLabel}
+              {activeTab === idx && !prefersReduced && (
+                <motion.div
+                  layoutId="tabUnderline"
+                  style={{
+                    position: 'absolute',
+                    bottom: -1,
+                    left: 0,
+                    right: 0,
+                    height: 2,
+                    background: 'var(--color-primary)',
+                    borderRadius: '2px 2px 0 0'
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+            </Box>
+          ))}
         </Box>
 
         {/* Doctors Tab */}
@@ -404,37 +456,45 @@ const TestSettings = () => {
             >
               Add Doctor
             </Button>
-            <List>
+            <List component={motion.ul} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible" sx={{ p: 0 }}>
               {doctors.map((doctor) => (
                 <ListItem
                   key={doctor._id}
+                  component={motion.li}
+                  variants={prefersReduced ? false : rowVariants}
                   divider
+                  sx={{ py: 2, transition: 'all 0.2s', '&:hover': { background: 'var(--surface-light)' } }}
                   secondaryAction={
-                    <Box>
-                      <IconButton
-                        edge="end"
-                        aria-label="edit"
-                        onClick={() => {
-                          setSelectedDoctor(doctor);
-                          setDoctorFormData({
-                            name: doctor.name,
-                            specialization: doctor.specialization,
-                            contact: doctor.contact,
-                            email: doctor.email
-                          });
-                          setDoctorDialogOpen(true);
-                        }}
-                        sx={{ mr: 1 }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={() => handleDeleteDoctor(doctor._id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                    <Box display="flex" gap={1}>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <IconButton
+                          edge="end"
+                          aria-label="edit"
+                          onClick={() => {
+                            setSelectedDoctor(doctor);
+                            setDoctorFormData({
+                              name: doctor.name,
+                              specialization: doctor.specialization,
+                              contact: doctor.contact,
+                              email: doctor.email
+                            });
+                            setDoctorDialogOpen(true);
+                          }}
+                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: 'var(--color-primary)' } }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => handleDeleteDoctor(doctor._id)}
+                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: '#dc2626' } }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </motion.div>
                     </Box>
                   }
                 >
@@ -477,38 +537,46 @@ const TestSettings = () => {
             >
               Add Agent
             </Button>
-            <List>
+            <List component={motion.ul} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible" sx={{ p: 0 }}>
               {agents.filter(Boolean).map((agent) => (
                 <ListItem
                   key={agent._id}
+                  component={motion.li}
+                  variants={prefersReduced ? false : rowVariants}
                   divider
+                  sx={{ py: 2, transition: 'all 0.2s', '&:hover': { background: 'var(--surface-light)' } }}
                   secondaryAction={
-                    <Box>
-                      <IconButton
-                        edge="end"
-                        aria-label="edit"
-                        onClick={() => {
-                          setSelectedAgent(agent);
-                          setAgentFormData({
-                            name: agent.name,
-                            contactNumber: agent.contactNumber,
-                            email: agent.email,
-                            address: agent.address,
-                            commission: agent.commission
-                          });
-                          setAgentDialogOpen(true);
-                        }}
-                        sx={{ mr: 1 }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={() => handleDeleteAgent(agent._id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                    <Box display="flex" gap={1}>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <IconButton
+                          edge="end"
+                          aria-label="edit"
+                          onClick={() => {
+                            setSelectedAgent(agent);
+                            setAgentFormData({
+                              name: agent.name,
+                              contactNumber: agent.contactNumber,
+                              email: agent.email,
+                              address: agent.address,
+                              commission: agent.commission
+                            });
+                            setAgentDialogOpen(true);
+                          }}
+                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: 'var(--color-primary)' } }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => handleDeleteAgent(agent._id)}
+                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: '#dc2626' } }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </motion.div>
                     </Box>
                   }
                 >
@@ -559,74 +627,82 @@ const TestSettings = () => {
             >
               Add Test
             </Button>
-            <List>
+            <List component={motion.ul} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible" sx={{ p: 0 }}>
               {tests.map((test) => (
                 <ListItem
                   key={test._id}
+                  component={motion.li}
+                  variants={prefersReduced ? false : rowVariants}
                   divider
+                  sx={{ py: 2, transition: 'all 0.2s', '&:hover': { background: 'var(--surface-light)' } }}
                   secondaryAction={
-                    <Box>
-                      <IconButton
-                        edge="end"
-                        aria-label="edit"
-                        onClick={() => {
-                          setSelectedTest(test);
-                          setTestFormData({
-                            name: test.name,
-                            code: test.code,
-                            description: test.description || '',
-                            image: test.image || '',
-                            requiresSeparatePage: test.requiresSeparatePage === true,
-                            subtests: Array.isArray(test.subtests)
-                              ? test.subtests.map(sub => ({
-                                  name: sub.name || '',
-                                  unit: sub.unit || '',
-                                  reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '',
-                                  hasGenderSpecificRanges: sub.hasGenderSpecificRanges || false,
-                                  maleReference: sub.maleReference || '',
-                                  femaleReference: sub.femaleReference || '',
-                                  formula: sub.formula || '',
-                                  result: sub.result || '',
-                                  image: sub.image || '',
-                                  _id: sub._id
-                                }))
-                              : [],
-                            packs: Array.isArray(test.packs)
-                              ? test.packs.map(pack => ({
-                                  name: pack.name || '',
-                                  image: pack.image || '',
-                                  requiresSeparatePage: Boolean(pack.requiresSeparatePage),
-                                  _id: pack._id,
-                                  subtests: Array.isArray(pack.subtests)
-                                    ? pack.subtests.map(sub => ({
-                                        name: sub.name || '',
-                                        unit: sub.unit || '',
-                                        reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '',
-                                        hasGenderSpecificRanges: sub.hasGenderSpecificRanges || false,
-                                        maleReference: sub.maleReference || '',
-                                        femaleReference: sub.femaleReference || '',
-                                        formula: sub.formula || '',
-                                        result: sub.result || '',
-                                        image: sub.image || '',
-                                        _id: sub._id
-                                      }))
-                                    : []
-                                }))
-                              : []
-                          });
-                          setTestDialogOpen(true);
-                        }}
-                        sx={{ mr: 1 }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={() => handleDeleteTest(test._id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                    <Box display="flex" gap={1}>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <IconButton
+                          edge="end"
+                          aria-label="edit"
+                          onClick={() => {
+                            setSelectedTest(test);
+                            setTestFormData({
+                              name: test.name,
+                              code: test.code,
+                              description: test.description || '',
+                              image: test.image || '',
+                              requiresSeparatePage: test.requiresSeparatePage === true,
+                              subtests: Array.isArray(test.subtests)
+                                ? test.subtests.map(sub => ({
+                                    name: sub.name || '',
+                                    unit: sub.unit || '',
+                                    reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '',
+                                    hasGenderSpecificRanges: sub.hasGenderSpecificRanges || false,
+                                    maleReference: sub.maleReference || '',
+                                    femaleReference: sub.femaleReference || '',
+                                    formula: sub.formula || '',
+                                    result: sub.result || '',
+                                    image: sub.image || '',
+                                    _id: sub._id
+                                  }))
+                                : [],
+                              packs: Array.isArray(test.packs)
+                                ? test.packs.map(pack => ({
+                                    name: pack.name || '',
+                                    image: pack.image || '',
+                                    requiresSeparatePage: Boolean(pack.requiresSeparatePage),
+                                    _id: pack._id,
+                                    subtests: Array.isArray(pack.subtests)
+                                      ? pack.subtests.map(sub => ({
+                                          name: sub.name || '',
+                                          unit: sub.unit || '',
+                                          reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '',
+                                          hasGenderSpecificRanges: sub.hasGenderSpecificRanges || false,
+                                          maleReference: sub.maleReference || '',
+                                          femaleReference: sub.femaleReference || '',
+                                          formula: sub.formula || '',
+                                          result: sub.result || '',
+                                          image: sub.image || '',
+                                          _id: sub._id
+                                        }))
+                                      : []
+                                  }))
+                                : []
+                            });
+                            setTestDialogOpen(true);
+                          }}
+                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: 'var(--color-primary)' } }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => handleDeleteTest(test._id)}
+                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: '#dc2626' } }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </motion.div>
                     </Box>
                   }
                 >
@@ -664,6 +740,7 @@ const TestSettings = () => {
 
         {/* Doctor Dialog */}
         <Dialog
+          TransitionComponent={Transition} PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden' } }} sx={{ backdropFilter: 'blur(8px)' }}
           open={doctorDialogOpen}
           onClose={() => {
             setDoctorDialogOpen(false);
@@ -744,6 +821,7 @@ const TestSettings = () => {
 
         {/* Agent Dialog */}
         <Dialog
+          TransitionComponent={Transition} PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden' } }} sx={{ backdropFilter: 'blur(8px)' }}
           open={agentDialogOpen}
           onClose={() => {
             setAgentDialogOpen(false);
@@ -836,6 +914,7 @@ const TestSettings = () => {
 
         {/* Test Dialog */}
         <Dialog
+          TransitionComponent={Transition} PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden' } }} sx={{ backdropFilter: 'blur(8px)' }}
           open={testDialogOpen}
           onClose={() => {
             setTestDialogOpen(false);
@@ -1499,6 +1578,7 @@ const TestSettings = () => {
 
         {/* SubTest Dialog */}
         <Dialog
+          TransitionComponent={Transition} PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden' } }} sx={{ backdropFilter: 'blur(8px)' }}
           open={subTestDialogOpen}
           onClose={() => {
             setSubTestDialogOpen(false);

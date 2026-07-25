@@ -46,6 +46,15 @@ const theme = createTheme({
     button: { textTransform: 'none', fontWeight: 700, letterSpacing: '0.01em' },
   },
   shape: { borderRadius: 12 },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 900,
+      lg: 1280,
+      xl: 1536,
+    },
+  },
   components: {
     MuiButton: {
       styleOverrides: {

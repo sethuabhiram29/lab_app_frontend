@@ -38,7 +38,28 @@ import DownloadIcon from '@mui/icons-material/Download';
 import { ReportDocument } from './CreateReport';
 import UpdateIcon from '@mui/icons-material/Update';
 import PreviewIcon from '@mui/icons-material/Preview';
+import CloseIcon from '@mui/icons-material/Close';
 import { updatePdfFile } from '../utils/driveUpdater';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Slide } from '@mui/material';
+
+// ── Framer Motion Variants ───────────────────────────────────────────────────
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+  }
+};
+
+const rowVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }
+};
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 // Google Drive Configuration
 const GOOGLE_CLIENT_ID = '1051032038727-00igqktf00j88sgta3tr2ap3f2ut7qrl.apps.googleusercontent.com';
@@ -57,6 +78,7 @@ function getReportDocumentFor(report, forPrinting = false) {
 }
 
 const ShareReport = () => {
+  const prefersReduced = useReducedMotion();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -1227,7 +1249,11 @@ Your Diagnostic Center`;
 
   return (
     <Box p={3}>
-      <Typography variant="h5" sx={{ mb: 3 }}>Share Report</Typography>
+      <motion.div initial={prefersReduced ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, color: 'var(--text-primary)', mb: 3 }}>
+          Share Report
+        </Typography>
+      </motion.div>
 
       {/* Date Picker */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -1283,65 +1309,46 @@ Your Diagnostic Center`;
         <>
           {/* Only render the table if there are standard reports */}
           {filteredReports.some(r => r.reportDisplayData && Object.keys(r.reportDisplayData).length > 0) && (
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
+            <TableContainer component={Paper} sx={{ mt: 2, borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-light)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
               <Table>
-                <TableHead>
+                <TableHead sx={{ background: 'var(--surface-light)' }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Patient ID</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Patient Name</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Links</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Patient ID</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Patient Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Links</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
-                <TableBody>
+                <TableBody component={motion.tbody} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible">
                   {filteredReports.filter(report => {
                     const hasDisplay = !!report.reportDisplayData && Object.keys(report.reportDisplayData).length > 0;
                     return hasDisplay;
                   }).map(report => {
-    const patient = report.patient;
-    const patientName = patient?.name || 'Unknown Patient';
-    const patientId = patient?.regNo || '-';
-    const patientMongoId = patient?._id;
-    
-    // Debug log for patient data
-    console.log('Patient Data:', {
-      patientName,
-      patientId,
-      mongoId: patientMongoId,
-      hasUpdationLinks: !!patient?.updationLinks,
-      updationLinksContent: {
-        viewLink: patient?.updationLinks?.viewLink,
-        downloadLink: patient?.updationLinks?.downloadLink,
-        updatedAt: patient?.updationLinks?.updatedAt,
-        patientName: patient?.updationLinks?.patientName
-      },
-      reportData: {
-        patient: report.reportDisplayData?.patient,
-        hasPatient: !!report.reportDisplayData?.patient,
-        reportId: report._id
-      }
-    });                    // Debug logging
-                    console.log('ShareReport Debug:', {
-                      patientMongoId,
-                      patientName,
-                      patientId,
-                      hasUpdationLinks: !!updationLinksMap[patientMongoId],
-                      updationLinks: updationLinksMap[patientMongoId],
-                      allLinks: updationLinksMap
-                    });
+                    const patient = report.patient;
+                    const patientName = patient?.name || 'Unknown Patient';
+                    const patientId = patient?.regNo || '-';
+                    const patientMongoId = patient?._id;
                     
                     const reportDate = report.patient?.sampleCollectionDate || report.createdAt
                       ? new Date(report.reportDisplayData.patient?.sampleCollectionDate || report.createdAt).toLocaleDateString()
                       : '-';
                     
                     return (
-                      <TableRow key={report._id}>
-                        <TableCell>{patientId}</TableCell>
-                        <TableCell>
-                          <Typography variant="body1">{patientName}</Typography>
+                      <TableRow 
+                        component={motion.tr} variants={prefersReduced ? false : rowVariants}
+                        key={report._id}
+                        hover
+                        sx={{ 
+                          transition: 'all 0.2s',
+                          '&:hover': { background: 'var(--surface-light) !important', transform: 'translateY(-1px)', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', zIndex: 1, position: 'relative' }
+                        }}
+                      >
+                        <TableCell sx={{ color: 'var(--text-secondary)' }}>{patientId}</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {patientName}
                         </TableCell>
-                        <TableCell>{reportDate}</TableCell>
+                        <TableCell sx={{ color: 'var(--text-secondary)' }}>{reportDate}</TableCell>
                         <TableCell>
                           {patient?.updationLinks ? (
                             <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
@@ -1350,7 +1357,7 @@ Your Diagnostic Center`;
                                   href={patient.updationLinks.viewLink} 
                                   target="_blank" 
                                   rel="noopener noreferrer" 
-                                  sx={{ fontSize: '0.8rem', color: 'success.main', display: 'flex', alignItems: 'center' }}
+                                  sx={{ fontSize: '0.8rem', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                                 >
                                   <LinkIcon sx={{ fontSize: '0.9rem', mr: 0.5 }} />
                                   View
@@ -1361,66 +1368,70 @@ Your Diagnostic Center`;
                                   href={patient.updationLinks.downloadLink}
                                   target="_blank" 
                                   rel="noopener noreferrer" 
-                                  sx={{ fontSize: '0.8rem', color: 'primary.main', display: 'flex', alignItems: 'center', ml: 1 }}
+                                  sx={{ fontSize: '0.8rem', color: 'var(--color-secondary)', display: 'flex', alignItems: 'center', ml: 1, fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                                 >
                                   <DownloadIcon sx={{ fontSize: '0.9rem', mr: 0.5 }} />
                                   Download
                                 </Link>
                               )}
-                              {patient.updationLinks.updatedAt && (
-                                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
-                                  ({new Date(patient.updationLinks.updatedAt).toLocaleDateString()})
-                                </Typography>
-                              )}
                             </Box>
                           ) : (
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                            <Typography variant="caption" sx={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
                               No links available
                             </Typography>
                           )}
                         </TableCell>
                         <TableCell>
                           <Box display="flex" alignItems="center" gap={1}>
-                            <Button 
-                              variant="outlined" 
-                              size="small" 
-                              onClick={() => handleShareWhatsApp(report)} 
-                              startIcon={uploadingToDrive ? <CircularProgress size={14} /> : null}
-                            >
-                              {uploadingToDrive ? 'Preparing...' : 'WhatsApp'}
-                            </Button>
-                            <Box display="flex" gap={1}>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={() => handleViewPdf(report)}
-                                color="primary"
-                                startIcon={<PreviewIcon />}
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              <Button 
+                                variant="outlined" 
+                                size="small" 
+                                onClick={() => handleShareWhatsApp(report)} 
+                                startIcon={uploadingToDrive ? <CircularProgress size={14} /> : null}
+                                sx={{ borderRadius: 'var(--radius-md)', textTransform: 'none', fontWeight: 600, borderColor: '#22c55e', color: '#22c55e', '&:hover': { borderColor: '#16a34a', bgcolor: 'rgba(34,197,94,0.05)' } }}
                               >
-                                View
+                                {uploadingToDrive ? 'Preparing...' : 'WhatsApp'}
                               </Button>
+                            </motion.div>
+                            <Box display="flex" gap={1}>
+                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  onClick={() => handleViewPdf(report)}
+                                  startIcon={<PreviewIcon />}
+                                  sx={{ borderRadius: 'var(--radius-md)', textTransform: 'none', fontWeight: 600, borderColor: 'rgba(15,110,86,0.3)', color: 'var(--color-primary)' }}
+                                >
+                                  View
+                                </Button>
+                              </motion.div>
                               {report.patient?.updationLinks?.viewLink ? (
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  onClick={() => handleUpdatePdf(report)}
-                                  color="warning"
-                                  disabled={!report.reportDisplayData || !driveAuthorized}
-                                  startIcon={report.updating ? <CircularProgress size={14} /> : <UpdateIcon />}
-                                >
-                                  {report.updating ? 'Updating...' : 'Update PDF'}
-                                </Button>
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => handleUpdatePdf(report)}
+                                    disabled={!report.reportDisplayData || !driveAuthorized}
+                                    startIcon={report.updating ? <CircularProgress size={14} /> : <UpdateIcon />}
+                                    sx={{ borderRadius: 'var(--radius-md)', textTransform: 'none', fontWeight: 600, borderColor: '#f59e0b', color: '#f59e0b', '&:hover': { borderColor: '#d97706', bgcolor: 'rgba(245,158,11,0.05)' } }}
+                                  >
+                                    {report.updating ? 'Updating...' : 'Update PDF'}
+                                  </Button>
+                                </motion.div>
                               ) : (
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  onClick={() => handleUploadToDrive(report)}
-                                  color="success"
-                                  disabled={!report.reportDisplayData || !driveAuthorized}
-                                  startIcon={report.uploading ? <CircularProgress size={14} /> : <CloudUploadIcon />}
-                                >
-                                  {report.uploading ? 'Uploading...' : 'Upload to Drive'}
-                                </Button>
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={() => handleUploadToDrive(report)}
+                                    disabled={!report.reportDisplayData || !driveAuthorized}
+                                    startIcon={report.uploading ? <CircularProgress size={14} /> : <CloudUploadIcon />}
+                                    sx={{ borderRadius: 'var(--radius-md)', textTransform: 'none', fontWeight: 600, background: 'var(--color-secondary)', boxShadow: 'none' }}
+                                  >
+                                    {report.uploading ? 'Uploading...' : 'Upload to Drive'}
+                                  </Button>
+                                </motion.div>
                               )}
                             </Box>
                           </Box>
@@ -1449,14 +1460,14 @@ Your Diagnostic Center`;
         onClose={handlePreviewClose}
         maxWidth="lg"
         fullWidth
+        TransitionComponent={Transition}
+        PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden', minHeight: '80vh' } }}
+        sx={{ backdropFilter: 'blur(8px)' }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ px: 3, py: 2, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface-light)', fontWeight: 800, color: 'var(--text-primary)' }}>
           Report Preview
-          <IconButton
-            onClick={handlePreviewClose}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
-            ×
+          <IconButton onClick={handlePreviewClose} sx={{ color: 'var(--text-secondary)' }}>
+            <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent>

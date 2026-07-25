@@ -23,8 +23,13 @@ import {
   IconButton,
   CircularProgress,
   Chip,
-  Backdrop
+  Backdrop,
+  Slide
 } from '@mui/material';
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 import GoogleIcon from '@mui/icons-material/Google';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { openDB } from 'idb';
@@ -2418,13 +2423,13 @@ function CreateReport() {
         onClose={handlePreviewClose}
         maxWidth="lg"
         fullWidth
+        TransitionComponent={Transition}
+        PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden', minHeight: '80vh' } }}
+        sx={{ backdropFilter: 'blur(8px)' }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ px: 3, py: 2, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface-light)', fontWeight: 800, color: 'var(--text-primary)' }}>
           Report Preview
-          <IconButton
-            onClick={handlePreviewClose}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
+          <IconButton onClick={handlePreviewClose} sx={{ color: 'var(--text-secondary)' }}>
             ×
           </IconButton>
         </DialogTitle>

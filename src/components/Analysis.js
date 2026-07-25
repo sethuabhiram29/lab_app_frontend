@@ -18,8 +18,39 @@ import {
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { getDoctors, getAgents, getDoctorAnalysis, getAgentAnalysis } from '../api';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import gsap from 'gsap';
+
+const CountUp = ({ value, prefix = '₹', decimals = 2 }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  useEffect(() => {
+    const obj = { val: displayValue };
+    gsap.to(obj, {
+      val: value,
+      duration: 1.5,
+      ease: "power2.out",
+      onUpdate: () => setDisplayValue(obj.val)
+    });
+  }, [value]);
+  return <>{prefix}{displayValue.toFixed(decimals)}</>;
+};
+
+// ── Framer Motion Variants ───────────────────────────────────────────────────
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+  }
+};
+
+const rowVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }
+};
 
 function Analysis() {
+  const prefersReduced = useReducedMotion();
   const [mode, setMode] = useState('doctor');
   const [doctors, setDoctors] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -127,33 +158,34 @@ function Analysis() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 1, mb: 4 }} className="animate-fade-in">
-      <Paper className="medical-card" elevation={0} sx={{ p: { xs: 2, sm: 4 } }}>
+    <Container maxWidth="lg" sx={{ mt: 1, mb: 4 }}>
+      <motion.div initial={prefersReduced ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2, sm: 4 }, background: 'transparent' }}>
         <Typography variant="h4" sx={{
           fontWeight: 800, mb: 3,
-          background: 'var(--gradient-primary)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: 'var(--text-primary)',
         }}>
           Analysis
         </Typography>
 
         {/* Mode Toggle */}
-        <Box sx={{ mb: 3, display: 'flex', gap: 1 }}>
-          <Button
-            variant={mode === 'doctor' ? 'contained' : 'outlined'}
-            onClick={() => setMode('doctor')}
-            sx={{ px: 4 }}
-          >
-            By Doctor
-          </Button>
-          <Button
-            variant={mode === 'agent' ? 'contained' : 'outlined'}
-            onClick={() => setMode('agent')}
-            sx={{ px: 4 }}
-          >
-            By Agent
-          </Button>
+        <Box sx={{ mb: 4, display: 'inline-flex', p: 0.5, background: 'var(--surface-light)', borderRadius: 'var(--radius-xl)', position: 'relative' }}>
+          {['doctor', 'agent'].map(m => (
+            <Box
+              key={m}
+              onClick={() => setMode(m)}
+              sx={{ px: 4, py: 1.5, cursor: 'pointer', position: 'relative', zIndex: 1, color: mode === m ? 'white' : 'var(--text-secondary)', fontWeight: 600, textTransform: 'capitalize' }}
+            >
+              {mode === m && (
+                <motion.div
+                  layoutId="analysisModePill"
+                  style={{ position: 'absolute', inset: 0, background: 'var(--color-primary)', borderRadius: 'var(--radius-lg)', zIndex: -1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              By {m}
+            </Box>
+          ))}
         </Box>
 
         {/* Filters - responsive */}
@@ -237,60 +269,68 @@ function Analysis() {
 
         {/* Summary Stat Cards */}
         {patients.length > 0 && (
-          <Box sx={{ mt: 3 }} className="animate-fade-in">
-            <Box sx={{ display: 'flex', gap: 2.5, mb: 4, flexDirection: { xs: 'column', sm: 'row' } }}>
-              <Box className="stat-card" sx={{ flex: 1, background: 'var(--gradient-primary)', color: 'white' }}>
-                <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 600, mb: 1, position: 'relative', zIndex: 1 }}>Total Amount</Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, position: 'relative', zIndex: 1 }}>
-                  ₹{(summary.totalAmount || 0).toFixed(2)}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Box sx={{ display: 'flex', gap: 3, mb: 5, mt: 4, flexDirection: { xs: 'column', sm: 'row' } }}>
+              <Box sx={{ flex: 1, p: 3, borderRadius: 'var(--radius-2xl)', background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%)', border: '1px solid rgba(34,197,94,0.2)', position: 'relative', overflow: 'hidden' }}>
+                <Box sx={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'rgba(34,197,94,0.1)', borderRadius: '50%', filter: 'blur(20px)' }} />
+                <Typography variant="body2" sx={{ color: 'var(--text-secondary)', fontWeight: 600, mb: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Amount</Typography>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: '#16a34a' }}>
+                  <CountUp value={summary.totalAmount || 0} />
                 </Typography>
               </Box>
-              <Box className="stat-card" sx={{ flex: 1, background: 'linear-gradient(135deg, #FF1744 0%, #FF5252 100%)', color: 'white' }}>
-                <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 600, mb: 1, position: 'relative', zIndex: 1 }}>Total Commission</Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, position: 'relative', zIndex: 1 }}>
-                  ₹{(summary.totalCommission || 0).toFixed(2)}
+              <Box sx={{ flex: 1, p: 3, borderRadius: 'var(--radius-2xl)', background: 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(239,68,68,0.05) 100%)', border: '1px solid rgba(239,68,68,0.2)', position: 'relative', overflow: 'hidden' }}>
+                <Box sx={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'rgba(239,68,68,0.1)', borderRadius: '50%', filter: 'blur(20px)' }} />
+                <Typography variant="body2" sx={{ color: 'var(--text-secondary)', fontWeight: 600, mb: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Commission</Typography>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: '#dc2626' }}>
+                  <CountUp value={summary.totalCommission || 0} />
                 </Typography>
               </Box>
-              <Box className="stat-card" sx={{ flex: 1, background: 'linear-gradient(135deg, #00C853 0%, #69F0AE 100%)', color: 'white' }}>
-                <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 600, mb: 1, position: 'relative', zIndex: 1 }}>Net Amount</Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, position: 'relative', zIndex: 1 }}>
-                  ₹{(summary.netAmount || 0).toFixed(2)}
+              <Box sx={{ flex: 1, p: 3, borderRadius: 'var(--radius-2xl)', background: 'linear-gradient(135deg, rgba(15,110,86,0.1) 0%, rgba(15,110,86,0.05) 100%)', border: '1px solid rgba(15,110,86,0.2)', position: 'relative', overflow: 'hidden' }}>
+                <Box sx={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'rgba(15,110,86,0.1)', borderRadius: '50%', filter: 'blur(20px)' }} />
+                <Typography variant="body2" sx={{ color: 'var(--text-secondary)', fontWeight: 600, mb: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net Amount</Typography>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: 'var(--color-primary)' }}>
+                  <CountUp value={summary.netAmount || 0} />
                 </Typography>
               </Box>
             </Box>
 
             {/* Patient Entries Table */}
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Patient Entries</Typography>
-            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '16px', border: '1px solid rgba(0,188,212,0.1)', overflow: 'auto' }}>
-              <Table size="small" className="table-medical">
-                <TableHead>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, color: 'var(--text-primary)' }}>Patient Entries</Typography>
+            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-light)', overflow: 'hidden' }}>
+              <Table>
+                <TableHead sx={{ background: 'var(--surface-light)' }}>
                   <TableRow>
-                    <TableCell>Patient ID</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Gender</TableCell>
-                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Phone</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Total</TableCell>
-                    <TableCell>Commission</TableCell>
-                    <TableCell>Net</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Patient ID</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Name</TableCell>
+                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Gender</TableCell>
+                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' }, fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Phone</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Total</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Commission</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Net</TableCell>
                   </TableRow>
                 </TableHead>
-                <TableBody>
+                <TableBody component={motion.tbody} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible">
                   {patients.map((p, idx) => (
-                    <TableRow key={p._id} sx={{ backgroundColor: idx % 2 === 0 ? 'rgba(0,188,212,0.02)' : 'transparent' }}>
-                      <TableCell sx={{ fontWeight: 600, color: 'primary.main' }}>{p.regNo || '-'}</TableCell>
-                      <TableCell sx={{ fontWeight: 500 }}>{p.name || '-'}</TableCell>
-                      <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{p.gender || '-'}</TableCell>
-                      <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{p.mobileNumber || '-'}</TableCell>
-                      <TableCell>
+                    <TableRow 
+                      component={motion.tr} variants={prefersReduced ? false : rowVariants}
+                      key={p._id} 
+                      hover
+                      sx={{ transition: 'all 0.2s', '&:hover': { background: 'var(--surface-light) !important' } }}
+                    >
+                      <TableCell sx={{ fontWeight: 600, color: 'var(--color-primary)' }}>{p.regNo || '-'}</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: 'var(--text-primary)' }}>{p.name || '-'}</TableCell>
+                      <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, color: 'var(--text-secondary)' }}>{p.gender || '-'}</TableCell>
+                      <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' }, color: 'var(--text-secondary)' }}>{p.mobileNumber || '-'}</TableCell>
+                      <TableCell sx={{ color: 'var(--text-secondary)' }}>
                         {p.createdAt ? (() => {
                           const d = new Date(p.createdAt);
                           return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
                         })() : '-'}
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>₹{(Number(p.totalAmount) || 0).toFixed(2)}</TableCell>
-                      <TableCell sx={{ color: 'error.main', fontWeight: 600 }}>₹{(Number(p.commission) || 0).toFixed(2)}</TableCell>
-                      <TableCell sx={{ color: 'success.main', fontWeight: 700 }}>₹{((Number(p.totalAmount) || 0) - (Number(p.commission) || 0)).toFixed(2)}</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: 'var(--text-primary)' }}>₹{(Number(p.totalAmount) || 0).toFixed(2)}</TableCell>
+                      <TableCell sx={{ color: '#dc2626', fontWeight: 600 }}>₹{(Number(p.commission) || 0).toFixed(2)}</TableCell>
+                      <TableCell sx={{ color: '#16a34a', fontWeight: 700 }}>₹{((Number(p.totalAmount) || 0) - (Number(p.commission) || 0)).toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -298,36 +338,36 @@ function Analysis() {
             </TableContainer>
 
             {/* Test Summary */}
-            <Box sx={{ mt: 4 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>Test Summary</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>Number of each test/pack performed</Typography>
-              <TableContainer component={Paper} elevation={0} sx={{ maxWidth: 450, borderRadius: '16px', border: '1px solid rgba(0,188,212,0.1)' }}>
-                <Table size="small" className="table-medical">
-                  <TableHead>
+            <Box sx={{ mt: 5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>Test Summary</Typography>
+              <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 0.5, mb: 2 }}>Number of each test/pack performed</Typography>
+              <TableContainer component={Paper} elevation={0} sx={{ maxWidth: 450, borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-light)', overflow: 'hidden' }}>
+                <Table>
+                  <TableHead sx={{ background: 'var(--surface-light)' }}>
                     <TableRow>
-                      <TableCell>Test/Pack Name</TableCell>
-                      <TableCell>Count</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Test/Pack Name</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Count</TableCell>
                     </TableRow>
                   </TableHead>
-                  <TableBody>
+                  <TableBody component={motion.tbody} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible">
                     {summary.testCounts && Object.entries(summary.testCounts || {}).map(([test, count]) => (
-                      <TableRow key={test}>
-                        <TableCell sx={{ fontWeight: 500 }}>{test}</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>{count}</TableCell>
+                      <TableRow component={motion.tr} variants={prefersReduced ? false : rowVariants} key={test}>
+                        <TableCell sx={{ fontWeight: 600, color: 'var(--text-primary)' }}>{test}</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: 'var(--color-primary)' }}>{count}</TableCell>
                       </TableRow>
                     ))}
                     {(!summary.testCounts || Object.keys(summary.testCounts).length === 0) && (
                       <TableRow>
-                        <TableCell colSpan={2} align="center" sx={{ py: 3, color: 'text.secondary' }}>No tests found</TableCell>
+                        <TableCell colSpan={2} align="center" sx={{ py: 3, color: 'var(--text-secondary)' }}>No tests found</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
               </TableContainer>
             </Box>
-          </Box>
-        )}
+          </motion.div>
       </Paper>
+      </motion.div>
     </Container>
   );
 }

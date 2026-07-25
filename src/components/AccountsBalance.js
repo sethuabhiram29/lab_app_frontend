@@ -174,7 +174,7 @@ function AccountsBalance() {
   const { agentSummary, doctorSummary } = getSummaryData();
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 1, mb: 4 }} className="animate-fade-in">
+    <Container maxWidth="lg" sx={{ mt: 1, mb: 4 }} className="animate-fade-in">
       <Paper className="medical-card" elevation={0} sx={{ p: { xs: 2, sm: 4 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" sx={{

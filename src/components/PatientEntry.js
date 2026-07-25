@@ -1,42 +1,58 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Typography,
-  Paper,
-  Grid,
-  TextField,
-  Button,
-  FormControl,
-  Select,
-  MenuItem,
-  Autocomplete,
-  List,
-  ListItem,
-  ListItemText,
-  Checkbox,
-  Container,
-  Alert,
+  Box, Typography, Paper, Grid, TextField, Button,
+  FormControl, Select, MenuItem, Autocomplete,
+  List, ListItem, ListItemText, Checkbox, Container, Alert,
+  IconButton, Dialog, DialogContent, Slide
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { CheckCircleOutline as CheckCircleOutlineIcon } from '@mui/icons-material';
+import {
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  Close as CloseIcon,
+  LocalHospital as TestIcon,
+  Add as AddIcon
+} from '@mui/icons-material';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import api from '../api';
 
+// ── Framer Motion variants ────────────────────────────────────────────────────
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1, y: 0,
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
+  }
+};
+
+const underlineVariants = {
+  hidden: { scaleX: 0, opacity: 0 },
+  visible: { 
+    scaleX: 1, opacity: 1, 
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 } 
+  }
+};
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
 function PatientEntry() {
+  const prefersReduced = useReducedMotion();
   const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    gender: '',
-    mobileNumber: '',
-    email: '',
-    emailUsername: '', // Added for Gmail username handling
-    sampleCollectionDate: new Date(),
-    refDoctor: null,
-    refAgent: null,
-    totalAmount: '',
-    advancePaid: '',
+    name: '', age: '', gender: '', mobileNumber: '',
+    email: '', emailUsername: '', sampleCollectionDate: new Date(),
+    refDoctor: null, refAgent: null, totalAmount: '', advancePaid: '',
     selectedTests: [],
   });
 
@@ -59,28 +75,22 @@ function PatientEntry() {
         const doctorsRes = await api.get('/doctors');
         doctorsArr = Array.isArray(doctorsRes.data) ? doctorsRes.data : (Array.isArray(doctorsRes) ? doctorsRes : []);
         setDoctors(doctorsArr);
-        console.log('Fetched doctors:', doctorsArr);
       } catch (err) {
         errorMsg += 'Failed to fetch doctors. ';
-        console.error('Error fetching doctors:', err);
       }
       try {
         const agentsRes = await api.get('/agents');
         agentsArr = Array.isArray(agentsRes.data) ? agentsRes.data : (Array.isArray(agentsRes) ? agentsRes : []);
         setAgents(agentsArr);
-        console.log('Fetched agents:', agentsArr);
       } catch (err) {
         errorMsg += 'Failed to fetch agents. ';
-        console.error('Error fetching agents:', err);
       }
       try {
         const testsRes = await api.get('/tests');
         testsArr = Array.isArray(testsRes.data) ? testsRes.data : (Array.isArray(testsRes) ? testsRes : []);
         setTests(testsArr);
-        console.log('Fetched tests:', testsArr);
       } catch (err) {
         errorMsg += 'Failed to fetch tests. ';
-        console.error('Error fetching tests:', err);
       }
 
       if (errorMsg) setError(errorMsg);
@@ -101,12 +111,8 @@ function PatientEntry() {
       const isSelected = prev.selectedTests.some(t => t.test._id === test._id);
       if (isSelected) {
         const newSelectedTests = prev.selectedTests.filter(t => t.test._id !== test._id);
-        return {
-          ...prev,
-          selectedTests: newSelectedTests
-        };
+        return { ...prev, selectedTests: newSelectedTests };
       } else {
-        // Initialize subtests and packs selection
         const subtests = (test.subtests || []).map((s, idx) => ({ ...s, id: s._id || idx + '' + test._id, selected: false }));
         const packs = (test.packs || []).map((p, pIdx) => ({
           ...p,
@@ -114,26 +120,17 @@ function PatientEntry() {
           selected: false,
           subtests: (p.subtests || []).map((s, sIdx) => ({ ...s, id: s._id || pIdx + '' + sIdx + '_' + test._id }))
         }));
-        const newTest = {
-          test,
-          subtests,
-          packs
-        };
-        return {
-          ...prev,
-          selectedTests: [...prev.selectedTests, newTest]
-        };
+        const newTest = { test, subtests, packs };
+        return { ...prev, selectedTests: [...prev.selectedTests, newTest] };
       }
     });
   };
 
-  // Update handleSubtestSelection to handle both direct subtests and subtests within packs
   const handleSubtestSelection = (testId, subtestId, packId = null) => {
     setFormData(prev => {
       const newSelectedTests = prev.selectedTests.map(t => {
         if (t.test._id === testId) {
           if (packId) {
-            // Subtest within a pack
             const newPacks = t.packs.map(p => {
               if (p._id === packId) {
                 const newSubtests = p.subtests.map(s =>
@@ -145,7 +142,6 @@ function PatientEntry() {
             });
             return { ...t, packs: newPacks };
           } else {
-            // Direct subtest
             const newSubtests = t.subtests.map(s =>
               s._id === subtestId ? { ...s, selected: !s.selected } : s
             );
@@ -181,13 +177,6 @@ function PatientEntry() {
     setError(null);
     setLoading(true);
 
-    // Debug: log selectedTests and their parameters
-    console.log('Submitting selectedTests:', JSON.stringify(formData.selectedTests, null, 2));
-    formData.selectedTests.forEach((test, i) => {
-      console.log(`Test ${i} (${test.test.name}) parameters:`, test.parameters);
-    });
-
-    // Basic validation - mobileNumber is now optional
     if (!formData.name || !formData.age || !formData.gender || !formData.totalAmount) {
       setError('Please fill in all required fields');
       setLoading(false);
@@ -195,32 +184,20 @@ function PatientEntry() {
     }
 
     try {
-      // Calculate due amount
       const dueAmount = formData.totalAmount - (formData.advancePaid || 0);
 
-      // Prepare selected subtests for each test
-      console.log('Preparing test payload from formData:', formData.selectedTests);
       const selectedTestsPayload = formData.selectedTests
         .filter(t => {
-          // Only include tests that have something selected
           const hasSelectedSubtest = t.subtests && t.subtests.some(s => s.selected);
           const hasSelectedPack = t.packs && t.packs.some(p => p.selected);
           return hasSelectedSubtest || hasSelectedPack;
         })
         .map(t => {
-          // Directly selected subtests
           const directSubtests = (t.subtests || []).filter(s => s.selected);
-          // Selected packs and their subtests
           const selectedPacks = (t.packs || []).filter(p => p.selected).map(p => ({
             name: p.name,
             subtests: (p.subtests || []).map(s => ({ name: s.name, unit: s.unit, reference: s.reference, _id: s._id }))
           }));
-        console.log('Processing test:', {
-          testId: t.test._id,
-          testName: t.test.name,
-          selectedSubtests: directSubtests.length,
-          selectedPacks: selectedPacks.length
-        });
         return {
           test: t.test._id,
           subtests: directSubtests.map(s => ({ name: s.name, unit: s.unit, reference: s.reference, _id: s._id })),
@@ -228,7 +205,6 @@ function PatientEntry() {
         };
       });
 
-      // Prepare patient data
       const patientData = {
         name: formData.name.trim(),
         age: Number(formData.age),
@@ -244,32 +220,14 @@ function PatientEntry() {
         selectedTests: selectedTestsPayload
       };
 
-      console.log('Final patient data being sent:', JSON.stringify(patientData, null, 2));
-
       const response = await api.post('/patients', patientData);
-      console.log('Server response:', response.data);
-
-      // Show regNo in success message
       setSuccess(`Patient entry created successfully. Reg No: ${response.data.regNo}`);
-      // Reset form
       setFormData({
-        name: '',
-        age: '',
-        gender: '',
-        mobileNumber: '',
-        email: '',
-        sampleCollectionDate: new Date(),
-        refDoctor: null,
-        refAgent: null,
-        totalAmount: '',
-        advancePaid: '',
-        selectedTests: []
+        name: '', age: '', gender: '', mobileNumber: '', email: '', emailUsername: '',
+        sampleCollectionDate: new Date(), refDoctor: null, refAgent: null,
+        totalAmount: '', advancePaid: '', selectedTests: []
       });
     } catch (err) {
-      console.error('Error creating patient:', err);
-      console.error('Error response:', err.response?.data);
-      console.error('Error status:', err.response?.status);
-      console.error('Error details:', err);
       const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Failed to create patient entry';
       setError(errorMessage);
     } finally {
@@ -277,10 +235,8 @@ function PatientEntry() {
     }
   };
 
-  // Calculate due amount for display
   const dueAmount = Number(formData.totalAmount || 0) - Number(formData.advancePaid || 0);
 
-  // Count selected tests
   const selectedTestCount = formData.selectedTests.filter(selectedTest => {
     const hasSelectedDirect = selectedTest.subtests && selectedTest.subtests.some(s => s.selected);
     const hasSelectedPack = selectedTest.packs && selectedTest.packs.some(pack => pack.subtests && pack.subtests.some(sub => sub.selected));
@@ -288,579 +244,615 @@ function PatientEntry() {
   }).length;
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 1, mb: 4, pb: 10 }}>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} className="animate-slide-up">
-          {error}
-        </Alert>
-      )}
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }} className="animate-slide-up">
-          {success}
-        </Alert>
-      )}
+    <Container maxWidth="lg" sx={{ mb: 6, position: 'relative' }}>
+      
+      {/* ── Alerts ──────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {error && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ marginBottom: 16 }}>
+            <Alert severity="error" sx={{ borderRadius: 'var(--radius-md)' }}>{error}</Alert>
+          </motion.div>
+        )}
+        {success && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ marginBottom: 16 }}>
+            <Alert severity="success" sx={{ borderRadius: 'var(--radius-md)' }}>{success}</Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Box component="form" onSubmit={handleSubmit}>
-        {/* Centered Header */}
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: '#1F2937', mb: 1 }}>
+        
+        {/* ── Header ────────────────────────────────────────────── */}
+        <Box sx={{ mb: 4, position: 'relative', display: 'inline-block' }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', mb: 0.5 }}>
             Patient Entry
           </Typography>
-          <Typography variant="body2" sx={{ color: '#6B7280' }}>
-            Fill in patient details and select the required diagnostic tests.
+          <motion.div
+            variants={prefersReduced ? false : underlineVariants}
+            initial="hidden" animate="visible"
+            style={{
+              height: '4px',
+              background: 'var(--gradient-brand)',
+              borderRadius: '2px',
+              width: '100%',
+              transformOrigin: 'left center'
+            }}
+          />
+          <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 1 }}>
+            Register new patient and select diagnostic tests.
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
-          {/* ═══════ LEFT COLUMN: White Form Area ═══════ */}
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Paper 
-              elevation={0} 
-              className="animate-slide-left"
-              sx={{ 
-                width: '100%',
-                height: 'calc(100vh - 190px)',
-                overflowY: 'auto',
-                p: { xs: 3, sm: 5 }, 
-                borderRadius: '20px', 
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E5E7EB',
-              }}
-            >
-              {/* Patient Details Section */}
-              <Box>
-                  {/* Row 1: Name, Age, Gender */}
-                  <Typography variant="overline" sx={{ color: '#9CA3AF', fontWeight: 700, letterSpacing: '0.1em', display: 'block', mb: 2 }}>
-                    PATIENT INFORMATION
-                  </Typography>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Patient Name <span style={{ color: '#EF4444' }}>*</span>
-                      </Typography>
+        <Grid container spacing={4}>
+          
+          {/* ═══════ LEFT COLUMN: Form Area ═══════ */}
+          <Grid item xs={12} md={7} lg={8}>
+            <motion.div variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible">
+              <Paper
+                elevation={0}
+                sx={{
+                  p: { xs: 3, sm: 4 },
+                  borderRadius: 'var(--radius-2xl)',
+                  background: 'var(--surface-paper)',
+                  border: '1px solid var(--border-light)',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                {/* ── Section Label ── */}
+                <motion.div variants={itemVariants}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-primary)' }} />
+                    <Typography variant="overline" sx={{ fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.1em' }}>
+                      Patient Information
+                    </Typography>
+                  </Box>
+                </motion.div>
+
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6}>
+                    <motion.div variants={itemVariants}>
                       <TextField
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            document.querySelector('input[name="age"]')?.focus();
-                          }
-                        }}
-                        fullWidth
-                        required
-                        placeholder="Enter full name"
-                        size="small"
+                        label="Full Name *" name="name"
+                        value={formData.name} onChange={handleInputChange}
+                        fullWidth required variant="filled"
+                        InputProps={{ disableUnderline: true }}
+                        sx={glassFieldSx}
                       />
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Age <span style={{ color: '#EF4444' }}>*</span>
-                      </Typography>
+                    </motion.div>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <motion.div variants={itemVariants}>
                       <TextField
-                        name="age"
-                        value={formData.age}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            document.querySelector('#gender-select')?.focus();
-                          } else if (e.key === 'ArrowLeft' && e.target.selectionStart === 0) {
-                            e.preventDefault();
-                            document.querySelector('input[name="name"]')?.focus();
-                          }
-                        }}
-                        fullWidth
-                        required
-                        placeholder="Age"
-                        size="small"
+                        label="Age *" name="age"
+                        value={formData.age} onChange={handleInputChange}
+                        fullWidth required variant="filled"
+                        InputProps={{ disableUnderline: true }}
+                        sx={glassFieldSx}
                       />
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Gender <span style={{ color: '#EF4444' }}>*</span>
-                      </Typography>
-                      <FormControl fullWidth required size="small">
+                    </motion.div>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <motion.div variants={itemVariants}>
+                      <FormControl fullWidth required variant="filled" sx={glassFieldSx}>
                         <Select
-                          id="gender-select"
-                          name="gender"
-                          value={formData.gender}
-                          onChange={handleInputChange}
+                          name="gender" value={formData.gender}
+                          onChange={handleInputChange} disableUnderline
                           displayEmpty
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              document.querySelector('input[name="mobileNumber"]')?.focus();
-                            } else if (e.key === 'ArrowLeft') {
-                              e.preventDefault();
-                              document.querySelector('input[name="age"]')?.focus();
-                            }
-                          }}
                         >
-                          <MenuItem value="" disabled><em>Select</em></MenuItem>
+                          <MenuItem value="" disabled>Gender *</MenuItem>
                           <MenuItem value="Male">Male</MenuItem>
                           <MenuItem value="Female">Female</MenuItem>
                           <MenuItem value="Others">Others</MenuItem>
                         </Select>
                       </FormControl>
-                    </Grid>
+                    </motion.div>
                   </Grid>
 
-                  {/* Row 2: Mobile, Email */}
-                  <Grid container spacing={3} sx={{ mt: 1 }}>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Mobile Number
-                      </Typography>
+                  <Grid item xs={12} sm={6}>
+                    <motion.div variants={itemVariants}>
                       <TextField
-                        name="mobileNumber"
-                        value={formData.mobileNumber}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            document.querySelector('input[name="emailUsername"]')?.focus();
-                          } else if (e.key === 'ArrowLeft' && e.target.selectionStart === 0) {
-                            e.preventDefault();
-                            document.querySelector('#gender-select')?.focus();
-                          }
-                        }}
-                        fullWidth
-                        placeholder="Phone number"
-                        size="small"
+                        label="Mobile Number" name="mobileNumber"
+                        value={formData.mobileNumber} onChange={handleInputChange}
+                        fullWidth variant="filled"
+                        InputProps={{ disableUnderline: true }}
+                        sx={glassFieldSx}
                       />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Email
-                      </Typography>
+                    </motion.div>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <motion.div variants={itemVariants}>
                       <TextField
-                        name="emailUsername"
-                        value={formData.emailUsername || ''}
+                        label="Email (Username)" name="emailUsername"
+                        value={formData.emailUsername}
                         onChange={(e) => {
                           const username = e.target.value.trim().replace(/@gmail\.com$/, '');
-                          setFormData({
-                            ...formData,
-                            emailUsername: username,
-                            email: username ? `${username}@gmail.com` : ''
-                          });
+                          setFormData({ ...formData, emailUsername: username, email: username ? `${username}@gmail.com` : '' });
                         }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            document.querySelector('input[name="sampleCollectionDate"]')?.focus();
-                          } else if (e.key === 'ArrowLeft' && e.target.selectionStart === 0) {
-                            e.preventDefault();
-                            document.querySelector('input[name="mobileNumber"]')?.focus();
-                          }
-                        }}
-                        fullWidth
-                        size="small"
-                        placeholder="Enter Gmail username"
+                        fullWidth variant="filled"
                         InputProps={{
-                          endAdornment: <span style={{color: 'rgba(0, 0, 0, 0.4)', fontSize: '0.85rem'}}>@gmail.com</span>,
+                          disableUnderline: true,
+                          endAdornment: <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@gmail.com</span>,
                         }}
-                        helperText={formData.email ? `Email will be: ${formData.email}` : ''}
+                        sx={glassFieldSx}
+                        helperText={formData.email ? `Email: ${formData.email}` : ''}
                       />
-                    </Grid>
+                    </motion.div>
                   </Grid>
 
-                  {/* Row 3: Date, Doctor, Agent */}
-                  <Grid container spacing={3} sx={{ mt: 1 }}>
-                    <Grid item xs={12} sm={4}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Sample Collection Date
-                      </Typography>
+                  <Grid item xs={12} sm={4}>
+                    <motion.div variants={itemVariants}>
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
+                          label="Collection Date"
                           value={formData.sampleCollectionDate}
                           onChange={(date) => setFormData({ ...formData, sampleCollectionDate: date })}
                           renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              name="sampleCollectionDate"
-                              fullWidth
-                              size="small"
-                            />
+                            <TextField {...params} fullWidth variant="filled" InputProps={{ disableUnderline: true }} sx={glassFieldSx} />
                           )}
                         />
                       </LocalizationProvider>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Referring Doctor
-                      </Typography>
+                    </motion.div>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <motion.div variants={itemVariants}>
                       <Autocomplete
-                        options={doctors}
-                        getOptionLabel={(option) => option.name}
+                        options={doctors} getOptionLabel={(opt) => opt.name}
                         value={formData.refDoctor}
-                        isOptionEqualToValue={(option, value) => option && value && option._id === value._id}
-                        onChange={(event, newValue) => setFormData({ ...formData, refDoctor: newValue })}
+                        isOptionEqualToValue={(opt, val) => opt && val && opt._id === val._id}
+                        onChange={(e, val) => setFormData({ ...formData, refDoctor: val })}
                         renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            name="refDoctor"
-                            fullWidth
-                            size="small"
-                            placeholder="Select doctor"
-                          />
+                          <TextField {...params} label="Ref. Doctor" variant="filled" InputProps={{ ...params.InputProps, disableUnderline: true }} sx={glassFieldSx} />
                         )}
                       />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Referring Agent
-                      </Typography>
+                    </motion.div>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <motion.div variants={itemVariants}>
                       <Autocomplete
-                        options={agents}
-                        getOptionLabel={(option) => option.name}
+                        options={agents} getOptionLabel={(opt) => opt.name}
                         value={formData.refAgent}
-                        isOptionEqualToValue={(option, value) => option && value && option._id === value._id}
-                        onChange={(event, newValue) => setFormData({ ...formData, refAgent: newValue })}
+                        isOptionEqualToValue={(opt, val) => opt && val && opt._id === val._id}
+                        onChange={(e, val) => setFormData({ ...formData, refAgent: val })}
                         renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            name="refAgent"
-                            fullWidth
-                            size="small"
-                            placeholder="Select agent"
-                          />
+                          <TextField {...params} label="Ref. Agent" variant="filled" InputProps={{ ...params.InputProps, disableUnderline: true }} sx={glassFieldSx} />
                         )}
                       />
-                    </Grid>
+                    </motion.div>
                   </Grid>
+                </Grid>
 
-                  {/* Financial Details Section */}
-                  <Typography variant="overline" sx={{ color: '#9CA3AF', fontWeight: 700, letterSpacing: '0.1em', display: 'block', mb: 2, mt: 4 }}>
-                    FINANCIAL DETAILS
-                  </Typography>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} sm={4}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Total Amount <span style={{ color: '#EF4444' }}>*</span>
-                      </Typography>
+                {/* ── Financial Section ── */}
+                <motion.div variants={itemVariants}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 5, mb: 3 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-secondary)' }} />
+                    <Typography variant="overline" sx={{ fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.1em' }}>
+                      Financial Details
+                    </Typography>
+                  </Box>
+                </motion.div>
+
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={4}>
+                    <motion.div variants={itemVariants}>
                       <TextField
-                        name="totalAmount"
-                        value={formData.totalAmount}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            document.querySelector('input[name="advancePaid"]')?.focus();
-                          }
-                        }}
-                        fullWidth required type="number" size="small" placeholder="₹ 0.00"
+                        label="Total Amount *" name="totalAmount" type="number"
+                        value={formData.totalAmount} onChange={handleInputChange}
+                        fullWidth required variant="filled"
+                        InputProps={{ disableUnderline: true }}
+                        sx={glassFieldSx}
                       />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Advance Paid
-                      </Typography>
-                      <TextField
-                        name="advancePaid"
-                        value={formData.advancePaid}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            document.querySelector('button[type="submit"]')?.focus();
-                          }
-                        }}
-                        fullWidth type="number" size="small" placeholder="₹ 0.00"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 0.5 }}>
-                        Due Amount
-                      </Typography>
-                      <TextField
-                        value={dueAmount}
-                        fullWidth
-                        InputProps={{ readOnly: true }}
-                        size="small"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            backgroundColor: dueAmount > 0 ? '#FEF2F2' : '#F0FDF4',
-                          }
-                        }}
-                      />
-                    </Grid>
+                    </motion.div>
                   </Grid>
-                  
-                  {/* Submit Button */}
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      sx={{
-                        bgcolor: '#1E293B',
-                        color: '#fff',
-                        borderRadius: '50px',
-                        minWidth: 280,
-                        px: 4,
-                        py: 1.8,
-                        fontWeight: 700,
-                        fontSize: '1.1rem',
-                        textTransform: 'none',
-                        boxShadow: '0 4px 14px 0 rgba(30, 41, 59, 0.39)',
-                        '&:hover': { bgcolor: '#0F172A', transform: 'translateY(-2px)' },
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      Save Patient Entry
-                    </Button>
+                  <Grid item xs={12} sm={4}>
+                    <motion.div variants={itemVariants}>
+                      <TextField
+                        label="Advance Paid" name="advancePaid" type="number"
+                        value={formData.advancePaid} onChange={handleInputChange}
+                        fullWidth variant="filled"
+                        InputProps={{ disableUnderline: true }}
+                        sx={glassFieldSx}
+                      />
+                    </motion.div>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <motion.div variants={itemVariants}>
+                      <TextField
+                        label="Due Amount" value={dueAmount}
+                        fullWidth variant="filled"
+                        InputProps={{ disableUnderline: true, readOnly: true }}
+                        sx={{
+                          ...glassFieldSx,
+                          '& .MuiFilledInput-root': {
+                            bgcolor: dueAmount > 0 ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)',
+                          }
+                        }}
+                      />
+                    </motion.div>
+                  </Grid>
+                </Grid>
+
+                <motion.div variants={itemVariants}>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 5 }}>
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button
+                        type="submit" variant="contained" disabled={loading}
+                        sx={{
+                          background: 'var(--gradient-brand)',
+                          color: '#fff',
+                          borderRadius: 'var(--radius-pill)',
+                          px: 4, py: 1.5,
+                          fontWeight: 700,
+                          fontSize: '1rem',
+                          boxShadow: '0 8px 24px rgba(15,110,86,0.35)',
+                          '&:hover': { background: 'linear-gradient(135deg, #0F6E56 0%, #0D4A7A 100%)' }
+                        }}
+                      >
+                        {loading ? 'Saving...' : 'Save Patient Entry'}
+                      </Button>
+                    </motion.div>
+                  </Box>
+                </motion.div>
+
+              </Paper>
+            </motion.div>
+          </Grid>
+
+          {/* ═══════ RIGHT COLUMN: Selected Tests ═══════ */}
+          <Grid item xs={12} md={5} lg={4}>
+            <motion.div
+              initial={prefersReduced ? false : { opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut', delay: 0.2 }}
+              style={{ position: 'sticky', top: 100 }}
+            >
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 'var(--radius-2xl)',
+                  background: 'linear-gradient(180deg, var(--surface-paper) 0%, rgba(255,255,255,0.4) 100%)',
+                  border: '1px solid var(--border-light)',
+                  boxShadow: 'var(--shadow-sm)',
+                  height: 'calc(100vh - 140px)',
+                  display: 'flex', flexDirection: 'column'
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: 'var(--text-primary)' }}>
+                    Selected Tests
+                  </Typography>
+                  <Box sx={{ background: 'var(--surface-dark)', color: '#fff', px: 1.5, py: 0.5, borderRadius: 'var(--radius-pill)', fontSize: '0.75rem', fontWeight: 700 }}>
+                    {selectedTestCount} Tests
                   </Box>
                 </Box>
 
-            </Paper>
-          </Box>
+                <Button
+                  variant="outlined" fullWidth
+                  startIcon={<AddIcon />}
+                  onClick={() => setShowTestSelection(true)}
+                  sx={{
+                    mb: 3, py: 1.2,
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px dashed var(--color-primary)',
+                    color: 'var(--color-primary)',
+                    fontWeight: 600,
+                    '&:hover': { background: 'rgba(15,110,86,0.05)', border: '1px solid var(--color-primary)' }
+                  }}
+                >
+                  Add / Edit Tests
+                </Button>
 
-          {/* ═══════ RIGHT COLUMN: Test Selection ═══════ */}
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box
-              className="dark-panel animate-slide-right"
-              sx={{ width: '100%', overflow: 'hidden', position: 'sticky', top: 100, height: 'calc(100vh - 190px)', display: 'flex', flexDirection: 'column' }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                Test Selection
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', mb: 3 }}>
-                {selectedTestCount === 0
-                  ? 'No tests selected yet.'
-                  : `${selectedTestCount} test${selectedTestCount > 1 ? 's' : ''} selected`}
-              </Typography>
-
-              {!showTestSelection ? (
-                <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    sx={{
-                      borderColor: 'rgba(255,255,255,0.2)',
-                      color: '#F1F5F9',
-                      borderRadius: '12px',
-                      py: 1.2,
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      mb: 3,
-                      '&:hover': { borderColor: '#60A5FA', bgcolor: 'rgba(96,165,250,0.1)' }
-                    }}
-                    onClick={() => setShowTestSelection(true)}
-                    type="button"
-                  >
-                    + Add / Edit Tests
-                  </Button>
-
-                  {/* Selected Tests List */}
-                  {selectedTestCount === 0 ? (
-                    <Box sx={{
-                      border: '1px dashed rgba(255,255,255,0.15)',
-                      borderRadius: '12px',
-                      p: 3,
-                      textAlign: 'center'
-                    }}>
-                      <Typography variant="body2" sx={{ color: '#64748B' }}>
-                        Tests will appear here once selected
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Box>
-                      {formData.selectedTests
-                        .filter(selectedTest => {
-                          const hasSelectedDirect = selectedTest.subtests && selectedTest.subtests.some(s => s.selected);
-                          const hasSelectedPack = selectedTest.packs && selectedTest.packs.some(pack =>
-                            pack.subtests && pack.subtests.some(sub => sub.selected)
-                          );
-                          return hasSelectedDirect || hasSelectedPack;
-                        })
-                        .map((selectedTest) => (
-                          <Box
-                            key={selectedTest.test._id}
-                            sx={{
-                              mb: 2,
-                              backgroundColor: 'rgba(255,255,255,0.06)',
-                              borderRadius: '12px',
-                              p: 2,
-                              border: '1px solid rgba(255,255,255,0.1)',
-                            }}
+                <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: 6 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(0,0,0,0.1)', borderRadius: 10 } }}>
+                  <AnimatePresence>
+                    {selectedTestCount === 0 ? (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <Box sx={{ textAlign: 'center', py: 8, opacity: 0.5 }}>
+                          <TestIcon sx={{ fontSize: 48, color: 'var(--text-muted)', mb: 1 }} />
+                          <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>No tests selected yet</Typography>
+                        </Box>
+                      </motion.div>
+                    ) : (
+                      formData.selectedTests
+                        .filter(st => (st.subtests && st.subtests.some(s => s.selected)) || (st.packs && st.packs.some(p => p.subtests && p.subtests.some(s => s.selected))))
+                        .map((st) => (
+                          <motion.div
+                            key={st.test._id}
+                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            layout
+                            style={{ marginBottom: 12 }}
                           >
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                              <CheckCircleOutlineIcon sx={{ color: '#4ADE80', fontSize: 22, mr: 1.5 }} />
-                              <Typography variant="h6" sx={{ 
-                                fontWeight: 800, 
-                                background: 'linear-gradient(90deg, #60A5FA, #A78BFA)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent'
-                              }}>
-                                {selectedTest.test.name}
-                              </Typography>
-                            </Box>
-
-                            {selectedTest.packs && selectedTest.packs
-                              .filter(pack => pack.subtests && pack.subtests.some(sub => sub.selected))
-                              .map(pack => (
-                                <Box key={pack._id} sx={{ ml: 3, mb: 1 }}>
-                                  <Typography variant="caption" sx={{ color: '#60A5FA', fontWeight: 600, display: 'block' }}>
-                                    📦 {pack.name}
-                                  </Typography>
+                            <Box sx={{
+                              background: '#fff',
+                              borderRadius: 'var(--radius-md)',
+                              p: 2,
+                              border: '1px solid var(--border-light)',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <CheckCircleOutlineIcon sx={{ color: 'var(--color-primary)', fontSize: 18, mr: 1 }} />
+                                <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                                  {st.test.name}
+                                </Typography>
+                              </Box>
+                              
+                              {/* Packs */}
+                              {st.packs && st.packs.filter(p => p.subtests && p.subtests.some(s => s.selected)).map(pack => (
+                                <Box key={pack._id} sx={{ ml: 3.5, mb: 1 }}>
+                                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-secondary)' }}>📦 {pack.name}</Typography>
                                   {pack.subtests.filter(s => s.selected).map(sub => (
-                                    <Typography key={sub._id} variant="caption" sx={{ color: '#CBD5E1', display: 'block', ml: 1 }}>
-                                      · {sub.name}{sub.unit ? ` (${sub.unit})` : ''}
+                                    <Typography key={sub._id} sx={{ fontSize: '0.75rem', color: 'var(--text-secondary)', ml: 1.5 }}>
+                                      · {sub.name} {sub.unit && `(${sub.unit})`}
                                     </Typography>
                                   ))}
                                 </Box>
                               ))}
 
-                            {selectedTest.subtests && selectedTest.subtests.filter(s => s.selected).length > 0 && (
-                              <Box sx={{ ml: 3 }}>
-                                <Typography variant="caption" sx={{ color: '#A78BFA', fontWeight: 600, display: 'block' }}>
-                                  🧪 Direct Subtests
-                                </Typography>
-                                {selectedTest.subtests.filter(s => s.selected).map(sub => (
-                                  <Typography key={sub._id} variant="caption" sx={{ color: '#CBD5E1', display: 'block', ml: 1 }}>
-                                    · {sub.name}{sub.unit ? ` (${sub.unit})` : ''}
-                                  </Typography>
-                                ))}
-                              </Box>
-                            )}
-                          </Box>
-                        ))}
-                    </Box>
-                  )}
-                </Box>
-              ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1, pr: 1, overflowY: 'auto' }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, overflowX: 'auto', pb: 2 }}>
-                    <Box sx={{ minWidth: 220, display: 'flex', flexDirection: 'column' }}>
-                      <Typography variant="overline" sx={{ fontWeight: 800, color: '#93C5FD', letterSpacing: '0.05em', mb: 1 }}>1. SELECT A TEST</Typography>
-                      <Paper sx={{ flexGrow: 1, maxHeight: 300, overflowY: 'auto', borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#F1F5F9' }}>
-                    <List dense>
-                      {tests.map((test) => {
-                        const selectedTest = formData.selectedTests.find(t => t.test._id === test._id);
-                        const isTestSelected = selectedTest && ((selectedTest.subtests && selectedTest.subtests.some(s => s.selected)) || (selectedTest.packs && selectedTest.packs.some(p => p.subtests && p.subtests.some(s => s.selected))));
-                        return (
-                          <ListItem
-                            button
-                            key={test._id}
-                            selected={activeTestId === test._id}
-                            onClick={() => {
-                              setActiveTestId(test._id);
-                              setActivePackId(null);
-                              if (!formData.selectedTests.some(t => t.test._id === test._id)) handleTestSelection(test);
-                            }}
-                            sx={{ '&.Mui-selected': { bgcolor: 'rgba(96,165,250,0.2)' }, '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
-                          >
-                            <ListItemText primary={<Box sx={{ display: 'flex', alignItems: 'center' }}><span style={{ fontWeight: isTestSelected ? 700 : 400, color: isTestSelected ? '#60A5FA' : '#F1F5F9' }}>{test.name}</span>{isTestSelected && <CheckCircleOutlineIcon fontSize="small" sx={{ ml: 1, color: '#4ADE80' }} />}</Box>} />
-                          </ListItem>
-                        );
-                      })}
-                    </List>
-                    </Paper>
-                  </Box>
-
-                  {activeTestId && (
-                    <Box sx={{ minWidth: 260, display: 'flex', flexDirection: 'column' }}>
-                      <Typography variant="overline" sx={{ fontWeight: 800, color: '#93C5FD', letterSpacing: '0.05em', mb: 1 }}>2. SELECT SUBTESTS / PACKS</Typography>
-                      <Paper sx={{ flexGrow: 1, maxHeight: 300, overflowY: 'auto', borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#F1F5F9' }}>
-                        <List dense>
-                          {(() => {
-                            const test = tests.find(t => t._id === activeTestId);
-                            const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
-                            if (test && Array.isArray(test.subtests) && test.subtests.length > 0) {
-                              return [
-                                <Box key="direct-subtests-header" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1, bgcolor: 'rgba(255,255,255,0.02)' }}>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#A78BFA' }}>Direct Subtests</Typography>
-                                  <Button size="small" sx={{ color: '#60A5FA' }} onClick={() => {
-                                    const allSelected = test.subtests.every(sub => selectedTest.subtests.find(s => s._id === sub._id && s.selected));
-                                    test.subtests.forEach(sub => { if (allSelected || !selectedTest.subtests.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(test._id, sub._id); });
-                                  }}>{test.subtests.every(sub => selectedTest.subtests.find(s => s._id === sub._id && s.selected)) ? 'Deselect All' : 'Select All'}</Button>
-                                </Box>,
-                                ...test.subtests.map((sub) => (
-                                  <ListItem key={sub._id} sx={{ pl: 3, '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
-                                    <Checkbox sx={{ color: '#94A3B8', '&.Mui-checked': { color: '#60A5FA' } }} checked={!!(selectedTest && selectedTest.subtests && selectedTest.subtests.find(s => s._id === sub._id && s.selected))} onChange={() => handleSubtestSelection(test._id, sub._id)} size="small" />
-                                    <ListItemText primary={sub.name + (sub.unit ? ` (${sub.unit})` : '')} sx={{ color: '#CBD5E1' }} />
-                                  </ListItem>
-                                ))
-                              ];
-                            }
-                            return null;
-                          })()}
-                          {(() => {
-                            const test = tests.find(t => t._id === activeTestId);
-                            const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
-                            if (test && Array.isArray(test.packs) && test.packs.length > 0) {
-                              return [
-                                <ListItem key="packs-header" sx={{ fontWeight: 600, color: '#60A5FA', bgcolor: 'rgba(255,255,255,0.02)' }}>Packs</ListItem>,
-                                ...test.packs.map((pack) => {
-                                  const selectedPack = selectedTest && selectedTest.packs && selectedTest.packs.find(p => p._id === pack._id);
-                                  return (
-                                    <ListItem button key={pack._id} selected={activePackId === pack._id} onClick={() => { setActivePackId(pack._id); if (!(selectedPack && selectedPack.selected)) handlePackSelection(test._id, pack._id); else if (selectedPack && selectedPack.selected && activePackId === pack._id) { handlePackSelection(test._id, pack._id); setActivePackId(null); } }} sx={{ '&.Mui-selected': { bgcolor: 'rgba(96,165,250,0.2)' }, '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
-                                      <ListItemText primary={<Box sx={{ display: 'flex', alignItems: 'center' }}><span style={{ fontWeight: (selectedPack && selectedPack.subtests && selectedPack.subtests.some(s => s.selected)) ? 700 : 400, color: (selectedPack && selectedPack.subtests && selectedPack.subtests.some(s => s.selected)) ? '#60A5FA' : '#F1F5F9' }}>{pack.name}</span>{(selectedPack && selectedPack.subtests && selectedPack.subtests.some(s => s.selected)) && <CheckCircleOutlineIcon fontSize="small" sx={{ ml: 1, color: '#4ADE80' }} />}</Box>} />
-                                    </ListItem>
-                                  );
-                                })
-                              ];
-                            }
-                            return null;
-                          })()}
-                        </List>
-                      </Paper>
-                    </Box>
-                  )}
-
-                  {activeTestId && activePackId && (() => {
-                    const test = tests.find(t => t._id === activeTestId);
-                    const pack = test && test.packs ? test.packs.find(p => p._id === activePackId) : null;
-                    const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
-                    const selectedPack = selectedTest && selectedTest.packs && selectedTest.packs.find(p => p._id === activePackId);
-                    if (pack && selectedPack && selectedPack.selected) {
-                      const allSelected = pack.subtests && pack.subtests.length > 0 && pack.subtests.every(sub => selectedPack.subtests.find(s => s._id === sub._id && s.selected));
-                      return (
-                        <Box sx={{ minWidth: 260, display: 'flex', flexDirection: 'column' }}>
-                          <Typography variant="overline" sx={{ fontWeight: 800, color: '#93C5FD', letterSpacing: '0.05em', mb: 1 }}>3. SUBTESTS IN {pack.name.toUpperCase()}</Typography>
-                          <Paper sx={{ flexGrow: 1, maxHeight: 300, overflowY: 'auto', borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#F1F5F9' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1, bgcolor: 'rgba(255,255,255,0.02)' }}>
-                              <Typography variant="subtitle2" sx={{ color: '#94A3B8' }}>Select to include</Typography>
-                              <Button size="small" sx={{ color: '#60A5FA' }} onClick={() => {
-                                if (allSelected) pack.subtests.forEach(sub => handleSubtestSelection(activeTestId, sub._id, activePackId));
-                                else pack.subtests.forEach(sub => { if (!selectedPack.subtests.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(activeTestId, sub._id, activePackId); });
-                              }}>{allSelected ? 'Deselect All' : 'Select All'}</Button>
+                              {/* Direct Subtests */}
+                              {st.subtests && st.subtests.some(s => s.selected) && (
+                                <Box sx={{ ml: 3.5 }}>
+                                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary)' }}>🧪 Direct Subtests</Typography>
+                                  {st.subtests.filter(s => s.selected).map(sub => (
+                                    <Typography key={sub._id} sx={{ fontSize: '0.75rem', color: 'var(--text-secondary)', ml: 1.5 }}>
+                                      · {sub.name} {sub.unit && `(${sub.unit})`}
+                                    </Typography>
+                                  ))}
+                                </Box>
+                              )}
                             </Box>
-                            <List dense>
-                              {(pack.subtests || []).map((sub) => (
-                                <ListItem key={sub._id} sx={{ pl: 3, '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
-                                  <Checkbox sx={{ color: '#94A3B8', '&.Mui-checked': { color: '#60A5FA' } }} checked={!!(selectedPack && selectedPack.subtests && selectedPack.subtests.find(s => s._id === sub._id && s.selected))} onChange={() => handleSubtestSelection(activeTestId, sub._id, activePackId)} size="small" />
-                                  <ListItemText primary={sub.name + (sub.unit ? ` (${sub.unit})` : '')} sx={{ color: '#CBD5E1' }} />
-                                </ListItem>
-                              ))}
-                            </List>
-                          </Paper>
+                          </motion.div>
+                        ))
+                    )}
+                  </AnimatePresence>
+                </Box>
+              </Paper>
+            </motion.div>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* ── Test Selection Modal ────────────────────────────────────── */}
+      <Dialog
+        fullWidth maxWidth="lg"
+        open={showTestSelection}
+        onClose={() => setShowTestSelection(false)}
+        TransitionComponent={Transition}
+        PaperProps={{
+          sx: {
+            borderRadius: 'var(--radius-2xl)',
+            background: 'var(--surface-paper)',
+            boxShadow: '0 32px 64px rgba(0,0,0,0.15)',
+            minHeight: '70vh',
+            overflow: 'hidden',
+          }
+        }}
+        sx={{
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <Box sx={{ px: 4, py: 3, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.5)' }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: 'var(--text-primary)' }}>Select Diagnostic Tests</Typography>
+          <IconButton onClick={() => setShowTestSelection(false)} sx={{ color: 'var(--text-secondary)' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <DialogContent sx={{ p: 0, display: 'flex', bgcolor: 'var(--surface-light)' }}>
+          
+          {/* Col 1: Tests */}
+          <Box sx={{ width: '33.33%', borderRight: '1px solid var(--border-light)', bgcolor: '#fff' }}>
+            <Box sx={{ p: 2, borderBottom: '1px solid var(--border-light)', bgcolor: 'rgba(0,0,0,0.02)' }}>
+              <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>1. Select a Test</Typography>
+            </Box>
+            <List sx={{ p: 0, overflowY: 'auto', height: 'calc(70vh - 100px)' }}>
+              {tests.map((test) => {
+                const selectedTest = formData.selectedTests.find(t => t.test._id === test._id);
+                const isSelected = selectedTest && ((selectedTest.subtests && selectedTest.subtests.some(s => s.selected)) || (selectedTest.packs && selectedTest.packs.some(p => p.subtests && p.subtests.some(s => s.selected))));
+                const isActive = activeTestId === test._id;
+                return (
+                  <ListItem
+                    button key={test._id}
+                    onClick={() => {
+                      setActiveTestId(test._id);
+                      setActivePackId(null);
+                      if (!formData.selectedTests.some(t => t.test._id === test._id)) handleTestSelection(test);
+                    }}
+                    sx={{
+                      borderBottom: '1px solid var(--border-light)',
+                      bgcolor: isActive ? 'rgba(15,110,86,0.06)' : 'transparent',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Typography sx={{ fontWeight: isActive || isSelected ? 700 : 500, color: isActive ? 'var(--color-primary)' : 'var(--text-primary)' }}>
+                            {test.name}
+                          </Typography>
+                          <AnimatePresence>
+                            {isSelected && (
+                              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                                <CheckCircleOutlineIcon sx={{ color: 'var(--color-primary)', fontSize: 18 }} />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </Box>
-                      );
+                      }
+                    />
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Box>
+
+          {/* Col 2: Subtests & Packs */}
+          <Box sx={{ width: '33.33%', borderRight: '1px solid var(--border-light)', bgcolor: '#fff' }}>
+            {activeTestId ? (
+              <>
+                <Box sx={{ p: 2, borderBottom: '1px solid var(--border-light)', bgcolor: 'rgba(0,0,0,0.02)' }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>2. Direct Subtests & Packs</Typography>
+                </Box>
+                <List sx={{ p: 0, overflowY: 'auto', height: 'calc(70vh - 100px)' }}>
+                  {/* ... logic for subtests ... */}
+                  {(() => {
+                    const test = tests.find(t => t._id === activeTestId);
+                    const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
+                    if (test && Array.isArray(test.subtests) && test.subtests.length > 0) {
+                      return [
+                        <Box key="header-subtests" sx={{ p: 1.5, bgcolor: 'rgba(15,110,86,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-primary)' }}>DIRECT SUBTESTS</Typography>
+                          <Button size="small" sx={{ fontSize: '0.7rem' }} onClick={() => {
+                            const allSel = test.subtests.every(sub => selectedTest.subtests.find(s => s._id === sub._id && s.selected));
+                            test.subtests.forEach(sub => { if (allSel || !selectedTest.subtests.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(test._id, sub._id); });
+                          }}>{test.subtests.every(sub => selectedTest.subtests.find(s => s._id === sub._id && s.selected)) ? 'Deselect All' : 'Select All'}</Button>
+                        </Box>,
+                        ...test.subtests.map((sub) => (
+                          <ListItem key={sub._id} sx={{ pl: 3, borderBottom: '1px solid var(--border-light)' }}>
+                            <Checkbox 
+                              checked={!!(selectedTest && selectedTest.subtests && selectedTest.subtests.find(s => s._id === sub._id && s.selected))} 
+                              onChange={() => handleSubtestSelection(test._id, sub._id)} size="small" 
+                              sx={{ '&.Mui-checked': { color: 'var(--color-primary)' } }}
+                            />
+                            <ListItemText primary={sub.name + (sub.unit ? ` (${sub.unit})` : '')} primaryTypographyProps={{ fontSize: '0.85rem' }} />
+                          </ListItem>
+                        ))
+                      ];
                     }
                     return null;
                   })()}
-                  </Box>
-
-                  <Box sx={{ mt: 2 }}>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      sx={{ bgcolor: '#2563EB', color: '#fff', borderRadius: '12px', py: 1.2, fontWeight: 700, textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}
-                      onClick={() => { setShowTestSelection(false); setActiveTestId(null); setActivePackId(null); }}
-                    >
-                      Finish Selection
-                    </Button>
-                  </Box>
-                </Box>
-              )}
-            </Box>
+                  {/* ... logic for packs ... */}
+                  {(() => {
+                    const test = tests.find(t => t._id === activeTestId);
+                    const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
+                    if (test && Array.isArray(test.packs) && test.packs.length > 0) {
+                      return [
+                        <Box key="header-packs" sx={{ p: 1.5, bgcolor: 'rgba(11,31,58,0.04)' }}>
+                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-secondary)' }}>TEST PACKS</Typography>
+                        </Box>,
+                        ...test.packs.map((pack) => {
+                          const selectedPack = selectedTest && selectedTest.packs && selectedTest.packs.find(p => p._id === pack._id);
+                          const isActivePack = activePackId === pack._id;
+                          const hasSelectedSubs = selectedPack && selectedPack.subtests && selectedPack.subtests.some(s => s.selected);
+                          return (
+                            <ListItem 
+                              button key={pack._id} 
+                              onClick={() => { 
+                                setActivePackId(pack._id); 
+                                if (!(selectedPack && selectedPack.selected)) handlePackSelection(test._id, pack._id); 
+                              }}
+                              sx={{ 
+                                bgcolor: isActivePack ? 'rgba(11,31,58,0.06)' : 'transparent',
+                                borderBottom: '1px solid var(--border-light)' 
+                              }}
+                            >
+                              <ListItemText 
+                                primary={
+                                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: hasSelectedSubs ? 700 : 500, color: hasSelectedSubs ? 'var(--color-secondary)' : 'inherit' }}>
+                                      {pack.name}
+                                    </Typography>
+                                    {hasSelectedSubs && <CheckCircleOutlineIcon sx={{ color: 'var(--color-secondary)', fontSize: 16 }} />}
+                                  </Box>
+                                } 
+                              />
+                            </ListItem>
+                          );
+                        })
+                      ];
+                    }
+                    return null;
+                  })()}
+                </List>
+              </>
+            ) : (
+              <Box sx={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Select a test first</Typography>
+              </Box>
+            )}
           </Box>
+
+          {/* Col 3: Pack Subtests */}
+          <Box sx={{ width: '33.34%', bgcolor: 'rgba(0,0,0,0.01)' }}>
+            {activeTestId && activePackId ? (() => {
+              const test = tests.find(t => t._id === activeTestId);
+              const pack = test && test.packs ? test.packs.find(p => p._id === activePackId) : null;
+              const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
+              const selectedPack = selectedTest && selectedTest.packs && selectedTest.packs.find(p => p._id === activePackId);
+              if (pack && selectedPack && selectedPack.selected) {
+                const allSelected = pack.subtests && pack.subtests.length > 0 && pack.subtests.every(sub => selectedPack.subtests.find(s => s._id === sub._id && s.selected));
+                return (
+                  <>
+                    <Box sx={{ p: 2, borderBottom: '1px solid var(--border-light)', bgcolor: 'rgba(0,0,0,0.02)' }}>
+                      <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>3. Select in {pack.name}</Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid var(--border-light)' }}>
+                      <Button size="small" onClick={() => {
+                          if (allSelected) pack.subtests.forEach(sub => handleSubtestSelection(activeTestId, sub._id, activePackId));
+                          else pack.subtests.forEach(sub => { if (!selectedPack.subtests.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(activeTestId, sub._id, activePackId); });
+                        }}
+                      >
+                        {allSelected ? 'Deselect All' : 'Select All'}
+                      </Button>
+                    </Box>
+                    <List sx={{ p: 0, overflowY: 'auto', height: 'calc(70vh - 146px)' }}>
+                      {(pack.subtests || []).map((sub) => (
+                        <ListItem key={sub._id} sx={{ pl: 3, borderBottom: '1px solid var(--border-light)' }}>
+                          <Checkbox 
+                            checked={!!(selectedPack && selectedPack.subtests && selectedPack.subtests.find(s => s._id === sub._id && s.selected))} 
+                            onChange={() => handleSubtestSelection(activeTestId, sub._id, activePackId)} size="small" 
+                            sx={{ '&.Mui-checked': { color: 'var(--color-secondary)' } }}
+                          />
+                          <ListItemText primary={sub.name + (sub.unit ? ` (${sub.unit})` : '')} primaryTypographyProps={{ fontSize: '0.85rem' }} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </>
+                );
+              }
+              return (
+                <Box sx={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Select a pack to view subtests</Typography>
+                </Box>
+              );
+            })() : (
+              <Box sx={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Select a pack first</Typography>
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+        <Box sx={{ p: 2, borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'flex-end', bgcolor: '#fff' }}>
+          <Button variant="contained" onClick={() => setShowTestSelection(false)} sx={{ borderRadius: 'var(--radius-pill)', px: 4, background: 'var(--gradient-brand)', color: '#fff' }}>
+            Done
+          </Button>
         </Box>
-      </Box>
+      </Dialog>
     </Container>
   );
 }
+
+// ── Reusable Styles ──────────────────────────────────────────────────────────
+const glassFieldSx = {
+  '& .MuiFilledInput-root': {
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--border-light)',
+    transition: 'all 0.2s',
+    '&:hover': {
+      backgroundColor: '#fff',
+      borderColor: 'var(--color-primary)',
+    },
+    '&.Mui-focused': {
+      backgroundColor: '#fff',
+      borderColor: 'var(--color-primary)',
+      boxShadow: '0 0 0 3px rgba(15,110,86,0.15)',
+    },
+  },
+  '& .MuiInputLabel-root': {
+    color: 'var(--text-muted)',
+    fontSize: '0.9rem',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: 'var(--color-primary)',
+  },
+};
 
 export default PatientEntry;

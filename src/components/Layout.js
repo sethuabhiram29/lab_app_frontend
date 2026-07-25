@@ -142,7 +142,7 @@ function Layout() {
           return (
             <Box key={item.text} sx={{ position: 'relative', mb: 0.5 }}>
               {/* Spring-animated active background pill */}
-              {isActive && (
+              {isActive && !prefersReduced && (
                 <motion.div
                   layoutId="sidebar-active-pill"
                   style={{
@@ -409,7 +409,7 @@ function Layout() {
                   const isActive = location.pathname === item.path;
                   return (
                     <Box key={item.text} sx={{ position: 'relative', mb: 0.5 }}>
-                      {isActive && (
+                      {isActive && !prefersReduced && (
                         <motion.div
                           layoutId="sidebar-active-pill-desktop"
                           style={{
