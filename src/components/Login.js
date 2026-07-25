@@ -215,7 +215,7 @@ function Login() {
         {/* ── RIGHT PANEL (Login Card) ────────────────────────────────────────────── */}
         <Grid item xs={12} md={6} sx={{ 
           display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch',
-          p: { xs: 2, md: 6 } 
+          p: { xs: 4, md: 8, lg: 12 } 
         }}>
           <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ display: 'flex', flexGrow: 1 }}>
             
@@ -414,10 +414,7 @@ function Login() {
               </Box>
             </Box>
 
-            {/* Footer Text */}
-            <Typography sx={{ textAlign: 'center', mt: 4, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', color: '#9D928F', textTransform: 'uppercase' }}>
-              SECURE PORTAL - SRI SAI DURGA DIAGNOSTIC CENTRE
-            </Typography>
+
 
           </motion.div>
         </Grid>
