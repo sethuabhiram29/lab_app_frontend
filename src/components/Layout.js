@@ -323,7 +323,7 @@ function Layout() {
           {/* Logo */}
           <Box
             onClick={() => navigate('/')}
-            sx={{ display: isHome ? 'flex' : { xs: 'flex', sm: 'none' }, alignItems: 'center', flexGrow: 1, cursor: 'pointer', gap: 1.5 }}
+            sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, cursor: 'pointer', gap: 1.5 }}
           >
             <Box sx={{
               width: 32, height: 32,
@@ -336,17 +336,17 @@ function Layout() {
               <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: '0.7rem' }}>SSD</Typography>
             </Box>
             <Typography sx={{
-              fontWeight: 800,
-              fontSize: '1rem',
+              fontWeight: 900,
+              fontSize: '1.1rem',
               color: 'var(--color-primary)',
-              letterSpacing: '-0.02em',
-              fontFamily: 'Inter, sans-serif',
+              letterSpacing: '-0.01em',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}>
               Sri Sai Durga{' '}
-              <Box component="span" sx={{ color: 'var(--color-teal)' }}>Diagnostic Centre</Box>
+              <Box component="span" sx={{ color: 'var(--color-teal)', fontWeight: 700 }}>Diagnostic Centre</Box>
             </Typography>
           </Box>
-          {!isHome && <Box sx={{ flexGrow: { xs: 0, sm: 1 } }} />}
+          <Box sx={{ flexGrow: { xs: 0, sm: 1 } }} />
 
           {/* Right: User avatar */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
