@@ -42,6 +42,19 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import QRCode from 'qrcode';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Search as SearchIcon,
+  CloudQueue as CloudQueueIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  Add as AddIcon,
+  Print as PrintIcon,
+  Edit as EditIcon,
+  Event as EventIcon,
+  DescriptionOutlined as DescriptionIcon,
+  RadioButtonUnchecked as RadioButtonUncheckedIcon
+} from '@mui/icons-material';
+import { Avatar, InputAdornment, OutlinedInput } from '@mui/material';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -1820,663 +1833,569 @@ function CreateReport() {
     return d1.getTime() === d2.getTime();
   });
 
+  // Calculate stats for the summary cards
+  const totalToday = filteredPatients.length;
+  const reportsCreated = filteredPatients.filter(p => getReportForPatient(p._id)).length;
+  const printedCount = filteredPatients.filter(p => {
+    const r = getReportForPatient(p._id);
+    return r && r.printed;
+  }).length;
+  const pendingCount = reportsCreated - printedCount;
+
+  // Animation variants
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } }
+  };
+  const fadeUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+  };
+  const scaleUp = {
+    hidden: { opacity: 0, scale: 0.96 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+  };
+
   return (
-    <Container maxWidth="lg">
-      <Paper
-        elevation={3}
-        sx={{ p: 4, mt: 4 }}
-        style={{
-          backgroundColor: 'transparent',
-          boxShadow: 'none',
-        }}
-      >
-        {/* Google Drive Authorization */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
-          <Typography variant="h5">Create Report</Typography>
-          <Box sx={{ flex: 1 }} />
-          {driveAuthChecked && (
-            driveAuthorized ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Chip
-                  icon={<GoogleIcon />}
-                  label="Google Drive Connected"
-                  color="success"
-                  variant="outlined"
-                />
-                <Button
-                  variant="outlined"
-                  color="error"
-                  startIcon={<LogoutIcon />}
-                  onClick={handleSignOut}
-                  size="small"
-                >
-                  Sign Out
-                </Button>
-              </Box>
-            ) : (
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<GoogleIcon />}
-                onClick={() => tokenClient?.requestAccessToken()}
-                disabled={gisLoading}
-              >
-                {gisLoading ? 'Loading...' : 'Connect Google Drive'}
-              </Button>
-            )
-          )}
-        </Box>
-        {driveAuthError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {driveAuthError}
-          </Alert>
-        )}
-        {/* Date Picker for filtering patients */}
-        {showPatientList && (
-          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Filter by Date"
-                value={filterDate}
-                onChange={date => { if(date) setFilterDate(date); }}
-                format="dd-MM-yyyy"
-                slotProps={{
-                  textField: {
-                    size: "small",
-                    inputProps: {
-                      placeholder: "DD-MM-YYYY"
-                    }
-                  }
-                }}
-              />
-            </LocalizationProvider>
-            <Button variant="outlined" size="small" onClick={() => setFilterDate(new Date())}>Today</Button>
-        </Box>
-        )}
-        {/* Toggle button for patient list/entry form */}
-        {selectedPatient && !showPatientList && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setShowPatientList(true)}
-            sx={{ mb: 2 }}
-            fullWidth
-          >
-            Show Patient List
-          </Button>
-        )}
+    <Box sx={{ minHeight: '100vh', background: 'var(--surface-light)', pb: 8 }}>
+      {/* Top Header Background Gradient (Subtle Green Mesh) */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0, left: 0, right: 0, height: '40vh',
+        background: 'linear-gradient(135deg, rgba(16,185,129,0.05) 0%, rgba(15,110,86,0.1) 100%)',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }} />
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 } }}>
+        <AnimatePresence>
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible">
+            
+            {/* Header Section */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 6, gap: 3 }}>
+              <motion.div variants={fadeUp}>
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '0.1em', mb: 1, textTransform: 'uppercase' }}>
+                  REPORTS
+                </Typography>
+                <Typography variant="h2" sx={{ fontWeight: 900, color: '#0F172A', mb: 1, fontSize: { xs: '2rem', md: '2.5rem' }, letterSpacing: '-0.02em', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+                  Create Report
+                </Typography>
+                <Typography sx={{ color: 'var(--text-secondary)', maxWidth: 500, fontSize: '0.95rem', lineHeight: 1.6 }}>
+                  Build, review and dispatch patient diagnostic reports. Actions stay in sync across your team in real time.
+                </Typography>
+              </motion.div>
 
-        {success && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {success}
-          </Alert>
-        )}
+              <motion.div variants={scaleUp}>
+                {driveAuthChecked && (
+                  driveAuthorized ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip
+                        icon={<CheckCircleOutlineIcon sx={{ color: '#10B981 !important' }} />}
+                        label="Google Drive Connected"
+                        sx={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', fontWeight: 700, borderRadius: '100px', border: '1px solid rgba(16,185,129,0.2)' }}
+                      />
+                      <Button
+                        onClick={handleSignOut}
+                        sx={{ minWidth: 'auto', p: 1, color: '#EF4444', '&:hover': { background: 'rgba(239,68,68,0.1)' }, borderRadius: '100px' }}
+                      >
+                        <LogoutIcon />
+                      </Button>
+                    </Box>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      startIcon={<CloudQueueIcon />}
+                      onClick={() => tokenClient?.requestAccessToken()}
+                      disabled={gisLoading}
+                      sx={{
+                        background: '#0F6E56',
+                        color: '#fff',
+                        fontWeight: 700,
+                        px: 4, py: 1.5,
+                        borderRadius: '100px',
+                        textTransform: 'none',
+                        fontSize: '0.95rem',
+                        boxShadow: '0 8px 24px rgba(15,110,86,0.3)',
+                        '&:hover': { background: '#0B5240', boxShadow: '0 12px 32px rgba(15,110,86,0.4)' },
+                      }}
+                    >
+                      {gisLoading ? 'Connecting...' : 'Connect Google Drive'}
+                    </Button>
+                  )
+                )}
+              </motion.div>
+            </Box>
 
-
-
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            {/* Show patient list table only if showPatientList is true */}
-            {showPatientList && (
-            <TableContainer component={Paper} sx={{ mb: 3, backgroundColor: 'transparent', boxShadow: 'none' }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ backgroundColor: 'transparent', fontWeight: 'bold' }}>Patient Name</TableCell>
-                    <TableCell sx={{ backgroundColor: 'transparent', fontWeight: 'bold' }}>Patient ID</TableCell>
-                    <TableCell sx={{ backgroundColor: 'transparent', fontWeight: 'bold' }}>Report Status</TableCell>
-                    <TableCell sx={{ backgroundColor: 'transparent', fontWeight: 'bold' }}>Save Status</TableCell>
-                    <TableCell sx={{ backgroundColor: 'transparent', fontWeight: 'bold' }}>Print Status</TableCell>
-                    <TableCell sx={{ backgroundColor: 'transparent', fontWeight: 'bold' }}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                    {filteredPatients.map((patient) => {
-                    const report = getReportForPatient(patient._id);
-                    return (
-                      <TableRow key={patient._id} selected={selectedPatient?._id === patient._id}>
-                        <TableCell>{patient.name}</TableCell>
-                        <TableCell>{patient.regNo}</TableCell>
-                        <TableCell>
-                          {!report ? (
-                            <Button size="small" variant="contained" color="primary" onClick={() => handlePatientSelect(patient)}>
-                              Create
-                            </Button>
-                          ) : (
-                            <Button size="small" variant="contained" color="info" onClick={() => handlePatientSelect(patient)}>
-                              Edit
-                            </Button>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {report ? 'Saved' : 'Not Saved'}
-                        </TableCell>
-                        <TableCell>
-                          {report ? (
-                            report.printed ? (
-                              <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>
-                                ✓ Printed
-                              </Typography>
-                            ) : (
-                              <Typography variant="caption" color="text.secondary">
-                                Not Printed
-                              </Typography>
-                            )
-                          ) : null}
-                        </TableCell>
-                        <TableCell>
-                          {report && (
-                            <>
-                              <Button 
-                                size="small"
-                                variant="outlined" 
-                                color="primary"
-                                onClick={() => {
-                                  // Open preview dialog with the saved report data
-                                  const reportDisplayData = report.reportDisplayData;
-                                  
-                                  // Set the saved patient data
-                                  setSelectedPatient(reportDisplayData.patient);
-                                  setQrImage(reportDisplayData.qrImage);
-                                  
-                                  // For viewing, we'll use the saved test tables directly
-                                  const savedTestTables = reportDisplayData.testTables;
-                                  setTestResults(savedTestTables.map(table => ({
-                                    test: table.test,
-                                    packs: table.packs.map(pack => ({
-                                      packName: pack.packName,
-                                      subtests: pack.subtests.map(sub => ({
-                                        name: sub.name,
-                                        result: sub.result,
-                                        unit: sub.unit,
-                                        range: sub.range
-                                      }))
-                                    })),
-                                    direct: table.direct.map(sub => ({
-                                      name: sub.name,
-                                      result: sub.result,
-                                      unit: sub.unit,
-                                      range: sub.range
-                                    }))
-                                  })));
-                                  
-                                  setRemovedImages(new Set(reportDisplayData.removedImages || []));
-                                  setTableNotes(reportDisplayData.tableNotes || {});
-                                  setPreviewOpen(true);
-                                }}
-                                sx={{ mr: 1 }}
-                              >
-                                View
-                              </Button>
-                              <Button 
-                                size="small"
-                                variant="outlined" 
-                                color={report.printed ? "success" : "secondary"}
-                                onClick={() => handlePrintReport(report)} 
-                                disabled={!report.reportDisplayData}
-                                startIcon={printLoading ? <CircularProgress size={14} /> : null}
-                              >
-                                {printLoading ? 'Printing...' : (report.printed ? 'Re-Print' : 'Print')}
-                              </Button>
-                            </>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            )}
-          </Grid>
-          <Grid item xs={12} md={9}>
-            {/* Show entry form only if showPatientList is false and a patient is selected (regardless of printed status) */}
-            {!showPatientList && selectedPatient && (
-              <Box component="form" onSubmit={handleSubmit}>
-                {/* Patient Details Section */}
-                <Paper variant="outlined" sx={{ p: 2, mb: 3, backgroundColor: 'transparent', boxShadow: 'none' }}>
-                  <Box sx={{ display: 'flex', gap: 3 }}>
-                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {/* Two-row, multi-column grid for patient info */}
-                    <Grid container spacing={2}>
-                      {/* Row 1 */}
-                      <Grid item xs={3}>
-                        <Typography variant="subtitle2" color="textSecondary">Name</Typography>
-                        <Typography>{selectedPatient.name}</Typography>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Typography variant="subtitle2" color="textSecondary">Gender</Typography>
-                        <Typography>{selectedPatient.gender}</Typography>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Typography variant="subtitle2" color="textSecondary">Age</Typography>
-                        <Typography>{selectedPatient.age} years</Typography>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Typography variant="subtitle2" color="textSecondary">Reg No</Typography>
-                        <Typography>{selectedPatient.regNo}</Typography>
-                      </Grid>
-                      {/* Row 2 */}
-                      <Grid item xs={3}>
-                        <Typography variant="subtitle2" color="textSecondary">Ref Doctor</Typography>
-                        <Typography>{selectedPatient.refDoctor?.name || '-'}</Typography>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Typography variant="subtitle2" color="textSecondary">Ref Agent</Typography>
-                        <Typography>{selectedPatient.refAgent?.name || '-'}</Typography>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Typography variant="subtitle2" color="textSecondary">Sample Collection Date</Typography>
-                        <Typography>
-                          {(() => {
-                            const d = new Date(selectedPatient.sampleCollectionDate);
-                            return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-                          })()}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Typography variant="subtitle2" color="textSecondary">Report Creation Date</Typography>
-                        <Typography>
-                          {(() => {
-                            const d = new Date();
-                            return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-                          })()}
-                        </Typography>
-                      </Grid>
-                    </Grid>
+            {/* Stats Cards Section */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 6 }}>
+              {[
+                { title: 'TOTAL TODAY', value: totalToday, delay: 0 },
+                { title: 'REPORTS CREATED', value: reportsCreated, delay: 0.1 },
+                { title: 'PRINTED', value: printedCount, delay: 0.2 },
+                { title: 'PENDING', value: pendingCount, delay: 0.3 }
+              ].map((stat, idx) => (
+                <motion.div key={idx} variants={scaleUp} custom={stat.delay}>
+                  <Box sx={{
+                    p: 3,
+                    borderRadius: '24px',
+                    background: 'rgba(255,255,255,0.7)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255,255,255,0.8)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <Box sx={{
+                      position: 'absolute', top: 0, right: 0, bottom: 0, left: '50%',
+                      background: 'radial-gradient(circle at center right, rgba(16,185,129,0.1) 0%, transparent 70%)',
+                      zIndex: 0
+                    }} />
+                    <Typography sx={{ position: 'relative', zIndex: 1, fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em', textTransform: 'uppercase', mb: 1 }}>
+                      {stat.title}
+                    </Typography>
+                    <Typography sx={{ position: 'relative', zIndex: 1, fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', fontFamily: '"Plus Jakarta Sans", sans-serif', lineHeight: 1 }}>
+                      {stat.value}
+                    </Typography>
                   </Box>
+                </motion.div>
+              ))}
+            </Box>
+
+            {/* Main Table Container */}
+            <motion.div variants={fadeUp}>
+              <Box sx={{
+                borderRadius: '32px',
+                background: '#fff',
+                boxShadow: '0 24px 64px rgba(0,0,0,0.06)',
+                border: '1px solid rgba(30,41,59,0.05)',
+                overflow: 'hidden',
+                mb: 4
+              }}>
+                {/* Table Toolbar */}
+                <Box sx={{ p: 3, px: 4, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(30,41,59,0.05)', gap: 3 }}>
                   
-                  {/* QR Code and Drive Links Display */}
-                  {(qrImage || uploadedLinks.viewLink) && (
-                    <Box sx={{ 
-                      width: 220, 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center',
-                      gap: 1,
-                      border: '1px solid #ccc',
-                      borderRadius: 1,
-                      p: 2
-                    }}>
-                      <Typography variant="subtitle2" color="textSecondary" align="center">
-                        Report QR Code
-                      </Typography>
-                      {qrImage && (
-                        <img 
-                          src={qrImage} 
-                          alt="Report QR Code" 
-                          style={{ 
-                            width: '100%', 
-                            height: 'auto',
-                            maxWidth: 200 
-                          }} 
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: { xs: '100%', md: 'auto' } }}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DatePicker
+                        value={filterDate}
+                        onChange={date => { if(date) setFilterDate(date); }}
+                        format="dd-MM-yyyy"
+                        slotProps={{
+                          textField: {
+                            size: "small",
+                            sx: {
+                              width: 160,
+                              '& .MuiOutlinedInput-root': { borderRadius: '100px', background: '#F8FAFC', fontWeight: 600 }
+                            }
+                          }
+                        }}
+                      />
+                    </LocalizationProvider>
+                    <Button 
+                      onClick={() => setFilterDate(new Date())}
+                      sx={{ borderRadius: '100px', px: 3, color: '#0F6E56', border: '1px solid rgba(15,110,86,0.3)', fontWeight: 600, '&:hover': { background: 'rgba(15,110,86,0.05)' } }}
+                    >
+                      Today
+                    </Button>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: { xs: '100%', md: 'auto' } }}>
+                    <OutlinedInput
+                      size="small"
+                      placeholder="Search patient or ID"
+                      startAdornment={<InputAdornment position="start"><SearchIcon sx={{ color: 'var(--text-secondary)' }} /></InputAdornment>}
+                      sx={{ borderRadius: '100px', width: { xs: '100%', md: 240 }, background: '#F8FAFC' }}
+                    />
+                    <Button
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      sx={{
+                        background: '#0F6E56', color: '#fff', borderRadius: '100px', px: 3, py: 1, fontWeight: 700, textTransform: 'none',
+                        boxShadow: '0 4px 12px rgba(15,110,86,0.2)', '&:hover': { background: '#0B5240' }
+                      }}
+                    >
+                      New
+                    </Button>
+                  </Box>
+
+                </Box>
+
+                {/* Table Content */}
+                <Box sx={{ overflowX: 'auto' }}>
+                  <Table sx={{ minWidth: 800 }}>
+                    <TableHead>
+                      <TableRow sx={{ '& th': { borderBottom: 'none', py: 3 } }}>
+                        <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em', pl: 5 }}>ID</TableCell>
+                        <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em' }}>PATIENT</TableCell>
+                        <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em', align: 'center' }}>REPORT</TableCell>
+                        <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em', align: 'center' }}>SAVE</TableCell>
+                        <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em', align: 'center' }}>PRINT</TableCell>
+                        <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em', align: 'right', pr: 5 }}>ACTIONS</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <AnimatePresence>
+                        {filteredPatients.map((patient, idx) => {
+                          const report = getReportForPatient(patient._id);
+                          const isSaved = !!report;
+                          const isPrinted = report && report.printed;
+                          
+                          // Parse simple ID number from regNo if it's like 00005
+                          const simpleId = patient.regNo.replace(/^0+/, '');
+
+                          return (
+                            <motion.tr
+                              key={patient._id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              transition={{ duration: 0.3, delay: idx * 0.05 }}
+                              style={{ borderBottom: '1px solid rgba(30,41,59,0.03)' }}
+                            >
+                              <TableCell sx={{ pl: 5, borderBottom: 'none' }}>
+                                <Typography sx={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}># {simpleId || idx+1}</Typography>
+                              </TableCell>
+                              <TableCell sx={{ borderBottom: 'none' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  <Avatar sx={{ bgcolor: 'rgba(16,185,129,0.15)', color: '#0F6E56', fontWeight: 800, fontSize: '0.9rem', width: 40, height: 40 }}>
+                                    {patient.name.substring(0,2).toUpperCase()}
+                                  </Avatar>
+                                  <Box>
+                                    <Typography sx={{ fontWeight: 800, color: '#0F172A' }}>{patient.name}</Typography>
+                                    <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Patient ID • {patient.regNo}</Typography>
+                                  </Box>
+                                </Box>
+                              </TableCell>
+                              <TableCell align="center" sx={{ borderBottom: 'none' }}>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<EditIcon sx={{ fontSize: '1rem' }} />}
+                                  onClick={() => handlePatientSelect(patient)}
+                                  sx={{
+                                    borderRadius: '100px',
+                                    color: 'var(--text-secondary)',
+                                    borderColor: 'var(--border-light)',
+                                    fontWeight: 700,
+                                    textTransform: 'none',
+                                    px: 2,
+                                    '&:hover': { background: '#F8FAFC', borderColor: 'var(--text-secondary)' }
+                                  }}
+                                >
+                                  {isSaved ? 'Edit' : 'Create'}
+                                </Button>
+                              </TableCell>
+                              <TableCell align="center" sx={{ borderBottom: 'none' }}>
+                                {isSaved ? (
+                                  <Chip
+                                    icon={<CheckCircleOutlineIcon sx={{ color: '#10B981 !important' }} />}
+                                    label="Saved"
+                                    sx={{ background: 'rgba(16,185,129,0.08)', color: '#10B981', fontWeight: 700, borderRadius: '100px', border: '1px solid rgba(16,185,129,0.2)' }}
+                                  />
+                                ) : (
+                                  <Chip
+                                    icon={<RadioButtonUncheckedIcon sx={{ color: 'var(--text-muted) !important' }} />}
+                                    label="Not saved"
+                                    sx={{ background: 'transparent', color: 'var(--text-secondary)', fontWeight: 600, borderRadius: '100px', border: '1px solid var(--border-light)' }}
+                                  />
+                                )}
+                              </TableCell>
+                              <TableCell align="center" sx={{ borderBottom: 'none' }}>
+                                {isPrinted ? (
+                                  <Chip
+                                    label="Printed"
+                                    sx={{ background: 'rgba(16,185,129,0.08)', color: '#10B981', fontWeight: 700, borderRadius: '100px', border: '1px solid rgba(16,185,129,0.2)' }}
+                                  />
+                                ) : (
+                                  <Chip
+                                    label="Not printed"
+                                    sx={{ background: 'rgba(249,115,22,0.08)', color: '#EA580C', fontWeight: 700, borderRadius: '100px', border: '1px solid rgba(249,115,22,0.2)' }}
+                                  />
+                                )}
+                              </TableCell>
+                              <TableCell align="right" sx={{ pr: 5, borderBottom: 'none' }}>
+                                {isSaved && (
+                                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      startIcon={<PreviewIcon sx={{ fontSize: '1rem' }} />}
+                                      onClick={() => {
+                                        const reportDisplayData = report.reportDisplayData;
+                                        setSelectedPatient(reportDisplayData.patient);
+                                        setQrImage(reportDisplayData.qrImage);
+                                        const savedTestTables = reportDisplayData.testTables;
+                                        setTestResults(savedTestTables.map(table => ({
+                                          test: table.test,
+                                          packs: table.packs.map(pack => ({
+                                            packName: pack.packName,
+                                            subtests: pack.subtests.map(sub => ({
+                                              name: sub.name,
+                                              result: sub.result,
+                                              unit: sub.unit,
+                                              range: sub.range
+                                            }))
+                                          })),
+                                          direct: table.direct.map(sub => ({
+                                            name: sub.name,
+                                            result: sub.result,
+                                            unit: sub.unit,
+                                            range: sub.range
+                                          }))
+                                        })));
+                                        setRemovedImages(new Set(reportDisplayData.removedImages || []));
+                                        setTableNotes(reportDisplayData.tableNotes || {});
+                                        setPreviewOpen(true);
+                                      }}
+                                      sx={{ borderRadius: '100px', color: 'var(--text-secondary)', borderColor: 'var(--border-light)', fontWeight: 700, textTransform: 'none', '&:hover': { background: '#F8FAFC' } }}
+                                    >
+                                      View
+                                    </Button>
+                                    <Button
+                                      variant="contained"
+                                      size="small"
+                                      startIcon={<PrintIcon sx={{ fontSize: '1rem' }} />}
+                                      onClick={() => handlePrintReport(report)}
+                                      disabled={printLoading}
+                                      sx={{ borderRadius: '100px', background: '#0F6E56', color: '#fff', fontWeight: 700, textTransform: 'none', boxShadow: 'none', '&:hover': { background: '#0B5240', boxShadow: '0 4px 12px rgba(15,110,86,0.3)' } }}
+                                    >
+                                      Print
+                                    </Button>
+                                  </Box>
+                                )}
+                              </TableCell>
+                            </motion.tr>
+                          );
+                        })}
+                      </AnimatePresence>
+                    </TableBody>
+                  </Table>
+                </Box>
+              </Box>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Edit Report Dialog - Shows when a patient is selected for editing */}
+        <Dialog
+          open={!!selectedPatient && !previewOpen}
+          onClose={() => setSelectedPatient(null)}
+          maxWidth="xl"
+          fullWidth
+          TransitionComponent={Transition}
+          PaperProps={{ sx: { borderRadius: '24px', overflow: 'hidden', minHeight: '90vh' } }}
+          sx={{ backdropFilter: 'blur(8px)' }}
+        >
+          <DialogTitle sx={{ px: 4, py: 3, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface-light)', fontWeight: 800 }}>
+            {selectedPatient?.name} - Edit Report
+            <IconButton onClick={() => setSelectedPatient(null)} sx={{ color: 'var(--text-secondary)' }}>
+              ×
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ p: 0, bgcolor: 'var(--surface-light)' }}>
+            <Grid container sx={{ minHeight: '100%' }}>
+              {/* Left Column: Form (60%) */}
+              <Grid item xs={12} md={7} sx={{ p: 4, borderRight: '1px solid var(--border-light)', overflowY: 'auto' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Enter Test Results</Typography>
+                
+                <Box component="form" onSubmit={handleSubmit}>
+                  {testResults.map((table, tableIndex) => (
+                    <Box key={tableIndex} sx={{ mb: 4, background: '#fff', p: 3, borderRadius: '16px', border: '1px solid var(--border-light)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography sx={{ fontWeight: 800, color: '#0F6E56', fontSize: '1.1rem' }}>
+                          {table.test.name}
+                        </Typography>
+                        {table.test.image && (
+                          <Button 
+                            size="small" 
+                            variant="outlined" 
+                            color={removedImages.has(`${tableIndex}-test`) ? "primary" : "error"}
+                            onClick={() => handleToggleImage(tableIndex, 'test')}
+                            sx={{ borderRadius: '100px', fontWeight: 700, textTransform: 'none' }}
+                          >
+                            {removedImages.has(`${tableIndex}-test`) ? 'Add Image' : 'Remove Image'}
+                          </Button>
+                        )}
+                      </Box>
+
+                      {/* Direct Subtests */}
+                      {table.direct.map((sub, subIndex) => (
+                        <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 2, alignItems: 'center', p: 2, bgcolor: '#F8FAFC', borderRadius: '12px' }}>
+                          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>{sub.name}</Typography>
+                          <TextField
+                            size="small"
+                            value={sub.result}
+                            onChange={(e) => handleResultChange(tableIndex, 'direct', null, subIndex, e.target.value)}
+                            placeholder="Enter result..."
+                            sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#fff', borderRadius: '8px' } }}
+                          />
+                          <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{sub.range} {sub.unit}</Typography>
+                        </Box>
+                      ))}
+
+                      {table.direct.length > 0 && (
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Add Note (Optional)"
+                          value={tableNotes[`${tableIndex}-direct`] || ''}
+                          onChange={(e) => handleNoteChange(tableIndex, 'direct', null, e.target.value)}
+                          sx={{ mt: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                         />
                       )}
-                      <Typography variant="caption" color="textSecondary" align="center">
-                        {driveAuthorized ? 'Scan to view online report' : 'Scan for patient info'}
-                      </Typography>
-                      {/* Show Drive links if available */}
-                      {(uploadedLinks.viewLink || updationLinks.viewLink) && (
-                        <Box sx={{ mt: 1, textAlign: 'center' }}>
-                          <Typography variant="subtitle2" color="textSecondary">Report Links</Typography>
-                          <a href={uploadedLinks.viewLink || updationLinks.viewLink} target="_blank" rel="noopener noreferrer">View PDF</a><br />
-                          <a href={uploadedLinks.downloadLink || updationLinks.downloadLink} target="_blank" rel="noopener noreferrer">Download PDF</a>
+
+                      {/* Pack Subtests */}
+                      {table.packs.map((pack, packIndex) => (
+                        <Box key={packIndex} sx={{ mt: 4, pt: 3, borderTop: '1px dashed var(--border-light)' }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography sx={{ fontWeight: 800, color: '#334155' }}>
+                              {pack.packName}
+                            </Typography>
+                            {pack.image && (
+                              <Button 
+                                size="small" 
+                                variant="outlined" 
+                                color={removedImages.has(`${tableIndex}-pack-${packIndex}`) ? "primary" : "error"}
+                                onClick={() => handleToggleImage(tableIndex, 'pack', packIndex)}
+                                sx={{ borderRadius: '100px', fontWeight: 700, textTransform: 'none' }}
+                              >
+                                {removedImages.has(`${tableIndex}-pack-${packIndex}`) ? 'Add Image' : 'Remove Image'}
+                              </Button>
+                            )}
+                          </Box>
+
+                          {pack.subtests.map((sub, subIndex) => (
+                            <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 2, alignItems: 'center', p: 2, bgcolor: '#F8FAFC', borderRadius: '12px' }}>
+                              <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>{sub.name}</Typography>
+                              <TextField
+                                size="small"
+                                value={sub.result}
+                                onChange={(e) => handleResultChange(tableIndex, 'pack', packIndex, subIndex, e.target.value)}
+                                placeholder="Enter result..."
+                                sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#fff', borderRadius: '8px' } }}
+                              />
+                              <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{sub.range} {sub.unit}</Typography>
+                            </Box>
+                          ))}
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label="Add Note for Pack (Optional)"
+                            value={tableNotes[`${tableIndex}-pack-${packIndex}`] || ''}
+                            onChange={(e) => handleNoteChange(tableIndex, 'pack', packIndex, e.target.value)}
+                            sx={{ mt: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                          />
                         </Box>
-                      )}
+                      ))}
                     </Box>
-                  )}
+                  ))}
                 </Box>
-                </Paper>
+              </Grid>
 
-                {/* Server link save status Snackbar */}
-                <Snackbar
-                  open={!!serverLinkStatus}
-                  onClose={() => setServerLinkStatus('')}
-                  anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                >
-                  <Alert onClose={() => setServerLinkStatus('')} severity={serverLinkStatus.toLowerCase().includes('saved to server') ? 'success' : 'error'} sx={{ width: '100%' }}>
-                    {serverLinkStatus}
-                  </Alert>
-                </Snackbar>
-                {/* Test Results Section */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                    Test Results
-                  </Typography>
-                  <Button
-                    startIcon={<PreviewIcon />}
-                    onClick={handlePreviewOpen}
-                    variant="outlined"
-                    size="small"
-                  >
-                    Preview Report
-                  </Button>
+              {/* Right Column: PDF Live Preview (40%) */}
+              <Grid item xs={12} md={5} sx={{ p: 4, bgcolor: '#F1F5F9', borderLeft: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Live Preview</Typography>
+                <Box sx={{ flex: 1, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', bgcolor: '#fff' }}>
+                  <PDFPreview 
+                    document={
+                      <ReportDocument 
+                        patient={selectedPatient} 
+                        testTables={testResults.map(table => ({
+                          test: allTests.find(t => t._id.toString() === (table.test._id?.toString() || table.test?.toString())) || table.test,
+                          packs: table.packs,
+                          direct: table.direct
+                        }))}
+                        isPrinting={false}
+                        removedImages={removedImages} 
+                        tableNotes={tableNotes}
+                        qrImage={qrImage}
+                      />
+                    } 
+                  />
                 </Box>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ p: 3, borderTop: '1px solid var(--border-light)', bgcolor: 'var(--surface-light)', gap: 2 }}>
+            <Button onClick={() => setSelectedPatient(null)} sx={{ color: 'var(--text-secondary)', fontWeight: 700, borderRadius: '100px', px: 4 }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmit}
+              variant="contained" 
+              disabled={printing}
+              sx={{ background: '#0F6E56', color: '#fff', fontWeight: 700, borderRadius: '100px', px: 6, py: 1.5, boxShadow: '0 8px 24px rgba(15,110,86,0.3)', '&:hover': { background: '#0B5240' } }}
+            >
+              {printing ? 'Saving...' : 'Save Report'}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-                <DragDropContext onDragEnd={onDragEnd}>
-                  <Droppable droppableId="testTables">
-                    {(provided) => (
-                      <div ref={provided.innerRef} {...provided.droppableProps}>
-                        {testResults.map((tr, testIndex) => {
-                          // Build an array of tables: one for direct subtests (if any), one for each pack
-                          const tables = [];
-                          if (tr.direct && tr.direct.length > 0) {
-                            tables.push({
-                              type: 'direct',
-                              testName: tr.test.name,
-                              subtests: tr.direct,
-                              testIndex,
-                            });
-                          }
-                          if (tr.packs && tr.packs.length > 0) {
-                            tr.packs.forEach((pack, packIndex) => {
-                              tables.push({
-                                type: 'pack',
-                                testName: tr.test.name,
-                                packName: pack.packName,
-                                subtests: pack.subtests,
-                                testIndex,
-                                packIndex,
-                              });
-                            });
-                          }
-                          return tables.map((table, tableIdx) => (
-                            <Draggable
-                              key={table.type === 'direct' ? `test-${tr.test._id || testIndex}-direct` : `test-${tr.test._id || testIndex}-pack-${table.packIndex}`}
-                              draggableId={table.type === 'direct' ? `test-${tr.test._id || testIndex}-direct` : `test-${tr.test._id || testIndex}-pack-${table.packIndex}`}
-                              index={testIndex + tableIdx / 10} // ensures unique order
-                            >
-                              {(provided, snapshot) => (
-                                <Box
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  sx={{ mb: 4 }}
-                                >
-                                  {/* Test Name as Centered Colored Heading */}
-                                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0 }}>
-                                    <div {...provided.dragHandleProps} style={{ marginRight: 8, display: 'flex', alignItems: 'center' }}>
-                                      <DragIndicatorIcon color="action" />
-                                    </div>
-                                    <Box sx={{ flex: 1, backgroundColor: '#cce6ff', borderTopLeftRadius: 4, borderTopRightRadius: 4, p: 1, mb: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                      <Typography variant="h6" sx={{ fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center', m: 0, flex: 1 }}>
-                                        {table.testName}
-                                      </Typography>
-                                    </Box>
-                                  </Box>
-                                  {/* Table with column headers */}
-                                  <TableContainer component={Paper} variant="outlined" sx={{ mb: 3, border: '1px solid #1976d2', backgroundColor: 'transparent', boxShadow: 'none' }}>
-                                    <Table size="small">
-                                      <TableHead>
-                                        <TableRow>
-                                          <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#bbdefb' }}>Test Description</TableCell>
-                                          <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#bbdefb' }}>Result</TableCell>
-                                          <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#bbdefb' }}>Units</TableCell>
-                                          <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#bbdefb' }}>Biological Reference Ranges</TableCell>
-                                        </TableRow>
-                                      </TableHead>
-                                      <TableBody>
-                                        {/* If this is a pack table, show the pack name row */}
-                                        {table.type === 'pack' && (
-                                          <TableRow>
-                                            <TableCell sx={{ backgroundColor: 'transparent', fontWeight: 'bold' }}>{table.packName}</TableCell>
-                                            <TableCell sx={{ backgroundColor: 'transparent' }}></TableCell>
-                                            <TableCell sx={{ backgroundColor: 'transparent' }}></TableCell>
-                                            <TableCell sx={{ backgroundColor: 'transparent' }}></TableCell>
-                                          </TableRow>
-                                        )}
-                                        {/* Subtests */}
-                                        {table.subtests.map((sub, subIndex) => [
-                                          <TableRow key={subIndex}>
-                                            <TableCell sx={{ backgroundColor: 'transparent' }}>{sub.name}</TableCell>
-                                            <TableCell sx={{ backgroundColor: 'transparent', display: 'flex', alignItems: 'center', gap: 1 }}>
-                                              <TextField
-                                                value={sub.result}
-                                                onChange={(e) =>
-                                                  table.type === 'direct'
-                                                    ? handleResultChange(table.testIndex, 'direct', subIndex, 'result', e.target.value)
-                                                    : handleResultChange(table.testIndex, 'pack', [table.packIndex, subIndex], 'result', e.target.value)
-                                                }
-                                                onKeyDown={(e) => {
-                                                  // Handle arrow key navigation
-                                                  if (e.key === 'ArrowDown' || (e.key === 'Enter' && !e.shiftKey)) {
-                                                    // Move to next result field
-                                                    e.preventDefault();
-                                                    const nextField = e.target.closest('tr').nextElementSibling?.querySelector('input[type="text"]');
-                                                    if (nextField) nextField.focus();
-                                                  } else if (e.key === 'ArrowUp') {
-                                                    // Move to previous result field
-                                                    e.preventDefault();
-                                                    const prevField = e.target.closest('tr').previousElementSibling?.querySelector('input[type="text"]');
-                                                    if (prevField) prevField.focus();
-                                                  } else if (e.key === 'ArrowRight' && e.target.selectionStart === e.target.value.length) {
-                                                    // Move to unit field
-                                                    e.preventDefault();
-                                                    const unitField = e.target.closest('td').nextElementSibling?.querySelector('input[type="text"]');
-                                                    if (unitField) unitField.focus();
-                                                  } else if (e.key === 'ArrowLeft' && e.target.selectionStart === 0) {
-                                                    // Move to previous field
-                                                    e.preventDefault();
-                                                    const prevField = e.target.closest('td').previousElementSibling?.querySelector('input[type="text"]');
-                                                    if (prevField) prevField.focus();
-                                                  } else if (e.key === 'Enter' && e.shiftKey) {
-                                                    // Move to previous result field with Shift+Enter
-                                                    e.preventDefault();
-                                                    const prevField = e.target.closest('tr').previousElementSibling?.querySelector('input[type="text"]');
-                                                    if (prevField) prevField.focus();
-                                                  }
-                                                }}
-                                                size="small"
-                                                fullWidth
-                                                sx={{
-                                                  '& .MuiInputBase-input': {
-                                                    fontWeight: isAbnormalResult(sub.result, sub.range) ? 'bold' : 'normal',
-                                                    color: isAbnormalResult(sub.result, sub.range) ? '#d32f2f' : 'inherit'
-                                                  }
-                                                }}
-                                                inputProps={{
-                                                  'data-field': 'result',
-                                                  'data-testindex': testIndex,
-                                                  'data-subindex': subIndex,
-                                                  'data-type': table.type,
-                                                  'data-packindex': table.type === 'pack' ? table.packIndex : undefined
-                                                }}
-                                              />
-                                              {/* Show Calculate button if formula exists */}
-                                              {sub.formula && (
-                                                <Button
-                                                  variant="outlined"
-                                                  size="small"
-                                                  onClick={() => {
-                                                    const calculated = calculateFormula(sub.formula, sub.result);
-                                                    if (calculated !== null) {
-                                                      const rawValue = sub.result;
-                                                      const combinedValue = `${rawValue}(${calculated} ${sub.unit})`;
-                                                      table.type === 'direct'
-                                                        ? handleResultChange(table.testIndex, 'direct', subIndex, 'result', combinedValue)
-                                                        : handleResultChange(table.testIndex, 'pack', [table.packIndex, subIndex], 'result', combinedValue);
-                                                    }
-                                                  }}
-                                                  sx={{ ml: 1, minWidth: 0, px: 1 }}
-                                                >
-                                                  Calculate
-                                                </Button>
-                                              )}
-                                            </TableCell>
-                                          <TableCell sx={{ backgroundColor: 'transparent' }}>
-                                            <TextField
-                                              value={sub.unit}
-                                              onChange={(e) =>
-                                                table.type === 'direct'
-                                                  ? handleResultChange(table.testIndex, 'direct', subIndex, 'unit', e.target.value)
-                                                  : handleResultChange(table.testIndex, 'pack', [table.packIndex, subIndex], 'unit', e.target.value)
-                                              }
-                                              size="small"
-                                              fullWidth
-                                            />
-                                          </TableCell>
-                                          <TableCell sx={{ backgroundColor: 'transparent' }}>
-                                            <TextField
-                                              value={sub.range}
-                                              onChange={(e) =>
-                                                table.type === 'direct'
-                                                  ? handleResultChange(table.testIndex, 'direct', subIndex, 'range', e.target.value)
-                                                  : handleResultChange(table.testIndex, 'pack', [table.packIndex, subIndex], 'range', e.target.value)
-                                              }
-                                              size="small"
-                                              fullWidth
-                                            />
-                                          </TableCell>
-                                        </TableRow>,
-                                        sub.image && (
-                                          <TableRow key={subIndex + '-img'}>
-                                            <TableCell colSpan={4} style={{ padding: 0, borderBottom: 'none' }}>
-                                              <img src={sub.image} alt="Subtest" style={{ width: '100%', maxHeight: 300, objectFit: 'contain', display: 'block', margin: '4px 0 0 0' }} />
-                                            </TableCell>
-                                          </TableRow>
-                                        )
-                                      ])}
-                                      </TableBody>
-                                    </Table>
-                                  </TableContainer>
-                                  {/* Note Input for each table */}
-                                  <Box sx={{ mt: 2, mb: 2 }}>
-                                    <TextField
-                                      fullWidth
-                                      label="Add Note for this table (Optional)"
-                                      multiline
-                                      rows={2}
-                                      value={tableNotes[table.type === 'pack' ? `${table.testIndex}-pack-${table.packIndex}` : `${table.testIndex}-direct`] || ''}
-                                      onChange={(e) => handleNoteChange(table.testIndex, table.type, table.packIndex, e.target.value)}
-                                      placeholder="Add notes specific to this table..."
-                                    />
-                                  </Box>
-                                  
-                                  {/* Pack Image with Remove Option */}
-                                  {(table.type === 'pack' && tr.packs[table.packIndex]?.image) && (
-                                    <Box sx={{ width: '100%', mt: 1, position: 'relative' }}>
-                                      <Button
-                                        variant="outlined"
-                                        color="error"
-                                        size="small"
-                                        onClick={() => toggleImageRemoval(table.testIndex, 'pack', table.packIndex)}
-                                        sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
-                                      >
-                                        {isImageRemoved(table.testIndex, 'pack', table.packIndex) ? 'Show Image' : 'Remove from PDF'}
-                                      </Button>
-                                      {!isImageRemoved(table.testIndex, 'pack', table.packIndex) && (
-                                        <img src={tr.packs[table.packIndex].image} alt="Pack" style={{ width: '100%', maxHeight: 300, objectFit: 'contain', display: 'block', marginTop: 8 }} />
-                                      )}
-                                    </Box>
-                                  )}
-                                  
-                                  {/* Test Image with Remove Option */}
-                                  {(table.type === 'direct' && tr.test?.image) && (
-                                    <Box sx={{ width: '100%', mt: 1, position: 'relative' }}>
-                                      <Button
-                                        variant="outlined"
-                                        color="error"
-                                        size="small"
-                                        onClick={() => toggleImageRemoval(table.testIndex, 'test')}
-                                        sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
-                                      >
-                                        {isImageRemoved(table.testIndex, 'test') ? 'Show Image' : 'Remove from PDF'}
-                                      </Button>
-                                      {!isImageRemoved(table.testIndex, 'test') && (
-                                        <img src={tr.test.image} alt="Test" style={{ width: '100%', maxHeight: 300, objectFit: 'contain', display: 'block', marginTop: 8 }} />
-                                      )}
-                                    </Box>
-                                  )}
-                                </Box>
-                              )}
-                            </Draggable>
-                          ));
-                        })}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                </DragDropContext>
+        {/* PDF Preview Dialog */}
+        <Dialog
+          open={previewOpen}
+          onClose={handlePreviewClose}
+          maxWidth="lg"
+          fullWidth
+          TransitionComponent={Transition}
+          PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden', minHeight: '80vh' } }}
+          sx={{ backdropFilter: 'blur(8px)' }}
+        >
+          <DialogTitle sx={{ px: 3, py: 2, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface-light)', fontWeight: 800, color: 'var(--text-primary)' }}>
+            Report Preview
+            <IconButton onClick={handlePreviewClose} sx={{ color: 'var(--text-secondary)' }}>
+              ×
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <PDFPreview 
+              document={
+                <ReportDocument 
+                  patient={selectedPatient} 
+                  testTables={testResults.map(table => ({
+                    test: allTests.find(t => t._id.toString() === (table.test._id?.toString() || table.test?.toString())) || table.test,
+                    packs: table.packs,
+                    direct: table.direct
+                  }))}
+                  isPrinting={false} // Keep false for preview to show background
+                  removedImages={removedImages} 
+                  tableNotes={tableNotes}
+                  qrImage={qrImage}
+                />
+              } 
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handlePreviewClose}>Close</Button>
+          </DialogActions>
+        </Dialog>
 
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{ mt: 2 }}
-                  disabled={printing}
-                >
-                  Save
-                </Button>
-              </Box>
-            )}
-          </Grid>
-        </Grid>
-      </Paper>
+        {/* Loading backdrop while uploading to Drive */}
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={uploadingToDrive}
+        >
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <CircularProgress color="inherit" />
+            <Typography>
+              {driveAuthorized ? 'Uploading to Google Drive...' : 'Creating Report QR Code...'}
+            </Typography>
+          </Box>
+        </Backdrop>
 
-      {/* PDF Preview Dialog */}
-      <Dialog
-        open={previewOpen}
-        onClose={handlePreviewClose}
-        maxWidth="lg"
-        fullWidth
-        TransitionComponent={Transition}
-        PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden', minHeight: '80vh' } }}
-        sx={{ backdropFilter: 'blur(8px)' }}
-      >
-        <DialogTitle sx={{ px: 3, py: 2, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface-light)', fontWeight: 800, color: 'var(--text-primary)' }}>
-          Report Preview
-          <IconButton onClick={handlePreviewClose} sx={{ color: 'var(--text-secondary)' }}>
-            ×
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <PDFPreview 
-            document={
-              <ReportDocument 
-                patient={selectedPatient} 
-                testTables={testResults.map(table => ({
-                  test: allTests.find(t => t._id.toString() === (table.test._id?.toString() || table.test?.toString())) || table.test,
-                  packs: table.packs,
-                  direct: table.direct
-                }))}
-                isPrinting={false} // Keep false for preview to show background
-                removedImages={removedImages} 
-                tableNotes={tableNotes}
-                qrImage={qrImage}
-              />
-            } 
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handlePreviewClose}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Loading backdrop while uploading to Drive */}
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={uploadingToDrive}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-          <CircularProgress color="inherit" />
-          <Typography>
-            {driveAuthorized ? 'Uploading to Google Drive...' : 'Creating Report QR Code...'}
-          </Typography>
-        </Box>
-      </Backdrop>
-    </Container>
+        {error && (
+          <Snackbar open autoHideDuration={6000} onClose={() => setError('')}>
+            <Alert severity="error" variant="filled">{error}</Alert>
+          </Snackbar>
+        )}
+        {success && (
+          <Snackbar open autoHideDuration={6000} onClose={() => setSuccess('')}>
+            <Alert severity="success" variant="filled">{success}</Alert>
+          </Snackbar>
+        )}
+      </Container>
+    </Box>
   );
-}
+
 
 export default CreateReport;
-
-
-
-
-
