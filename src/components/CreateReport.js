@@ -1857,21 +1857,38 @@ function CreateReport() {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', background: 'var(--surface-light)', pb: 8 }}>
-      {/* Top Header Background Gradient (Subtle Green Mesh) */}
+    <Box sx={{
+      minHeight: '100%',
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+      overflow: 'hidden',
+      bgcolor: '#F8FAFC',
+    }}>
+      {/* ── Background Image ─────────────────────────────────── */}
       <Box sx={{
-        position: 'absolute',
-        top: 0, left: 0, right: 0, height: '40vh',
-        background: 'linear-gradient(135deg, rgba(16,185,129,0.05) 0%, rgba(15,110,86,0.1) 100%)',
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundImage: 'url(/patient_entry_bg_light.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity: 1,
         zIndex: 0,
-        pointerEvents: 'none'
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(255,255,255,0.2)',
+        }
       }} />
 
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 } }}>
-        <AnimatePresence>
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible">
-            
-            {/* Header Section */}
+      <Box sx={{ position: 'relative', zIndex: 1, pt: 3, pb: 6, px: { xs: 2, md: 4, lg: 6 }, width: '100%', maxWidth: '1600px', mx: 'auto' }}>
+        <AnimatePresence mode="wait">
+          {!selectedPatient ? (
+            <motion.div key="table-view" variants={staggerContainer} initial="hidden" animate="visible" exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}>
+              
+              {/* Header Section */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 6, gap: 3 }}>
               <motion.div variants={fadeUp}>
                 <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '0.1em', mb: 1, textTransform: 'uppercase' }}>
@@ -2181,36 +2198,49 @@ function CreateReport() {
                 </Box>
               </Box>
             </motion.div>
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          ) : (
+            <motion.div key="edit-view" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+                <Box>
+                  <Typography sx={{ fontWeight: 800, color: 'var(--color-primary)', fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase', mb: 1 }}>
+                    Edit Report
+                  </Typography>
+                  <Typography variant="h3" sx={{ fontWeight: 900, color: '#0F172A', fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: '-0.02em' }}>
+                    {selectedPatient?.name}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button onClick={() => setSelectedPatient(null)} sx={{ color: 'var(--text-secondary)', fontWeight: 700, borderRadius: '100px', px: 4, background: '#fff', border: '1px solid var(--border-light)', '&:hover': { background: '#F8FAFC' } }}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="outlined" 
+                    startIcon={<PreviewIcon />}
+                    onClick={() => setPreviewOpen(true)}
+                    sx={{ borderRadius: '100px', color: '#0F6E56', borderColor: 'rgba(15,110,86,0.3)', fontWeight: 700, px: 3, background: '#fff', '&:hover': { background: 'rgba(15,110,86,0.05)' } }}
+                  >
+                    Preview PDF
+                  </Button>
+                  <Button 
+                    onClick={handleSubmit}
+                    variant="contained" 
+                    disabled={printing}
+                    sx={{ background: '#0F6E56', color: '#fff', fontWeight: 700, borderRadius: '100px', px: 6, boxShadow: '0 8px 24px rgba(15,110,86,0.3)', '&:hover': { background: '#0B5240' } }}
+                  >
+                    {printing ? 'Saving...' : 'Save Report'}
+                  </Button>
+                </Box>
+              </Box>
 
-        {/* Edit Report Dialog - Shows when a patient is selected for editing */}
-        <Dialog
-          open={!!selectedPatient && !previewOpen}
-          onClose={() => setSelectedPatient(null)}
-          maxWidth="xl"
-          fullWidth
-          TransitionComponent={Transition}
-          PaperProps={{ sx: { borderRadius: '24px', overflow: 'hidden', minHeight: '90vh' } }}
-          sx={{ backdropFilter: 'blur(8px)' }}
-        >
-          <DialogTitle sx={{ px: 4, py: 3, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface-light)', fontWeight: 800 }}>
-            {selectedPatient?.name} - Edit Report
-            <IconButton onClick={() => setSelectedPatient(null)} sx={{ color: 'var(--text-secondary)' }}>
-              ×
-            </IconButton>
-          </DialogTitle>
-          <DialogContent sx={{ p: 0, bgcolor: 'var(--surface-light)' }}>
-            <Grid container sx={{ minHeight: '100%' }}>
-              {/* Left Column: Form (60%) */}
-              <Grid item xs={12} md={7} sx={{ p: 4, borderRight: '1px solid var(--border-light)', overflowY: 'auto' }}>
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Enter Test Results</Typography>
+              <Box sx={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '24px', p: { xs: 3, md: 5 }, boxShadow: '0 12px 40px rgba(0,0,0,0.04)' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 4, color: '#334155' }}>Enter Test Results</Typography>
                 
                 <Box component="form" onSubmit={handleSubmit}>
                   {testResults.map((table, tableIndex) => (
-                    <Box key={tableIndex} sx={{ mb: 4, background: '#fff', p: 3, borderRadius: '16px', border: '1px solid var(--border-light)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography sx={{ fontWeight: 800, color: '#0F6E56', fontSize: '1.1rem' }}>
+                    <Box key={tableIndex} sx={{ mb: 4, background: '#fff', p: { xs: 3, md: 4 }, borderRadius: '16px', border: '1px solid var(--border-light)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                        <Typography sx={{ fontWeight: 800, color: '#0F6E56', fontSize: '1.25rem' }}>
                           {table.test.name}
                         </Typography>
                         {table.test.image && (
@@ -2228,16 +2258,17 @@ function CreateReport() {
 
                       {/* Direct Subtests */}
                       {table.direct.map((sub, subIndex) => (
-                        <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 2, alignItems: 'center', p: 2, bgcolor: '#F8FAFC', borderRadius: '12px' }}>
-                          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>{sub.name}</Typography>
+                        <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center', p: 2, bgcolor: '#F8FAFC', borderRadius: '12px' }}>
+                          <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{sub.name}</Typography>
                           <TextField
+                            fullWidth
                             size="small"
                             value={sub.result}
                             onChange={(e) => handleResultChange(tableIndex, 'direct', null, subIndex, e.target.value)}
                             placeholder="Enter result..."
                             sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#fff', borderRadius: '8px' } }}
                           />
-                          <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{sub.range} {sub.unit}</Typography>
+                          <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: { xs: 'left', md: 'right' } }}>{sub.range} {sub.unit}</Typography>
                         </Box>
                       ))}
 
@@ -2248,15 +2279,15 @@ function CreateReport() {
                           label="Add Note (Optional)"
                           value={tableNotes[`${tableIndex}-direct`] || ''}
                           onChange={(e) => handleNoteChange(tableIndex, 'direct', null, e.target.value)}
-                          sx={{ mt: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                          sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: '#fff' } }}
                         />
                       )}
 
                       {/* Pack Subtests */}
                       {table.packs.map((pack, packIndex) => (
-                        <Box key={packIndex} sx={{ mt: 4, pt: 3, borderTop: '1px dashed var(--border-light)' }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography sx={{ fontWeight: 800, color: '#334155' }}>
+                        <Box key={packIndex} sx={{ mt: 5, pt: 4, borderTop: '1px dashed var(--border-light)' }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                            <Typography sx={{ fontWeight: 800, color: '#334155', fontSize: '1.1rem' }}>
                               {pack.packName}
                             </Typography>
                             {pack.image && (
@@ -2273,16 +2304,17 @@ function CreateReport() {
                           </Box>
 
                           {pack.subtests.map((sub, subIndex) => (
-                            <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 2, alignItems: 'center', p: 2, bgcolor: '#F8FAFC', borderRadius: '12px' }}>
-                              <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>{sub.name}</Typography>
+                            <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center', p: 2, bgcolor: '#F8FAFC', borderRadius: '12px' }}>
+                              <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{sub.name}</Typography>
                               <TextField
+                                fullWidth
                                 size="small"
                                 value={sub.result}
                                 onChange={(e) => handleResultChange(tableIndex, 'pack', packIndex, subIndex, e.target.value)}
                                 placeholder="Enter result..."
                                 sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#fff', borderRadius: '8px' } }}
                               />
-                              <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{sub.range} {sub.unit}</Typography>
+                              <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: { xs: 'left', md: 'right' } }}>{sub.range} {sub.unit}</Typography>
                             </Box>
                           ))}
                           <TextField
@@ -2291,71 +2323,35 @@ function CreateReport() {
                             label="Add Note for Pack (Optional)"
                             value={tableNotes[`${tableIndex}-pack-${packIndex}`] || ''}
                             onChange={(e) => handleNoteChange(tableIndex, 'pack', packIndex, e.target.value)}
-                            sx={{ mt: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                            sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: '#fff' } }}
                           />
                         </Box>
                       ))}
                     </Box>
                   ))}
                 </Box>
-              </Grid>
+              </Box>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              {/* Right Column: PDF Live Preview (40%) */}
-              <Grid item xs={12} md={5} sx={{ p: 4, bgcolor: '#F1F5F9', borderLeft: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Live Preview</Typography>
-                <Box sx={{ flex: 1, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', bgcolor: '#fff' }}>
-                  <PDFPreview 
-                    document={
-                      <ReportDocument 
-                        patient={selectedPatient} 
-                        testTables={testResults.map(table => ({
-                          test: allTests.find(t => t._id.toString() === (table.test._id?.toString() || table.test?.toString())) || table.test,
-                          packs: table.packs,
-                          direct: table.direct
-                        }))}
-                        isPrinting={false}
-                        removedImages={removedImages} 
-                        tableNotes={tableNotes}
-                        qrImage={qrImage}
-                      />
-                    } 
-                  />
-                </Box>
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions sx={{ p: 3, borderTop: '1px solid var(--border-light)', bgcolor: 'var(--surface-light)', gap: 2 }}>
-            <Button onClick={() => setSelectedPatient(null)} sx={{ color: 'var(--text-secondary)', fontWeight: 700, borderRadius: '100px', px: 4 }}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSubmit}
-              variant="contained" 
-              disabled={printing}
-              sx={{ background: '#0F6E56', color: '#fff', fontWeight: 700, borderRadius: '100px', px: 6, py: 1.5, boxShadow: '0 8px 24px rgba(15,110,86,0.3)', '&:hover': { background: '#0B5240' } }}
-            >
-              {printing ? 'Saving...' : 'Save Report'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* PDF Preview Dialog */}
+        {/* PDF Preview Dialog (Now activated by button) */}
         <Dialog
           open={previewOpen}
           onClose={handlePreviewClose}
           maxWidth="lg"
           fullWidth
           TransitionComponent={Transition}
-          PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden', minHeight: '80vh' } }}
+          PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden', minHeight: '85vh' } }}
           sx={{ backdropFilter: 'blur(8px)' }}
         >
-          <DialogTitle sx={{ px: 3, py: 2, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface-light)', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <DialogTitle sx={{ px: 4, py: 3, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface-light)', fontWeight: 800, color: 'var(--text-primary)' }}>
             Report Preview
             <IconButton onClick={handlePreviewClose} sx={{ color: 'var(--text-secondary)' }}>
               ×
             </IconButton>
           </DialogTitle>
-          <DialogContent>
+          <DialogContent sx={{ p: 0, bgcolor: '#e2e8f0' }}>
             <PDFPreview 
               document={
                 <ReportDocument 
@@ -2373,9 +2369,6 @@ function CreateReport() {
               } 
             />
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handlePreviewClose}>Close</Button>
-          </DialogActions>
         </Dialog>
 
         {/* Loading backdrop while uploading to Drive */}
@@ -2401,7 +2394,7 @@ function CreateReport() {
             <Alert severity="success" variant="filled">{success}</Alert>
           </Snackbar>
         )}
-      </Container>
+      </Box>
     </Box>
   );
 }
