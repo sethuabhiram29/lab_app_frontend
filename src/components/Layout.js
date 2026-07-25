@@ -465,7 +465,7 @@ function Layout() {
             variants={prefersReduced ? {} : pageVariants}
             initial="initial"
             animate="animate"
-            style={{ height: '100%' }}
+            style={{ height: '100%', width: '100%' }}
           >
             <Outlet />
           </motion.div>

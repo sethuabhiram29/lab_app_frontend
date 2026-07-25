@@ -269,9 +269,11 @@ function PatientEntry() {
 
   return (
     <Box sx={{
-      minHeight: '100vh',
+      minHeight: '100%',
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
       position: 'relative',
-      background: '#0A1628',
       overflow: 'hidden',
     }}>
       {/* ── Background Image ─────────────────────────────────── */}
