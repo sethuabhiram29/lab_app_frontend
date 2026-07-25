@@ -842,6 +842,7 @@ function PatientEntry() {
           <IconButton onClick={() => setShowTestSelection(false)} sx={{ color: '#94A3B8', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' } }}>
             <CloseIcon />
           </IconButton>
+        </Box>
         <DialogContent data-lenis-prevent="true" sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: '#0F172A', overflow: { xs: 'auto', md: 'hidden' }, flex: 1, minHeight: 0 }}>
           
           {/* Col 1: Tests */}
