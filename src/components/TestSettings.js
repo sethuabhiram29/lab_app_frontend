@@ -20,12 +20,27 @@ import {
   RadioGroup,
   Radio,
   Switch,
-  Slide
+  Slide,
+  InputAdornment,
+  Collapse,
+  Avatar,
+  CardActionArea,
+  CardContent,
+  Card
 } from '@mui/material';
 import { motion, useReducedMotion } from 'framer-motion';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import LocalHospitalOutlinedIcon from '@mui/icons-material/LocalHospitalOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import * as api from '../api';
 
 // ── Framer Motion Variants ───────────────────────────────────────────────────
@@ -47,6 +62,28 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
+const glassFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    background: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(12px)',
+    borderRadius: 'var(--radius-xl)',
+    transition: 'all 0.3s ease',
+    border: '1px solid rgba(255, 255, 255, 0.5)',
+    '& fieldset': { border: 'none' },
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 0.5)',
+      transform: 'translateY(-1px)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+      border: '1px solid rgba(255, 255, 255, 0.8)'
+    },
+    '&.Mui-focused': {
+      background: 'rgba(255, 255, 255, 0.6)',
+      boxShadow: '0 8px 24px rgba(15, 110, 86, 0.15)',
+      border: '1px solid var(--color-primary)'
+    }
+  }
+};
+
 const TestSettings = () => {
   const prefersReduced = useReducedMotion();
   const [activeTab, setActiveTab] = useState(0);
@@ -61,6 +98,8 @@ const TestSettings = () => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedTest, setExpandedTest] = useState(null);
 
   // Form states
   const [testFormData, setTestFormData] = useState({
@@ -382,359 +421,258 @@ const TestSettings = () => {
     }
   };
 
+  const filteredDoctors = doctors.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredAgents = agents.filter(a => a?.name?.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredTests = tests.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <motion.div initial={prefersReduced ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-      <Paper elevation={0} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 'var(--radius-2xl)', background: 'var(--surface-paper)' }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, color: 'var(--text-primary)', mb: 1 }}>
-          Settings
-        </Typography>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-            {error}
-          </Alert>
-        )}
-
-        {success && (
-          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
-            {success}
-          </Alert>
-        )}
-
-        <Box sx={{ display: 'flex', gap: 4, mb: 4, borderBottom: '1px solid var(--border-light)' }}>
-          {['Doctors', 'Agents', 'Tests'].map((tabLabel, idx) => (
-            <Box
-              key={tabLabel}
-              onClick={() => setActiveTab(idx)}
-              sx={{
-                position: 'relative',
-                py: 2,
-                cursor: 'pointer',
-                color: activeTab === idx ? 'var(--color-primary)' : 'var(--text-secondary)',
-                fontWeight: activeTab === idx ? 700 : 500,
-                transition: 'color 0.2s',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                fontSize: '0.875rem'
-              }}
-            >
-              {tabLabel}
-              {activeTab === idx && !prefersReduced && (
-                <motion.div
-                  layoutId="tabUnderline"
-                  style={{
-                    position: 'absolute',
-                    bottom: -1,
-                    left: 0,
-                    right: 0,
-                    height: 2,
-                    background: 'var(--color-primary)',
-                    borderRadius: '2px 2px 0 0'
-                  }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
+    <Box sx={{ minHeight: '100vh', background: 'url(/settings_bg_light.png) center/cover no-repeat fixed', pb: 8 }}>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 } }}>
+        <motion.div initial={prefersReduced ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          
+          {/* Header */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4, flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: 1, mb: 1, background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(10px)', px: 2, py: 0.5, borderRadius: 'var(--radius-full)', width: 'fit-content', border: '1px solid rgba(255,255,255,0.8)' }}>
+                <AutoAwesomeIcon sx={{ fontSize: 14 }} /> Test Settings · Live
+              </Typography>
+              <Typography variant="h2" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-1px' }}>
+                Settings<Typography component="span" sx={{ color: 'var(--color-primary)', fontSize: 'inherit', fontWeight: 'inherit' }}>.</Typography>
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'var(--text-secondary)', mt: 1, maxWidth: 600 }}>
+                Curate the humans and diagnostics powering Sri Sai Durga — tilt cards, hover for detail, click to compose.
+              </Typography>
             </Box>
-          ))}
-        </Box>
-
-        {/* Doctors Tab */}
-        {activeTab === 0 && (
-          <Box>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => {
-                setSelectedDoctor(null);
-                setDoctorFormData({ name: '', specialization: '', contact: '', email: '' });
-                setDoctorDialogOpen(true);
-              }}
-              sx={{ mb: 2 }}
-            >
-              Add Doctor
-            </Button>
-            <List component={motion.ul} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible" sx={{ p: 0 }}>
-              {doctors.map((doctor) => (
-                <ListItem
-                  key={doctor._id}
-                  component={motion.li}
-                  variants={prefersReduced ? false : rowVariants}
-                  divider
-                  sx={{ py: 2, transition: 'all 0.2s', '&:hover': { background: 'var(--surface-light)' } }}
-                  secondaryAction={
-                    <Box display="flex" gap={1}>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <IconButton
-                          edge="end"
-                          aria-label="edit"
-                          onClick={() => {
-                            setSelectedDoctor(doctor);
-                            setDoctorFormData({
-                              name: doctor.name,
-                              specialization: doctor.specialization,
-                              contact: doctor.contact,
-                              email: doctor.email
-                            });
-                            setDoctorDialogOpen(true);
-                          }}
-                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: 'var(--color-primary)' } }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </motion.div>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={() => handleDeleteDoctor(doctor._id)}
-                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: '#dc2626' } }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </motion.div>
-                    </Box>
-                  }
-                >
-                  <ListItemText
-                    primary={doctor.name}
-                    secondary={
-                      <>
-                        <Typography component="span" variant="body2" color="textPrimary">
-                          {doctor.specialization}
-                        </Typography>
-                        <br />
-                        <Typography component="span" variant="body2">
-                          Contact: {doctor.contact}
-                        </Typography>
-                        <br />
-                        <Typography component="span" variant="body2">
-                          Email: {doctor.email}
-                        </Typography>
-                      </>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
+            <Box sx={{ width: { xs: '100%', md: '300px' } }}>
+              <TextField
+                fullWidth
+                placeholder="Search anything..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: 'var(--text-secondary)' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={glassFieldSx}
+              />
+            </Box>
           </Box>
-        )}
 
-        {/* Agents Tab */}
-        {activeTab === 1 && (
-          <Box>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => {
-                setSelectedAgent(null);
-                setAgentFormData({ name: '', contactNumber: '', email: '', address: '', commission: 0 });
-                setAgentDialogOpen(true);
-              }}
-              sx={{ mb: 2 }}
-            >
-              Add Agent
-            </Button>
-            <List component={motion.ul} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible" sx={{ p: 0 }}>
-              {agents.filter(Boolean).map((agent) => (
-                <ListItem
-                  key={agent._id}
-                  component={motion.li}
-                  variants={prefersReduced ? false : rowVariants}
-                  divider
-                  sx={{ py: 2, transition: 'all 0.2s', '&:hover': { background: 'var(--surface-light)' } }}
-                  secondaryAction={
-                    <Box display="flex" gap={1}>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <IconButton
-                          edge="end"
-                          aria-label="edit"
-                          onClick={() => {
-                            setSelectedAgent(agent);
-                            setAgentFormData({
-                              name: agent.name,
-                              contactNumber: agent.contactNumber,
-                              email: agent.email,
-                              address: agent.address,
-                              commission: agent.commission
-                            });
-                            setAgentDialogOpen(true);
-                          }}
-                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: 'var(--color-primary)' } }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </motion.div>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={() => handleDeleteAgent(agent._id)}
-                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: '#dc2626' } }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </motion.div>
-                    </Box>
-                  }
-                >
-                  <ListItemText
-                    primary={agent.name}
-                    secondary={
-                      <>
-                        <Typography component="span" variant="body2">
-                          Contact: {agent.contactNumber}
-                        </Typography>
-                        <br />
-                        <Typography component="span" variant="body2">
-                          Email: {agent.email}
-                        </Typography>
-                        <br />
-                        <Typography component="span" variant="body2">
-                          Address: {agent.address}
-                        </Typography>
-                      </>
-                    }
+          {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 'var(--radius-xl)' }} onClose={() => setError('')}>{error}</Alert>}
+          {success && <Alert severity="success" sx={{ mb: 2, borderRadius: 'var(--radius-xl)' }} onClose={() => setSuccess('')}>{success}</Alert>}
+
+          {/* Tabs */}
+          <Box sx={{ display: 'flex', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(24px)', borderRadius: 'var(--radius-2xl)', border: '1px solid rgba(255,255,255,1)', p: 1, mb: 4, overflowX: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.02)' }}>
+            {[
+              { label: 'Doctors', icon: LocalHospitalOutlinedIcon, count: doctors.length },
+              { label: 'Agents', icon: PersonOutlineOutlinedIcon, count: agents.filter(Boolean).length },
+              { label: 'Tests', icon: ScienceOutlinedIcon, count: tests.length }
+            ].map((tab, idx) => (
+              <Box
+                key={tab.label}
+                onClick={() => setActiveTab(idx)}
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1.5,
+                  py: 2,
+                  px: 3,
+                  cursor: 'pointer',
+                  position: 'relative',
+                  color: activeTab === idx ? '#fff' : 'var(--text-secondary)',
+                  fontWeight: activeTab === idx ? 700 : 600,
+                  transition: 'all 0.3s',
+                  zIndex: 1,
+                  minWidth: 140
+                }}
+              >
+                {activeTab === idx && !prefersReduced && (
+                  <motion.div
+                    layoutId="settingsTabBg"
+                    style={{ position: 'absolute', inset: 0, background: 'var(--color-primary)', borderRadius: 'var(--radius-xl)', zIndex: -1, boxShadow: '0 4px 12px rgba(15,110,86,0.2)' }}
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
-                </ListItem>
-              ))}
-            </List>
+                )}
+                <tab.icon sx={{ fontSize: 20 }} />
+                <Typography sx={{ fontWeight: 'inherit', fontSize: '0.9rem' }}>{tab.label}</Typography>
+                <Box sx={{ background: activeTab === idx ? 'rgba(255,255,255,0.2)' : 'rgba(15,110,86,0.1)', color: activeTab === idx ? '#fff' : 'var(--color-primary)', px: 1.2, py: 0.2, borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>
+                  {tab.count}
+                </Box>
+              </Box>
+            ))}
           </Box>
-        )}
 
-        {/* Tests Tab */}
-        {activeTab === 2 && (
-          <Box>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => {
-                setSelectedTest(null);
-                setTestFormData({
-                  name: '',
-                  code: '',
-                  description: '',
-                  image: '',
-                  subtests: [],
-                  packs: [],
-                  requiresSeparatePage: false
-                });
-                setTestDialogOpen(true);
-              }}
-              sx={{ mb: 2 }}
-            >
-              Add Test
-            </Button>
-            <List component={motion.ul} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible" sx={{ p: 0 }}>
-              {tests.map((test) => (
-                <ListItem
-                  key={test._id}
-                  component={motion.li}
-                  variants={prefersReduced ? false : rowVariants}
-                  divider
-                  sx={{ py: 2, transition: 'all 0.2s', '&:hover': { background: 'var(--surface-light)' } }}
-                  secondaryAction={
-                    <Box display="flex" gap={1}>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <IconButton
-                          edge="end"
-                          aria-label="edit"
-                          onClick={() => {
+          {/* Main Content Area */}
+          <Box sx={{ background: 'rgba(255,255,255,0.45)', backdropFilter: 'blur(24px)', borderRadius: '32px', p: { xs: 3, sm: 5 }, border: '1px solid rgba(255,255,255,0.6)', boxShadow: '0 24px 64px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)', overflow: 'hidden' }}>
+            
+            {/* Doctors */}
+            {activeTab === 0 && (
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                  <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>Doctors</Typography>
+                    <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 0.5 }}>Panel of referring & in-house physicians.</Typography>
+                  </Box>
+                  <Button variant="contained" color="primary" startIcon={<AddIcon />} sx={{ borderRadius: 'var(--radius-full)', px: 3, py: 1.2, fontWeight: 600, boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }} onClick={() => { setSelectedDoctor(null); setDoctorFormData({ name: '', specialization: '', contact: '', email: '' }); setDoctorDialogOpen(true); }}>
+                    Add doctor
+                  </Button>
+                </Box>
+                <Grid container spacing={3}>
+                  {filteredDoctors.map(doctor => (
+                    <Grid item xs={12} md={6} key={doctor._id}>
+                      <Box sx={{ p: 3, borderRadius: '24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,250,220,0.4) 100%)', border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.1)' }, '&:hover .actions': { opacity: 1 } }}>
+                        <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>{doctor.name.charAt(0)}</Avatar>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>{doctor.name}</Typography>
+                          <Typography sx={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>{doctor.specialization || 'General'}</Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)', mb: 0.5 }}>
+                            <PhoneOutlinedIcon sx={{ fontSize: 14, color: '#ef4444' }} />
+                            <Typography sx={{ fontSize: '0.85rem' }}>{doctor.contact}</Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)' }}>
+                            <EmailOutlinedIcon sx={{ fontSize: 14, color: '#8b5cf6' }} />
+                            <Typography sx={{ fontSize: '0.85rem' }}>{doctor.email || 'N/A'}</Typography>
+                          </Box>
+                        </Box>
+                        <Box className="actions" sx={{ opacity: 0, transition: 'opacity 0.2s', display: 'flex', gap: 1, position: 'absolute', right: 24, top: 24 }}>
+                          <IconButton size="small" onClick={() => { setSelectedDoctor(doctor); setDoctorFormData({ name: doctor.name, specialization: doctor.specialization, contact: doctor.contact, email: doctor.email }); setDoctorDialogOpen(true); }} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', '&:hover': { background: 'rgba(15,110,86,0.2)' } }}><EditIcon fontSize="small" /></IconButton>
+                          <IconButton size="small" onClick={() => handleDeleteDoctor(doctor._id)} sx={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', '&:hover': { background: 'rgba(239,68,68,0.2)' } }}><DeleteIcon fontSize="small" /></IconButton>
+                        </Box>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+
+            {/* Agents */}
+            {activeTab === 1 && (
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                  <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>Agents</Typography>
+                    <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 0.5 }}>External collection & referral agents.</Typography>
+                  </Box>
+                  <Button variant="contained" color="primary" startIcon={<AddIcon />} sx={{ borderRadius: 'var(--radius-full)', px: 3, py: 1.2, fontWeight: 600, boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }} onClick={() => { setSelectedAgent(null); setAgentFormData({ name: '', contactNumber: '', email: '', address: '', commission: 0 }); setAgentDialogOpen(true); }}>
+                    Add agent
+                  </Button>
+                </Box>
+                <Grid container spacing={3}>
+                  {filteredAgents.map(agent => (
+                    <Grid item xs={12} md={6} key={agent._id}>
+                      <Box sx={{ p: 3, borderRadius: '24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,250,220,0.4) 100%)', border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.1)' }, '&:hover .actions': { opacity: 1 } }}>
+                        <Avatar sx={{ width: 64, height: 64, background: '#0F172A', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,23,42,0.2)' }}>{agent.name?.charAt(0) || 'A'}</Avatar>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>{agent.name}</Typography>
+                          <Typography sx={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>Commission: {agent.commission}%</Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)', mb: 0.5 }}>
+                            <PhoneOutlinedIcon sx={{ fontSize: 14, color: '#ef4444' }} />
+                            <Typography sx={{ fontSize: '0.85rem' }}>{agent.contactNumber}</Typography>
+                          </Box>
+                          {agent.email && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)' }}>
+                              <EmailOutlinedIcon sx={{ fontSize: 14, color: '#8b5cf6' }} />
+                              <Typography sx={{ fontSize: '0.85rem' }}>{agent.email}</Typography>
+                            </Box>
+                          )}
+                        </Box>
+                        <Box className="actions" sx={{ opacity: 0, transition: 'opacity 0.2s', display: 'flex', gap: 1, position: 'absolute', right: 24, top: 24 }}>
+                          <IconButton size="small" onClick={() => { setSelectedAgent(agent); setAgentFormData({ name: agent.name, contactNumber: agent.contactNumber, email: agent.email, address: agent.address, commission: agent.commission }); setAgentDialogOpen(true); }} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', '&:hover': { background: 'rgba(15,110,86,0.2)' } }}><EditIcon fontSize="small" /></IconButton>
+                          <IconButton size="small" onClick={() => handleDeleteAgent(agent._id)} sx={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', '&:hover': { background: 'rgba(239,68,68,0.2)' } }}><DeleteIcon fontSize="small" /></IconButton>
+                        </Box>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+
+            {/* Tests */}
+            {activeTab === 2 && (
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                  <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>Tests</Typography>
+                    <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 0.5 }}>Diagnostic catalogue with sub-tests and packs.</Typography>
+                  </Box>
+                  <Button variant="contained" color="primary" startIcon={<AddIcon />} sx={{ borderRadius: 'var(--radius-full)', px: 3, py: 1.2, fontWeight: 600, boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }} onClick={() => { setSelectedTest(null); setTestFormData({ name: '', code: '', description: '', image: '', subtests: [], packs: [], requiresSeparatePage: false }); setTestDialogOpen(true); }}>
+                    Add test
+                  </Button>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {filteredTests.map((test, index) => (
+                    <Box key={test._id} sx={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,250,220,0.3) 100%)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.9)', overflow: 'hidden', transition: 'all 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.1)' } }}>
+                      <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer' }} onClick={() => setExpandedTest(expandedTest === test._id ? null : test._id)}>
+                        <Box sx={{ position: 'relative' }}>
+                          <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>
+                            <ScienceOutlinedIcon fontSize="large" />
+                          </Avatar>
+                          <Box sx={{ position: 'absolute', bottom: -8, right: -8, background: '#fff', color: 'var(--color-primary)', fontWeight: 800, fontSize: '0.7rem', px: 1, py: 0.2, borderRadius: '12px', border: '2px solid rgba(255,255,255,0.8)', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+                            #{String(index + 1).padStart(2, '0')}
+                          </Box>
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>{test.name}</Typography>
+                          <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.85rem', mt: 0.5 }}>{test.subtests?.length || 0} sub-tests · {test.packs?.length || 0} packs</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                          <IconButton size="small" onClick={() => {
                             setSelectedTest(test);
                             setTestFormData({
-                              name: test.name,
-                              code: test.code,
-                              description: test.description || '',
-                              image: test.image || '',
-                              requiresSeparatePage: test.requiresSeparatePage === true,
-                              subtests: Array.isArray(test.subtests)
-                                ? test.subtests.map(sub => ({
-                                    name: sub.name || '',
-                                    unit: sub.unit || '',
-                                    reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '',
-                                    hasGenderSpecificRanges: sub.hasGenderSpecificRanges || false,
-                                    maleReference: sub.maleReference || '',
-                                    femaleReference: sub.femaleReference || '',
-                                    formula: sub.formula || '',
-                                    result: sub.result || '',
-                                    image: sub.image || '',
-                                    _id: sub._id
-                                  }))
-                                : [],
-                              packs: Array.isArray(test.packs)
-                                ? test.packs.map(pack => ({
-                                    name: pack.name || '',
-                                    image: pack.image || '',
-                                    requiresSeparatePage: Boolean(pack.requiresSeparatePage),
-                                    _id: pack._id,
-                                    subtests: Array.isArray(pack.subtests)
-                                      ? pack.subtests.map(sub => ({
-                                          name: sub.name || '',
-                                          unit: sub.unit || '',
-                                          reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '',
-                                          hasGenderSpecificRanges: sub.hasGenderSpecificRanges || false,
-                                          maleReference: sub.maleReference || '',
-                                          femaleReference: sub.femaleReference || '',
-                                          formula: sub.formula || '',
-                                          result: sub.result || '',
-                                          image: sub.image || '',
-                                          _id: sub._id
-                                        }))
-                                      : []
-                                  }))
-                                : []
+                              name: test.name, code: test.code, description: test.description || '', image: test.image || '', requiresSeparatePage: test.requiresSeparatePage === true,
+                              subtests: Array.isArray(test.subtests) ? test.subtests.map(sub => ({ ...sub, reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '' })) : [],
+                              packs: Array.isArray(test.packs) ? test.packs.map(pack => ({ ...pack, subtests: Array.isArray(pack.subtests) ? pack.subtests.map(sub => ({ ...sub, reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '' })) : [] })) : []
                             });
                             setTestDialogOpen(true);
-                          }}
-                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: 'var(--color-primary)' } }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </motion.div>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={() => handleDeleteTest(test._id)}
-                          sx={{ color: 'var(--text-secondary)', '&:hover': { color: '#dc2626' } }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </motion.div>
+                          }} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', '&:hover': { background: 'rgba(15,110,86,0.2)' } }}><EditIcon fontSize="small" /></IconButton>
+                          <IconButton size="small" onClick={() => handleDeleteTest(test._id)} sx={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', '&:hover': { background: 'rgba(239,68,68,0.2)' } }}><DeleteIcon fontSize="small" /></IconButton>
+                          <IconButton size="small" sx={{ color: 'var(--text-secondary)' }} onClick={() => setExpandedTest(expandedTest === test._id ? null : test._id)}>
+                            {expandedTest === test._id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                          </IconButton>
+                        </Box>
+                      </Box>
+                      <Collapse in={expandedTest === test._id}>
+                        <Box sx={{ px: { xs: 3, sm: 13 }, pb: 4, pt: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          {test.subtests && test.subtests.length > 0 && (
+                            <Box>
+                              <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px', mb: 1 }}>Sub-tests</Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {test.subtests.map((sub, i) => (
+                                  <Box key={i} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', px: 1.5, py: 0.5, borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600 }}>
+                                    {sub.name}
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                          {test.packs && test.packs.length > 0 && (
+                            <Box>
+                              <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px', mb: 1 }}>Packs</Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {test.packs.map((pack, i) => (
+                                  <Box key={i} sx={{ background: '#fff', border: '1px solid rgba(15,110,86,0.2)', color: '#0F172A', px: 1.5, py: 0.5, borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600 }}>
+                                    {pack.name}
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+                      </Collapse>
                     </Box>
-                  }
-                >
-                  <ListItemText
-                    primary={test.name}
-                    secondary={
-                      <>
-                        <Typography component="span" variant="body2" color="textPrimary">
-                          Code: {test.code}
-                        </Typography>
-                        <br />
-                        {test.description && (
-                          <>
-                            <Typography component="span" variant="body2">
-                              {test.description}
-                            </Typography>
-                            <br />
-                          </>
-                        )}
-                        <Typography component="span" variant="body2">
-                          Subtests: {(test.subtests || []).map(sub => sub.name).join(', ')}
-                        </Typography>
-                        <br />
-                        <Typography component="span" variant="body2">
-                          Packs: {(test.packs || []).map(pack => pack.name).join(', ')}
-                        </Typography>
-                      </>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
+                  ))}
+                </Box>
+              </Box>
+            )}
           </Box>
-        )}
+        </motion.div>
+      </Container>
+    </Box>
 
         {/* Doctor Dialog */}
         <Dialog
