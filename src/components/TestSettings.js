@@ -529,34 +529,32 @@ const TestSettings = () => {
                     Add doctor
                   </Button>
                 </Box>
-                <Grid container spacing={4}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
                   {filteredDoctors.map(doctor => (
-                    <Grid item xs={12} md={4} lg={4} key={doctor._id} sx={{ display: 'flex' }}>
-                      <Box sx={{ flex: 1, width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'scale(1.02) translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 }, boxSizing: 'border-box' }}>
-                        <Box sx={{ position: 'relative' }}>
-                          <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>{doctor.name.charAt(0)}</Avatar>
-                          <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
+                    <Box key={doctor._id} sx={{ width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'scale(1.02) translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 }, boxSizing: 'border-box' }}>
+                      <Box sx={{ position: 'relative' }}>
+                        <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>{doctor.name.charAt(0)}</Avatar>
+                        <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>Dr. {doctor.name.replace(/^Dr\.\s*/i, '')}</Typography>
+                        <Typography sx={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>{doctor.specialization || 'General'}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)', mb: 0.5 }}>
+                          <PhoneOutlinedIcon sx={{ fontSize: 14, color: '#ef4444' }} />
+                          <Typography sx={{ fontSize: '0.85rem' }}>{doctor.contact}</Typography>
                         </Box>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>Dr. {doctor.name.replace(/^Dr\.\s*/i, '')}</Typography>
-                          <Typography sx={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>{doctor.specialization || 'General'}</Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)', mb: 0.5 }}>
-                            <PhoneOutlinedIcon sx={{ fontSize: 14, color: '#ef4444' }} />
-                            <Typography sx={{ fontSize: '0.85rem' }}>{doctor.contact}</Typography>
-                          </Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)' }}>
-                            <EmailOutlinedIcon sx={{ fontSize: 14, color: '#8b5cf6' }} />
-                            <Typography sx={{ fontSize: '0.85rem' }}>{doctor.email || 'N/A'}</Typography>
-                          </Box>
-                        </Box>
-                        <Box className="actions" sx={{ opacity: 0, transition: 'opacity 0.2s', display: 'flex', gap: 1, position: 'absolute', right: 24, top: 24 }}>
-                          <IconButton size="small" onClick={() => { setSelectedDoctor(doctor); setDoctorFormData({ name: doctor.name, specialization: doctor.specialization, contact: doctor.contact, email: doctor.email }); setDoctorDialogOpen(true); }} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', '&:hover': { background: 'rgba(15,110,86,0.2)' } }}><EditIcon fontSize="small" /></IconButton>
-                          <IconButton size="small" onClick={() => handleDeleteDoctor(doctor._id)} sx={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', '&:hover': { background: 'rgba(239,68,68,0.2)' } }}><DeleteIcon fontSize="small" /></IconButton>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)' }}>
+                          <EmailOutlinedIcon sx={{ fontSize: 14, color: '#8b5cf6' }} />
+                          <Typography sx={{ fontSize: '0.85rem' }}>{doctor.email || 'N/A'}</Typography>
                         </Box>
                       </Box>
-                    </Grid>
+                      <Box className="actions" sx={{ opacity: 0, transition: 'opacity 0.2s', display: 'flex', gap: 1, position: 'absolute', right: 24, top: 24 }}>
+                        <IconButton size="small" onClick={() => { setSelectedDoctor(doctor); setDoctorFormData({ name: doctor.name, specialization: doctor.specialization, contact: doctor.contact, email: doctor.email }); setDoctorDialogOpen(true); }} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', '&:hover': { background: 'rgba(15,110,86,0.2)' } }}><EditIcon fontSize="small" /></IconButton>
+                        <IconButton size="small" onClick={() => handleDeleteDoctor(doctor._id)} sx={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', '&:hover': { background: 'rgba(239,68,68,0.2)' } }}><DeleteIcon fontSize="small" /></IconButton>
+                      </Box>
+                    </Box>
                   ))}
-                </Grid>
+                </Box>
               </Box>
             )}
 
@@ -572,36 +570,34 @@ const TestSettings = () => {
                     Add agent
                   </Button>
                 </Box>
-                <Grid container spacing={4}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
                   {filteredAgents.map(agent => (
-                    <Grid item xs={12} md={4} lg={4} key={agent._id} sx={{ display: 'flex' }}>
-                      <Box sx={{ flex: 1, width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'scale(1.02) translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 }, boxSizing: 'border-box' }}>
-                        <Box sx={{ position: 'relative' }}>
-                          <Avatar sx={{ width: 64, height: 64, background: '#0F172A', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,23,42,0.2)' }}>{agent.name?.charAt(0) || 'A'}</Avatar>
-                          <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
-                        </Box>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>{agent.name}</Typography>
-                          <Typography sx={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>Commission: {agent.commission}%</Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)', mb: 0.5 }}>
-                            <PhoneOutlinedIcon sx={{ fontSize: 14, color: '#ef4444' }} />
-                            <Typography sx={{ fontSize: '0.85rem' }}>{agent.contactNumber}</Typography>
-                          </Box>
-                          {agent.email && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)' }}>
-                              <EmailOutlinedIcon sx={{ fontSize: 14, color: '#8b5cf6' }} />
-                              <Typography sx={{ fontSize: '0.85rem' }}>{agent.email}</Typography>
-                            </Box>
-                          )}
-                        </Box>
-                        <Box className="actions" sx={{ opacity: 0, transition: 'opacity 0.2s', display: 'flex', gap: 1, position: 'absolute', right: 24, top: 24 }}>
-                          <IconButton size="small" onClick={() => { setSelectedAgent(agent); setAgentFormData({ name: agent.name, contactNumber: agent.contactNumber, email: agent.email, address: agent.address, commission: agent.commission }); setAgentDialogOpen(true); }} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', '&:hover': { background: 'rgba(15,110,86,0.2)' } }}><EditIcon fontSize="small" /></IconButton>
-                          <IconButton size="small" onClick={() => handleDeleteAgent(agent._id)} sx={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', '&:hover': { background: 'rgba(239,68,68,0.2)' } }}><DeleteIcon fontSize="small" /></IconButton>
-                        </Box>
+                    <Box key={agent._id} sx={{ width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'scale(1.02) translateY(-4px)', boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 }, boxSizing: 'border-box' }}>
+                      <Box sx={{ position: 'relative' }}>
+                        <Avatar sx={{ width: 64, height: 64, background: '#0F172A', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,23,42,0.2)' }}>{agent.name?.charAt(0) || 'A'}</Avatar>
+                        <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
                       </Box>
-                    </Grid>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>{agent.name}</Typography>
+                        <Typography sx={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>Commission: {agent.commission}%</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)', mb: 0.5 }}>
+                          <PhoneOutlinedIcon sx={{ fontSize: 14, color: '#ef4444' }} />
+                          <Typography sx={{ fontSize: '0.85rem' }}>{agent.contactNumber}</Typography>
+                        </Box>
+                        {agent.email && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)' }}>
+                            <EmailOutlinedIcon sx={{ fontSize: 14, color: '#8b5cf6' }} />
+                            <Typography sx={{ fontSize: '0.85rem' }}>{agent.email}</Typography>
+                          </Box>
+                        )}
+                      </Box>
+                      <Box className="actions" sx={{ opacity: 0, transition: 'opacity 0.2s', display: 'flex', gap: 1, position: 'absolute', right: 24, top: 24 }}>
+                        <IconButton size="small" onClick={() => { setSelectedAgent(agent); setAgentFormData({ name: agent.name, contactNumber: agent.contactNumber, email: agent.email, address: agent.address, commission: agent.commission }); setAgentDialogOpen(true); }} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', '&:hover': { background: 'rgba(15,110,86,0.2)' } }}><EditIcon fontSize="small" /></IconButton>
+                        <IconButton size="small" onClick={() => handleDeleteAgent(agent._id)} sx={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', '&:hover': { background: 'rgba(239,68,68,0.2)' } }}><DeleteIcon fontSize="small" /></IconButton>
+                      </Box>
+                    </Box>
                   ))}
-                </Grid>
+                </Box>
               </Box>
             )}
 
