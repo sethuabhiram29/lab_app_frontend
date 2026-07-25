@@ -291,7 +291,7 @@ function PatientEntry() {
         }
       }} />
 
-      <Box sx={{ position: 'relative', zIndex: 1, pt: 2, pb: 6, px: { xs: 2, md: 3 } }}>
+      <Box sx={{ position: 'relative', zIndex: 1, pt: 2, pb: 6 }}>
         
         {/* ── Alerts ──────────────────────────────────────────────── */}
         <AnimatePresence>
@@ -330,38 +330,6 @@ function PatientEntry() {
         </motion.div>
 
         <Box component="form" onSubmit={handleSubmit}>
-
-          {/* ── Hero Row ── */}
-          <Box sx={{ display: 'flex', gap: 3, mb: 3, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
-            <Box sx={{ flex: '1 1 55%', minWidth: 0 }}>
-              <motion.div variants={heroTextReveal} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
-                <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#10B981', letterSpacing: '0.15em', textTransform: 'uppercase', mb: 0.5 }}>
-                  ◆ WORKSPACE · PATIENT ENTRY
-                </Typography>
-                <Typography sx={{ fontSize: { xs: '1.4rem', sm: '1.8rem' }, fontWeight: 800, color: '#F8FAFC', lineHeight: 1.15, letterSpacing: '-0.03em' }}>
-                  A new <span style={{ fontStyle: 'italic', background: 'linear-gradient(135deg, #10B981, #0D9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>patient</span>,{' '}
-                  captured in seconds.
-                </Typography>
-                <Typography sx={{ fontSize: '0.8rem', color: 'rgba(148,163,184,0.7)', mt: 1 }}>
-                  Every field flows into reports, invoices and lab dispatch — instantly.
-                </Typography>
-              </motion.div>
-            </Box>
-            <Box sx={{ flex: '1 1 40%', minWidth: 0 }}>
-              <motion.div variants={heroTextReveal} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
-                <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#475569', letterSpacing: '0.15em', textTransform: 'uppercase', mb: 0.5 }}>
-                  ─── THE PANEL
-                </Typography>
-                <Typography sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, fontWeight: 800, color: '#F8FAFC', lineHeight: 1.15, letterSpacing: '-0.03em' }}>
-                  Precision <span style={{ fontStyle: 'italic', background: 'linear-gradient(135deg, #10B981, #0D9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>diagnostics</span>,{' '}
-                  elegantly composed.
-                </Typography>
-                <Typography sx={{ fontSize: '0.8rem', color: 'rgba(148,163,184,0.7)', mt: 1 }}>
-                  Your selected panel is ready for lab dispatch.
-                </Typography>
-              </motion.div>
-            </Box>
-          </Box>
 
           {/* ── Main Two-Column Layout ── */}
           <Box sx={{ display: 'flex', gap: 3, alignItems: 'stretch', flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
