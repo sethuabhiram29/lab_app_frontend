@@ -2271,7 +2271,7 @@ function CreateReport() {
                             variant="filled"
                             InputProps={{ disableUnderline: true }}
                             value={sub.result}
-                            onChange={(e) => handleResultChange(tableIndex, 'direct', null, subIndex, e.target.value)}
+                            onChange={(e) => handleResultChange(tableIndex, 'direct', subIndex, 'result', e.target.value)}
                             placeholder="Enter result..."
                             sx={glassFieldSx}
                           />
@@ -2319,7 +2319,7 @@ function CreateReport() {
                                 variant="filled"
                                 InputProps={{ disableUnderline: true }}
                                 value={sub.result}
-                                onChange={(e) => handleResultChange(tableIndex, 'pack', packIndex, subIndex, e.target.value)}
+                                onChange={(e) => handleResultChange(tableIndex, 'pack', [packIndex, subIndex], 'result', e.target.value)}
                                 placeholder="Enter result..."
                                 sx={glassFieldSx}
                               />
