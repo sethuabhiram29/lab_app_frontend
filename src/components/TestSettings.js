@@ -472,7 +472,7 @@ const TestSettings = () => {
           {success && <Alert severity="success" sx={{ mb: 2, borderRadius: 'var(--radius-xl)' }} onClose={() => setSuccess('')}>{success}</Alert>}
 
           {/* Tabs */}
-          <Box sx={{ display: 'flex', background: '#ffffff', borderRadius: 'var(--radius-full)', p: 1, mb: 4, overflowX: 'auto', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+          <Box sx={{ display: 'flex', background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)', borderRadius: 'var(--radius-full)', p: 1, mb: 4, overflowX: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)' }}>
             {[
               { label: 'Doctors', icon: LocalHospitalOutlinedIcon, count: doctors.length },
               { label: 'Agents', icon: PersonOutlineOutlinedIcon, count: agents.filter(Boolean).length },
@@ -515,7 +515,7 @@ const TestSettings = () => {
           </Box>
 
           {/* Main Content Area */}
-          <Box sx={{ background: '#ffffff', borderRadius: '32px', p: { xs: 3, sm: 5 }, boxShadow: '0 12px 48px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+          <Box sx={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)', borderRadius: '32px', p: { xs: 3, sm: 5 }, boxShadow: '0 24px 64px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)', overflow: 'hidden' }}>
             
             {/* Doctors */}
             {activeTab === 0 && (
