@@ -540,7 +540,8 @@ function Layout() {
         sx={{
           flexGrow: 1,
           pt: 'var(--appbar-height)',
-          width: isHome ? '100%' : { sm: `calc(100% - ${drawerWidth}px)` },
+          width: isHome ? '100%' : { sm: `calc(100% - ${currentDrawerWidth}px)` },
+          transition: 'width 0.3s ease',
           display: 'flex',
           flexDirection: 'column',
           minHeight: '100vh',
