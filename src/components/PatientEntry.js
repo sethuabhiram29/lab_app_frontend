@@ -1051,22 +1051,23 @@ function PatientEntry() {
 const darkCardSx = {
   p: { xs: 1.5, sm: 2 },
   borderRadius: 'var(--radius-xl)',
-  background: 'rgba(255, 255, 255, 0.85)',
+  background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%)',
   backdropFilter: 'blur(24px)',
-  border: '1px solid rgba(255,255,255,0.9)',
-  boxShadow: '0 12px 36px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9)',
+  border: '1px solid rgba(255,255,255,0.6)',
+  boxShadow: '0 12px 36px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)',
 };
 
 const darkFieldSx = {
   '& .MuiFilledInput-root': {
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: 'rgba(255,255,255,0.35)',
+    backdropFilter: 'blur(12px)',
     borderRadius: 'var(--radius-md)',
-    border: '1px solid rgba(0,0,0,0.08)',
+    border: '1px solid rgba(255,255,255,0.7)',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     minHeight: '2.5rem',
     '&:hover': {
-      backgroundColor: 'rgba(255,255,255,0.9)',
-      borderColor: 'rgba(16,185,129,0.3)',
+      backgroundColor: 'rgba(255,255,255,0.55)',
+      borderColor: 'rgba(16,185,129,0.5)',
     },
     '&.Mui-focused': {
       backgroundColor: 'rgba(255,255,255,1)',
