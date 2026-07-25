@@ -296,12 +296,12 @@ function Layout() {
         position="fixed"
         elevation={0}
         sx={{
-          background: 'rgba(255,255,255,0.88)',
+          background: isFullBleed ? 'rgba(10,22,40,0.85)' : 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(30,41,59,0.08)',
+          borderBottom: isFullBleed ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(30,41,59,0.08)',
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          color: 'var(--text-primary)',
+          color: isFullBleed ? '#F1F5F9' : 'var(--text-primary)',
           width: isHome ? '100%' : { sm: `calc(100% - ${currentDrawerWidth}px)` },
           ml: isHome ? 0 : { sm: `${currentDrawerWidth}px` },
           transition: 'width 0.2s, margin-left 0.2s',
@@ -410,7 +410,7 @@ function Layout() {
 
       {/* ── Sidebar ────────────────────────────────────────────────────── */}
       {!isHome && (
-        <Box component="nav" sx={{ width: { sm: currentDrawerWidth }, flexShrink: { sm: 0 }, transition: 'width 0.2s', background: isFullBleed ? '#0A1628' : 'transparent' }}>
+        <Box component="nav" sx={{ width: { sm: currentDrawerWidth }, flexShrink: { sm: 0 }, transition: 'width 0.2s' }}>
           {/* Mobile drawer */}
           <Drawer
             variant="temporary"

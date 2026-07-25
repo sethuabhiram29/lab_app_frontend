@@ -389,8 +389,12 @@ function PatientEntry() {
                   </Box>
 
                   <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                    <Grid container spacing={2.5}>
-                      <Grid item xs={12} sm={6}>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(12, 1fr)', 
+                      gap: 2 
+                    }}>
+                      <Box sx={{ gridColumn: 'span 12' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>FULL NAME</Typography>
                           <TextField
@@ -400,8 +404,9 @@ function PatientEntry() {
                             sx={darkFieldSx}
                           />
                         </motion.div>
-                      </Grid>
-                      <Grid item xs={6} sm={3}>
+                      </Box>
+                      
+                      <Box sx={{ gridColumn: 'span 6' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>AGE</Typography>
                           <TextField
@@ -411,8 +416,9 @@ function PatientEntry() {
                             sx={darkFieldSx}
                           />
                         </motion.div>
-                      </Grid>
-                      <Grid item xs={6} sm={3}>
+                      </Box>
+                      
+                      <Box sx={{ gridColumn: 'span 6' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>GENDER</Typography>
                           <FormControl fullWidth required variant="filled" sx={darkFieldSx}>
@@ -429,9 +435,9 @@ function PatientEntry() {
                             </Select>
                           </FormControl>
                         </motion.div>
-                      </Grid>
+                      </Box>
 
-                      <Grid item xs={12} sm={6}>
+                      <Box sx={{ gridColumn: 'span 12' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>MOBILE NUMBER</Typography>
                           <TextField
@@ -441,8 +447,9 @@ function PatientEntry() {
                             sx={darkFieldSx}
                           />
                         </motion.div>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
+                      </Box>
+                      
+                      <Box sx={{ gridColumn: 'span 12' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>EMAIL (USERNAME)</Typography>
                           <TextField
@@ -459,9 +466,9 @@ function PatientEntry() {
                             sx={darkFieldSx}
                           />
                         </motion.div>
-                      </Grid>
+                      </Box>
 
-                      <Grid item xs={12} sm={4}>
+                      <Box sx={{ gridColumn: 'span 4' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>COLLECTION DATE</Typography>
                           <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -474,8 +481,9 @@ function PatientEntry() {
                             />
                           </LocalizationProvider>
                         </motion.div>
-                      </Grid>
-                      <Grid item xs={12} sm={4}>
+                      </Box>
+                      
+                      <Box sx={{ gridColumn: 'span 4' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>REF. DOCTOR</Typography>
                           <Autocomplete
@@ -488,8 +496,9 @@ function PatientEntry() {
                             )}
                           />
                         </motion.div>
-                      </Grid>
-                      <Grid item xs={12} sm={4}>
+                      </Box>
+                      
+                      <Box sx={{ gridColumn: 'span 4' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>REF. AGENT</Typography>
                           <Autocomplete
@@ -502,8 +511,8 @@ function PatientEntry() {
                             )}
                           />
                         </motion.div>
-                      </Grid>
-                    </Grid>
+                      </Box>
+                    </Box>
                   </motion.div>
                 </Paper>
               </motion.div>
@@ -528,8 +537,12 @@ function PatientEntry() {
                   </Box>
 
                   <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                    <Grid container spacing={2.5}>
-                      <Grid item xs={12} sm={4}>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(12, 1fr)', 
+                      gap: 2 
+                    }}>
+                      <Box sx={{ gridColumn: 'span 4' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>TOTAL AMOUNT</Typography>
                           <TextField
@@ -539,8 +552,8 @@ function PatientEntry() {
                             sx={darkFieldSx}
                           />
                         </motion.div>
-                      </Grid>
-                      <Grid item xs={12} sm={4}>
+                      </Box>
+                      <Box sx={{ gridColumn: 'span 4' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>ADVANCE PAID</Typography>
                           <TextField
@@ -550,8 +563,8 @@ function PatientEntry() {
                             sx={darkFieldSx}
                           />
                         </motion.div>
-                      </Grid>
-                      <Grid item xs={12} sm={4}>
+                      </Box>
+                      <Box sx={{ gridColumn: 'span 4' }}>
                         <motion.div variants={fieldReveal}>
                           <Typography sx={fieldLabelSx}>DUE AMOUNT</Typography>
                           <TextField
@@ -573,8 +586,8 @@ function PatientEntry() {
                             }}
                           />
                         </motion.div>
-                      </Grid>
-                    </Grid>
+                      </Box>
+                    </Box>
 
                     <motion.div variants={fieldReveal}>
                       <Typography sx={{ fontSize: '0.75rem', color: '#475569', mt: 2, mb: 2 }}>
