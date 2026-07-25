@@ -843,14 +843,14 @@ function PatientEntry() {
             <CloseIcon />
           </IconButton>
         </Box>
-        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: '#0F172A', overflow: { xs: 'auto', md: 'hidden' }, flex: 1 }}>
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: '#0F172A', overflow: { xs: 'auto', md: 'hidden' }, flex: 1, minHeight: 0 }}>
           
           {/* Col 1: Tests */}
-          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', borderRight: { xs: 'none', md: '1px solid rgba(255,255,255,0.06)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.06)', md: 'none' } }}>
+          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, borderRight: { xs: 'none', md: '1px solid rgba(255,255,255,0.06)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.06)', md: 'none' } }}>
             <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
               <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>1. Select a Test</Typography>
             </Box>
-            <List sx={{ p: 0, flex: 1, overflowY: 'auto' }}>
+            <List sx={{ p: 0, flex: 1, overflowY: 'auto', minHeight: 0 }}>
               {tests.map((test) => {
                 const selectedTest = formData.selectedTests.find(t => t.test._id === test._id);
                 const isSelected = selectedTest && ((selectedTest.subtests && selectedTest.subtests.some(s => s.selected)) || (selectedTest.packs && selectedTest.packs.some(p => p.subtests && p.subtests.some(s => s.selected))));
@@ -893,13 +893,13 @@ function PatientEntry() {
           </Box>
 
           {/* Col 2: Subtests & Packs */}
-          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', borderRight: { xs: 'none', md: '1px solid rgba(255,255,255,0.06)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.06)', md: 'none' }, minHeight: { xs: '300px', md: 'auto' } }}>
+          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, borderRight: { xs: 'none', md: '1px solid rgba(255,255,255,0.06)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.06)', md: 'none' } }}>
             {activeTestId ? (
               <>
                 <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
                   <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>2. Direct Subtests & Packs</Typography>
                 </Box>
-                <List sx={{ p: 0, flex: 1, overflowY: 'auto' }}>
+                <List sx={{ p: 0, flex: 1, overflowY: 'auto', minHeight: 0 }}>
                   {(() => {
                     const test = tests.find(t => t._id === activeTestId);
                     const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
@@ -978,7 +978,7 @@ function PatientEntry() {
           </Box>
 
           {/* Col 3: Pack Subtests */}
-          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: { xs: '300px', md: 'auto' } }}>
+          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             {activeTestId && activePackId ? (() => {
               const test = tests.find(t => t._id === activeTestId);
               const pack = test && test.packs ? test.packs.find(p => p._id === activePackId) : null;
@@ -1000,7 +1000,7 @@ function PatientEntry() {
                         {allSelected ? 'Deselect All' : 'Select All'}
                       </Button>
                     </Box>
-                    <List sx={{ p: 0, flex: 1, overflowY: 'auto' }}>
+                    <List sx={{ p: 0, flex: 1, overflowY: 'auto', minHeight: 0 }}>
                       {(pack.subtests || []).map((sub) => (
                         <ListItem key={sub._id} sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                           <Checkbox 
