@@ -2272,16 +2272,17 @@ function CreateReport() {
 
                       {/* Direct Subtests Header */}
                       {table.direct.length > 0 && (
-                        <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '2fr 3fr 1fr', gap: 3, mb: 1, px: 1 }}>
+                        <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '2fr 3fr 2fr 1fr', gap: 3, mb: 1, px: 1 }}>
                           <Typography sx={fieldLabelSx}>TEST NAME</Typography>
                           <Typography sx={fieldLabelSx}>RESULT</Typography>
-                          <Typography sx={{ ...fieldLabelSx, textAlign: 'right' }}>REFERENCE & UNIT</Typography>
+                          <Typography sx={fieldLabelSx}>REFERENCE</Typography>
+                          <Typography sx={fieldLabelSx}>UNIT</Typography>
                         </Box>
                       )}
 
                       {/* Direct Subtests */}
                       {table.direct.map((sub, subIndex) => (
-                        <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center' }}>
+                        <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 2fr 1fr' }, gap: 3, mb: 2, alignItems: 'center' }}>
                           <Typography sx={fieldLabelSx}>{sub.name}</Typography>
                           <TextField
                             fullWidth
@@ -2292,7 +2293,24 @@ function CreateReport() {
                             placeholder="Enter result..."
                             sx={glassFieldSx}
                           />
-                          <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: { xs: 'left', md: 'right' } }}>{sub.range} {sub.unit}</Typography>
+                          <TextField
+                            fullWidth
+                            variant="filled"
+                            InputProps={{ disableUnderline: true }}
+                            value={sub.range}
+                            onChange={(e) => handleResultChange(tableIndex, 'direct', subIndex, 'range', e.target.value)}
+                            placeholder="Reference..."
+                            sx={glassFieldSx}
+                          />
+                          <TextField
+                            fullWidth
+                            variant="filled"
+                            InputProps={{ disableUnderline: true }}
+                            value={sub.unit}
+                            onChange={(e) => handleResultChange(tableIndex, 'direct', subIndex, 'unit', e.target.value)}
+                            placeholder="Unit..."
+                            sx={glassFieldSx}
+                          />
                         </Box>
                       ))}
 
@@ -2330,15 +2348,16 @@ function CreateReport() {
 
                           {/* Pack Subtests Header */}
                           {pack.subtests.length > 0 && (
-                            <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '2fr 3fr 1fr', gap: 3, mb: 1, px: 1 }}>
+                            <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '2fr 3fr 2fr 1fr', gap: 3, mb: 1, px: 1 }}>
                               <Typography sx={fieldLabelSx}>TEST NAME</Typography>
                               <Typography sx={fieldLabelSx}>RESULT</Typography>
-                              <Typography sx={{ ...fieldLabelSx, textAlign: 'right' }}>REFERENCE & UNIT</Typography>
+                              <Typography sx={fieldLabelSx}>REFERENCE</Typography>
+                              <Typography sx={fieldLabelSx}>UNIT</Typography>
                             </Box>
                           )}
 
                           {pack.subtests.map((sub, subIndex) => (
-                            <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center' }}>
+                            <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 2fr 1fr' }, gap: 3, mb: 2, alignItems: 'center' }}>
                               <Typography sx={fieldLabelSx}>{sub.name}</Typography>
                               <TextField
                                 fullWidth
@@ -2349,7 +2368,24 @@ function CreateReport() {
                                 placeholder="Enter result..."
                                 sx={glassFieldSx}
                               />
-                              <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: { xs: 'left', md: 'right' } }}>{sub.range} {sub.unit}</Typography>
+                              <TextField
+                                fullWidth
+                                variant="filled"
+                                InputProps={{ disableUnderline: true }}
+                                value={sub.range}
+                                onChange={(e) => handleResultChange(tableIndex, 'pack', [packIndex, subIndex], 'range', e.target.value)}
+                                placeholder="Reference..."
+                                sx={glassFieldSx}
+                              />
+                              <TextField
+                                fullWidth
+                                variant="filled"
+                                InputProps={{ disableUnderline: true }}
+                                value={sub.unit}
+                                onChange={(e) => handleResultChange(tableIndex, 'pack', [packIndex, subIndex], 'unit', e.target.value)}
+                                placeholder="Unit..."
+                                sx={glassFieldSx}
+                              />
                             </Box>
                           ))}
                           <TextField
