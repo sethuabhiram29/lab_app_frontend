@@ -2270,6 +2270,15 @@ function CreateReport() {
                         )}
                       </Box>
 
+                      {/* Direct Subtests Header */}
+                      {table.direct.length > 0 && (
+                        <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '2fr 3fr 1fr', gap: 3, mb: 1, px: 1 }}>
+                          <Typography sx={fieldLabelSx}>TEST NAME</Typography>
+                          <Typography sx={fieldLabelSx}>RESULT</Typography>
+                          <Typography sx={{ ...fieldLabelSx, textAlign: 'right' }}>REFERENCE & UNIT</Typography>
+                        </Box>
+                      )}
+
                       {/* Direct Subtests */}
                       {table.direct.map((sub, subIndex) => (
                         <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center' }}>
@@ -2318,6 +2327,15 @@ function CreateReport() {
                               </Button>
                             )}
                           </Box>
+
+                          {/* Pack Subtests Header */}
+                          {pack.subtests.length > 0 && (
+                            <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '2fr 3fr 1fr', gap: 3, mb: 1, px: 1 }}>
+                              <Typography sx={fieldLabelSx}>TEST NAME</Typography>
+                              <Typography sx={fieldLabelSx}>RESULT</Typography>
+                              <Typography sx={{ ...fieldLabelSx, textAlign: 'right' }}>REFERENCE & UNIT</Typography>
+                            </Box>
+                          )}
 
                           {pack.subtests.map((sub, subIndex) => (
                             <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center' }}>
