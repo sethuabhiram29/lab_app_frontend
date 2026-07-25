@@ -1248,7 +1248,16 @@ Your Diagnostic Center`;
   const filteredReports = reports
     .filter(r => {
       const reportDate = new Date(r.reportDisplayData?.patient?.sampleCollectionDate || r.createdAt);
-      const reportDateString = `${reportDate.getFullYear()}-${String(reportDate.getMonth() + 1).padStart(2, '0')}-${String(reportDate.getDa  // Calculate stats for the summary cards
+      const reportDateString = `${reportDate.getFullYear()}-${String(reportDate.getMonth() + 1).padStart(2, '0')}-${String(reportDate.getDate()).padStart(2, '0')}`;
+      return reportDateString === selectedDate;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.reportDisplayData?.patient?.sampleCollectionDate || a.createdAt);
+      const dateB = new Date(b.reportDisplayData?.patient?.sampleCollectionDate || b.createdAt);
+      return dateB - dateA;
+    });
+
+  // Calculate stats for the summary cards
   const totalReports = filteredReports.length;
   const withLinks = filteredReports.filter(r => r.patient?.updationLinks?.viewLink || r.patient?.updationLinks?.downloadLink).length;
   const pendingLinks = totalReports - withLinks;

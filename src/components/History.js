@@ -144,7 +144,16 @@ const History = () => {
         aValue = ''; bValue = '';
     }
     if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -  // Calculate stats for the summary cards
+    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (column) => {
+    if (sortBy === column) setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    else { setSortBy(column); setSortOrder('asc'); }
+  };
+
+  // Calculate stats for the summary cards
   const totalRecords = filteredPatients.length;
   const recentRecords = filteredPatients.filter(p => new Date(p.sampleCollectionDate) > new Date(Date.now() - 30*24*60*60*1000)).length;
   const matchCount = sortedPatients.length;
