@@ -428,7 +428,7 @@ const TestSettings = () => {
   return (
     <>
     <Box sx={{ minHeight: '100vh', background: 'url(/settings_bg_light.png) center/cover no-repeat fixed', pb: 8 }}>
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 } }}>
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 } }}>
         <motion.div initial={prefersReduced ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           
           {/* Header */}
@@ -456,8 +456,14 @@ const TestSettings = () => {
                       <SearchIcon sx={{ color: 'var(--text-secondary)' }} />
                     </InputAdornment>
                   ),
+                  sx: {
+                    background: '#ffffff',
+                    borderRadius: 'var(--radius-full)',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                    '& fieldset': { border: 'none' },
+                    px: 1
+                  }
                 }}
-                sx={glassFieldSx}
               />
             </Box>
           </Box>
@@ -526,10 +532,13 @@ const TestSettings = () => {
                 <Grid container spacing={4}>
                   {filteredDoctors.map(doctor => (
                     <Grid item xs={12} sm={6} key={doctor._id}>
-                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ p: 4, borderRadius: '24px', background: '#ffffff', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
-                        <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', fontWeight: 800, fontSize: '1.5rem', borderRadius: '50% 50% 0 50%', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>{doctor.name.charAt(0)}</Avatar>
+                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
+                        <Box sx={{ position: 'relative' }}>
+                          <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>{doctor.name.charAt(0)}</Avatar>
+                          <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
+                        </Box>
                         <Box sx={{ flex: 1 }}>
-                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>{doctor.name}</Typography>
+                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>Dr. {doctor.name.replace(/^Dr\.\s*/i, '')}</Typography>
                           <Typography sx={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>{doctor.specialization || 'General'}</Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)', mb: 0.5 }}>
                             <PhoneOutlinedIcon sx={{ fontSize: 14, color: '#ef4444' }} />
@@ -566,10 +575,13 @@ const TestSettings = () => {
                 <Grid container spacing={4}>
                   {filteredAgents.map(agent => (
                     <Grid item xs={12} sm={6} key={agent._id}>
-                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ p: 4, borderRadius: '24px', background: '#ffffff', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
-                        <Avatar sx={{ width: 64, height: 64, background: '#0F172A', color: 'white', fontWeight: 800, fontSize: '1.5rem', borderRadius: '50% 50% 0 50%', boxShadow: '0 8px 16px rgba(15,23,42,0.2)' }}>{agent.name?.charAt(0) || 'A'}</Avatar>
+                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
+                        <Box sx={{ position: 'relative' }}>
+                          <Avatar sx={{ width: 64, height: 64, background: '#0F172A', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,23,42,0.2)' }}>{agent.name?.charAt(0) || 'A'}</Avatar>
+                          <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
+                        </Box>
                         <Box sx={{ flex: 1 }}>
-                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>{agent.name}</Typography>
+                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>{agent.name}</Typography>
                           <Typography sx={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>Commission: {agent.commission}%</Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'var(--text-secondary)', mb: 0.5 }}>
                             <PhoneOutlinedIcon sx={{ fontSize: 14, color: '#ef4444' }} />
@@ -607,10 +619,10 @@ const TestSettings = () => {
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {filteredTests.map((test, index) => (
-                    <Box component={motion.div} whileHover={{ scale: 1.01, rotate: 0.5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} key={test._id} sx={{ background: '#ffffff', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', borderRadius: '24px', overflow: 'hidden', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' } }}>
+                    <Box component={motion.div} whileHover={{ scale: 1.01, rotate: 0.5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} key={test._id} sx={{ background: '#F8FAFC', borderRadius: '24px', overflow: 'hidden', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' } }}>
                       <Box sx={{ p: 4, display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer' }} onClick={() => setExpandedTest(expandedTest === test._id ? null : test._id)}>
                         <Box sx={{ position: 'relative' }}>
-                          <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', borderRadius: '50% 50% 0 50%', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>
+                          <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>
                             <ScienceOutlinedIcon fontSize="large" />
                           </Avatar>
                           <Box sx={{ position: 'absolute', bottom: -8, right: -8, background: '#fff', color: 'var(--color-primary)', fontWeight: 800, fontSize: '0.7rem', px: 1, py: 0.2, borderRadius: '12px', border: '2px solid rgba(255,255,255,0.8)', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
