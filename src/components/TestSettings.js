@@ -428,7 +428,7 @@ const TestSettings = () => {
   return (
     <>
     <Box sx={{ minHeight: '100vh', background: 'url(/settings_bg_light.png) center/cover no-repeat fixed', pb: 8 }}>
-      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 } }}>
+      <Container maxWidth={false} sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 }, px: { xs: 2, md: 6, lg: 12 } }}>
         <motion.div initial={prefersReduced ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           
           {/* Header */}
@@ -531,8 +531,8 @@ const TestSettings = () => {
                 </Box>
                 <Grid container spacing={4}>
                   {filteredDoctors.map(doctor => (
-                    <Grid item xs={12} sm={6} key={doctor._id}>
-                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
+                    <Grid item xs={12} md={6} lg={6} key={doctor._id}>
+                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar sx={{ width: 64, height: 64, background: 'var(--color-primary)', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }}>{doctor.name.charAt(0)}</Avatar>
                           <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
@@ -574,8 +574,8 @@ const TestSettings = () => {
                 </Box>
                 <Grid container spacing={4}>
                   {filteredAgents.map(agent => (
-                    <Grid item xs={12} sm={6} key={agent._id}>
-                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
+                    <Grid item xs={12} md={6} lg={6} key={agent._id}>
+                      <Box component={motion.div} whileHover={{ scale: 1.03, rotate: 1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} sx={{ width: '100%', p: 4, borderRadius: '24px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 3, position: 'relative', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0 12px 32px rgba(15,110,86,0.15)' }, '&:hover .actions': { opacity: 1 } }}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar sx={{ width: 64, height: 64, background: '#0F172A', color: 'white', fontWeight: 800, fontSize: '1.5rem', boxShadow: '0 8px 16px rgba(15,23,42,0.2)' }}>{agent.name?.charAt(0) || 'A'}</Avatar>
                           <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, borderRadius: '50%', background: '#10b981', border: '3px solid #F8FAFC' }} />
