@@ -186,7 +186,8 @@ function Dashboard() {
             position: 'relative',
             zIndex: 3,
             px: { xs: 3, md: 6 },
-            maxWidth: '820px',
+            maxWidth: '1400px',
+            width: '100%',
             mx: 'auto',
           }}
         >
@@ -228,7 +229,7 @@ function Dashboard() {
                         initial="hidden"
                         animate="visible"
                         style={{
-                          fontSize: 'clamp(2rem, 5vw, 4.5rem)', // slightly smaller to fit the long word
+                          fontSize: 'clamp(1.8rem, 4.5vw, 4.5rem)',
                           color: '#FFFFFF',
                           display: 'inline-block',
                           fontFamily: 'Inter, sans-serif',
