@@ -37,7 +37,7 @@ const menuItems = [
 ];
 
 // ── Heading words for staggered reveal ──────────────────────────────────────
-const headingLine1 = 'Exceptional';
+const headingLine1 = 'Sri Sai Durga Diagnostics';
 const headingLine2 = 'Sri Sai Durga';
 
 // ── Framer Motion variants ───────────────────────────────────────────────────
@@ -218,7 +218,7 @@ function Dashboard() {
           <Typography component="div" sx={{ fontWeight: 900, lineHeight: 1.08, mb: 2.5 }}>
             <Box component="div" sx={{ overflow: 'hidden' }}>
               <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'nowrap', gap: { xs: '0.5rem', md: '1rem' } }}>
-                {'Sri Sai Durga'.split(' ').map((word, wIdx) => (
+                {headingLine1.split(' ').map((word, wIdx) => (
                   <Box key={wIdx} sx={{ display: 'flex', whiteSpace: 'nowrap' }}>
                     {word.split('').map((char, i) => (
                       <motion.span
@@ -228,7 +228,7 @@ function Dashboard() {
                         initial="hidden"
                         animate="visible"
                         style={{
-                          fontSize: 'clamp(2.5rem, 7vw, 5.5rem)',
+                          fontSize: 'clamp(2rem, 5vw, 4.5rem)', // slightly smaller to fit the long word
                           color: '#FFFFFF',
                           display: 'inline-block',
                           fontFamily: 'Inter, sans-serif',
