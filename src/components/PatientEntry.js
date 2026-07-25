@@ -850,7 +850,7 @@ function PatientEntry() {
             <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
               <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>1. Select a Test</Typography>
             </Box>
-            <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain' }}>
               <List sx={{ p: 0 }}>
               {tests.map((test) => {
                 const selectedTest = formData.selectedTests.find(t => t.test._id === test._id);
@@ -901,7 +901,7 @@ function PatientEntry() {
                 <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
                   <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>2. Direct Subtests & Packs</Typography>
                 </Box>
-                <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain' }}>
                   <List sx={{ p: 0 }}>
                   {(() => {
                     const test = tests.find(t => t._id === activeTestId);
@@ -1004,7 +1004,7 @@ function PatientEntry() {
                         {allSelected ? 'Deselect All' : 'Select All'}
                       </Button>
                     </Box>
-                    <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                    <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain' }}>
                       <List sx={{ p: 0 }}>
                       {(pack.subtests || []).map((sub) => (
                         <ListItem key={sub._id} sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
