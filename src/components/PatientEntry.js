@@ -294,7 +294,7 @@ function PatientEntry() {
         }
       }} />
 
-      <Box sx={{ position: 'relative', zIndex: 1, pt: 1, pb: 6, width: '100%' }}>
+      <Box sx={{ position: 'relative', zIndex: 1, pt: 3, pb: 6, px: 3, width: '100%' }}>
         
         {/* ── Alerts ──────────────────────────────────────────────── */}
         <AnimatePresence>
