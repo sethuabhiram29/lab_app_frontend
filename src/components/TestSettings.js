@@ -426,6 +426,7 @@ const TestSettings = () => {
   const filteredTests = tests.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
+    <>
     <Box sx={{ minHeight: '100vh', background: 'url(/settings_bg_light.png) center/cover no-repeat fixed', pb: 8 }}>
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 } }}>
         <motion.div initial={prefersReduced ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -1627,9 +1628,7 @@ const TestSettings = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Paper>
-      </motion.div>
-    </Container>
+    </>
   );
 };
 
