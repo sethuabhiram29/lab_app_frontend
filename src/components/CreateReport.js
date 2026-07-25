@@ -2396,6 +2396,6 @@ function CreateReport() {
       </Container>
     </Box>
   );
-
+}
 
 export default CreateReport;
