@@ -37,8 +37,8 @@ const menuItems = [
 ];
 
 // ── Heading words for staggered reveal ──────────────────────────────────────
-const headingLine1 = 'Exceptional'.split('');
-const headingLine2 = 'Personalized Care'.split('');
+const headingLine1 = 'Exceptional';
+const headingLine2 = 'Sri Sai Durga';
 
 // ── Framer Motion variants ───────────────────────────────────────────────────
 const charVariants = {
@@ -209,7 +209,7 @@ function Dashboard() {
             }}>
               <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#D8A13B', animation: 'pulse-accent 2s infinite' }} />
               <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#F0C97A', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                Sri Sai Durga Diagnostic Centre
+                "Health is the greatest of human blessings."
               </Typography>
             </Box>
           </motion.div>
@@ -217,47 +217,54 @@ function Dashboard() {
           {/* Staggered character reveal heading */}
           <Typography component="div" sx={{ fontWeight: 900, lineHeight: 1.08, mb: 2.5 }}>
             <Box component="div" sx={{ overflow: 'hidden' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 0 }}>
-                {headingLine1.map((char, i) => (
-                  <motion.span
-                    key={i}
-                    custom={i}
-                    variants={charVariants}
-                    initial="hidden"
-                    animate="visible"
-                    style={{
-                      fontSize: 'clamp(3rem, 8vw, 6rem)',
-                      color: '#FFFFFF',
-                      display: 'inline-block',
-                      fontFamily: 'Inter, sans-serif',
-                      letterSpacing: '-0.03em',
-                    }}
-                  >
-                    {char === ' ' ? '\u00A0' : char}
-                  </motion.span>
+              <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                {headingLine1.split(' ').map((word, wIdx) => (
+                  <Box key={wIdx} sx={{ display: 'flex', whiteSpace: 'nowrap' }}>
+                    {word.split('').map((char, i) => (
+                      <motion.span
+                        key={i}
+                        custom={i}
+                        variants={charVariants}
+                        initial="hidden"
+                        animate="visible"
+                        style={{
+                          fontSize: 'clamp(3rem, 8vw, 6rem)',
+                          color: '#FFFFFF',
+                          display: 'inline-block',
+                          fontFamily: 'Inter, sans-serif',
+                          letterSpacing: '-0.03em',
+                        }}
+                      >
+                        {char}
+                      </motion.span>
+                    ))}
+                  </Box>
                 ))}
               </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 0 }}>
-                {headingLine2.map((char, i) => (
-                  <motion.span
-                    key={i}
-                    custom={headingLine1.length + i + 2}
-                    variants={charVariants}
-                    initial="hidden"
-                    animate="visible"
-                    style={{
-                      fontSize: 'clamp(3rem, 8vw, 6rem)',
-                      display: 'inline-block',
-                      fontFamily: 'Inter, sans-serif',
-                      letterSpacing: '-0.03em',
-                      background: 'linear-gradient(135deg, #0F6E56 0%, #D8A13B 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
-                  >
-                    {char === ' ' ? '\u00A0' : char}
-                  </motion.span>
+              <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                {headingLine2.split(' ').map((word, wIdx) => (
+                  <Box key={wIdx} sx={{ display: 'flex', whiteSpace: 'nowrap' }}>
+                    {word.split('').map((char, i) => (
+                      <motion.span
+                        key={i}
+                        custom={headingLine1.length + i + 2 + wIdx}
+                        variants={charVariants}
+                        initial="hidden"
+                        animate="visible"
+                        style={{
+                          fontSize: 'clamp(3rem, 8vw, 6rem)',
+                          display: 'inline-block',
+                          fontFamily: 'Inter, sans-serif',
+                          letterSpacing: '-0.03em',
+                          background: 'linear-gradient(90deg, #10B981 0%, #F59E0B 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      >
+                        {char}
+                      </motion.span>
+                    ))}
+                  </Box>
                 ))}
               </Box>
             </Box>
