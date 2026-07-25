@@ -215,9 +215,9 @@ function Login() {
         {/* ── RIGHT PANEL (Login Card) ────────────────────────────────────────────── */}
         <Grid item xs={12} md={6} sx={{ 
           display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-          p: { xs: 2, md: 4 } 
+          p: { xs: 2, md: 4 }, pr: { md: 8 } 
         }}>
-          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ width: '100%', maxWidth: '640px' }}>
+          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ width: '100%', maxWidth: '100%' }}>
             
             {/* Glassmorphism Card */}
             <Box sx={{
