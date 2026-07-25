@@ -395,15 +395,17 @@ function Layout() {
               background: 'var(--surface-dark)',
               display: 'flex', flexDirection: 'column',
             }}>
-              <List sx={{ px: 2, flex: 1, pt: 2 }}>
-                <Typography sx={{
-                  px: 1.5, mb: 1.5, display: 'block',
-                  fontSize: '0.65rem', fontWeight: 700,
-                  color: 'rgba(241,245,249,0.25)',
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                }}>
-                  Navigation
-                </Typography>
+                            <List sx={{ px: isCollapsed ? 1 : 2, flex: 1, pt: 2, overflowX: 'hidden' }}>
+                {!isCollapsed && (
+                  <Typography sx={{
+                    px: 1.5, mb: 1.5, display: 'block',
+                    fontSize: '0.65rem', fontWeight: 700,
+                    color: 'rgba(241,245,249,0.25)',
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                  }}>
+                    Navigation
+                  </Typography>
+                )}
 
                 {menuItems.map((item) => {
                   const isActive = location.pathname === item.path;
@@ -428,7 +430,8 @@ function Layout() {
                         sx={{
                           borderRadius: 'var(--radius-md)',
                           py: 1,
-                          px: 1.5,
+                          px: isCollapsed ? 0 : 1.5,
+                          justifyContent: isCollapsed ? 'center' : 'flex-start',
                           position: 'relative',
                           zIndex: 1,
                           color: isActive ? '#5EEAD4' : 'rgba(241,245,249,0.5)',
@@ -436,28 +439,31 @@ function Layout() {
                             background: 'rgba(255,255,255,0.05)',
                             color: 'rgba(241,245,249,0.85)',
                           },
-                          transition: 'color 0.2s ease',
+                          transition: 'all 0.2s ease',
                         }}
+                        title={isCollapsed ? item.text : ''}
                       >
                         <ListItemIcon sx={{
                           color: 'inherit',
-                          minWidth: 36,
+                          minWidth: isCollapsed ? 'auto' : 36,
                           '& .MuiSvgIcon-root': { fontSize: '1.1rem' },
                           transition: 'transform 0.2s var(--ease-spring)',
                           ...(isActive && { transform: 'scale(1.12)' }),
                         }}>
                           {item.icon}
                         </ListItemIcon>
-                        <ListItemText
-                          primary={item.text}
-                          primaryTypographyProps={{
-                            fontWeight: isActive ? 700 : 500,
-                            fontSize: '0.85rem',
-                            letterSpacing: '-0.01em',
-                            color: 'inherit',
-                          }}
-                        />
-                        {isActive && (
+                        {!isCollapsed && (
+                          <ListItemText
+                            primary={item.text}
+                            primaryTypographyProps={{
+                              fontWeight: isActive ? 700 : 500,
+                              fontSize: '0.85rem',
+                              letterSpacing: '-0.01em',
+                              color: 'inherit',
+                            }}
+                          />
+                        )}
+                        {isActive && !isCollapsed && (
                           <Box sx={{
                             width: 4, height: 4, borderRadius: '50%',
                             bgcolor: '#5EEAD4',
@@ -476,33 +482,52 @@ function Layout() {
                   onClick={handleLogout}
                   sx={{
                     display: 'flex', alignItems: 'center', gap: 1.5,
-                    px: 1.5, py: 1.2,
+                    px: isCollapsed ? 0 : 1.5, py: 1.2,
+                    justifyContent: isCollapsed ? 'center' : 'flex-start',
                     borderRadius: 'var(--radius-md)',
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    color: 'rgba(241,245,249,0.6)',
                     cursor: 'pointer',
-                    '&:hover': { background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.2)' },
                     transition: 'all 0.2s ease',
+                    '&:hover': { background: 'rgba(239,68,68,0.1)', color: '#EF4444' }
+                  }}
+                  title={isCollapsed ? 'Logout' : ''}
+                >
+                  {isCollapsed ? (
+                    <LogoutIcon sx={{ fontSize: '1.1rem' }} />
+                  ) : (
+                    <>
+                      <Avatar sx={{
+                        bgcolor: 'rgba(241,245,249,0.05)',
+                        border: '1px solid rgba(15,110,86,0.5)',
+                        width: 30, height: 30,
+                        fontSize: '0.78rem', fontWeight: 700, color: '#5EEAD4',
+                      }}>
+                        {user.username.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#F1F5F9', lineHeight: 1.2 }} noWrap>
+                          {user.username}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.65rem', color: 'rgba(241,245,249,0.35)', textTransform: 'capitalize' }}>
+                          {user.role || 'Staff'}
+                        </Typography>
+                      </Box>
+                      <LogoutIcon sx={{ fontSize: '0.9rem', color: 'rgba(241,245,249,0.25)' }} />
+                    </>
+                  )}
+                </Box>
+                <IconButton 
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  sx={{ 
+                    color: 'rgba(255,255,255,0.5)', 
+                    mt: 1, 
+                    width: '100%', 
+                    borderRadius: 'var(--radius-md)',
+                    '&:hover': { color: '#fff', background: 'rgba(255,255,255,0.05)' } 
                   }}
                 >
-                  <Avatar sx={{
-                    bgcolor: 'rgba(15,110,86,0.35)',
-                    border: '1px solid rgba(15,110,86,0.5)',
-                    width: 30, height: 30,
-                    fontSize: '0.78rem', fontWeight: 700, color: '#5EEAD4',
-                  }}>
-                    {user.username.charAt(0).toUpperCase()}
-                  </Avatar>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#F1F5F9', lineHeight: 1.2 }} noWrap>
-                      {user.username}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.65rem', color: 'rgba(241,245,249,0.35)', textTransform: 'capitalize' }}>
-                      {user.role || 'Staff'}
-                    </Typography>
-                  </Box>
-                  <LogoutIcon sx={{ fontSize: '0.9rem', color: 'rgba(241,245,249,0.25)' }} />
-                </Box>
+                  {isCollapsed ? <MenuOpenIcon /> : <ChevronLeftIcon />}
+                </IconButton>
               </Box>
             </Box>
           </Drawer>

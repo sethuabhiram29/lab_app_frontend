@@ -440,18 +440,21 @@ function Dashboard() {
             </motion.div>
           </Box>
 
-          {/* Card Grid */}
-          <motion.div
-            variants={cardContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-60px' }}
-          >
-            <Grid container spacing={3} alignItems="stretch">
-              {menuItems.map((item, index) => (
-                <Grid item xs={12} sm={6} md={4} key={item.title}>
-                  <motion.div variants={cardVariants} style={{ height: '100%' }}>
-                    <Tilt
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, 
+            gap: 3 
+          }}>
+            {menuItems.map((item, index) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 40, scale: 0.96 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.55, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                style={{ height: '100%' }}
+              >
+                <Tilt
                       tiltMaxAngleX={8}
                       tiltMaxAngleY={8}
                       glareEnable={true}
@@ -562,10 +565,8 @@ function Dashboard() {
                       </Box>
                     </Tilt>
                   </motion.div>
-                </Grid>
               ))}
-            </Grid>
-          </motion.div>
+          </Box>
         </Container>
       </Box>
 
