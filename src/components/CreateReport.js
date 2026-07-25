@@ -1487,9 +1487,12 @@ function CreateReport() {
                 patient={selectedPatient} 
                 testTables={testResults.map(table => ({
                   test: allTests.find(t => t._id.toString() === (table.test._id?.toString() || table.test?.toString())) || table.test,
-                  packs: table.packs,
-                  direct: table.direct
-                }))}
+                  packs: table.packs.map(pack => ({
+                    ...pack,
+                    subtests: pack.subtests.filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+                  })).filter(pack => pack.subtests.length > 0),
+                  direct: table.direct.filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+                })).filter(tr => tr.packs.length > 0 || tr.direct.length > 0)}
                 isPrinting={false}
                 removedImages={removedImages} 
                 tableNotes={tableNotes}
@@ -1599,9 +1602,12 @@ function CreateReport() {
                   patient={selectedPatient} 
                   testTables={testResults.map(table => ({
                     test: allTests.find(t => t._id.toString() === (table.test._id?.toString() || table.test?.toString())) || table.test,
-                    packs: table.packs,
-                    direct: table.direct
-                  }))}
+                    packs: table.packs.map(pack => ({
+                      ...pack,
+                      subtests: pack.subtests.filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+                    })).filter(pack => pack.subtests.length > 0),
+                    direct: table.direct.filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+                  })).filter(tr => tr.packs.length > 0 || tr.direct.length > 0)}
                   isPrinting={false}
                   removedImages={removedImages} 
                   tableNotes={tableNotes}
@@ -2362,9 +2368,12 @@ function CreateReport() {
                   patient={selectedPatient} 
                   testTables={testResults.map(table => ({
                     test: allTests.find(t => t._id.toString() === (table.test._id?.toString() || table.test?.toString())) || table.test,
-                    packs: table.packs,
-                    direct: table.direct
-                  }))}
+                    packs: table.packs.map(pack => ({
+                      ...pack,
+                      subtests: pack.subtests.filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+                    })).filter(pack => pack.subtests.length > 0),
+                    direct: table.direct.filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+                  })).filter(tr => tr.packs.length > 0 || tr.direct.length > 0)}
                   isPrinting={false} // Keep false for preview to show background
                   removedImages={removedImages} 
                   tableNotes={tableNotes}
