@@ -217,7 +217,7 @@ function Login() {
           display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch',
           p: { xs: 2, md: 6 } 
         }}>
-          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ display: 'flex', flexGrow: 1 }}>
             
             {/* Glassmorphism Card */}
             <Box sx={{
