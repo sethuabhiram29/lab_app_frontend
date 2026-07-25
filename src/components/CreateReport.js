@@ -2041,7 +2041,7 @@ function CreateReport() {
                           const isPrinted = report && report.printed;
                           
                           // Parse simple ID number from regNo if it's like 00005
-                          const simpleId = patient.regNo.replace(/^0+/, '');
+                          const simpleId = (patient.regNo || '').toString().replace(/^0+/, '');
 
                           return (
                             <motion.tr
