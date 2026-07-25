@@ -1,150 +1,39 @@
-/* eslint-disable */
-import React, { useEffect, useState } from 'react';
-import {
-  Container, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Box, TableSortLabel, TextField, Grid, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Slide
-} from '@mui/material';
-import {
-  Close as CloseIcon,
-  PictureAsPdfOutlined as PdfIcon,
-  RemoveRedEyeOutlined as ViewIcon,
-  HistoryOutlined as HistoryIcon
-} from '@mui/icons-material';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import {
+const fs = require('fs');
+const path = require('path');
+
+const filePath = path.join(__dirname, 'src/components/History.js');
+let code = fs.readFileSync(filePath, 'utf8');
+
+const returnStart = code.lastIndexOf('  return (\n    <Container');
+const returnStartWin = code.lastIndexOf('  return (\r\n    <Container');
+const startIndex = returnStart !== -1 ? returnStart : (returnStartWin !== -1 ? returnStartWin : code.lastIndexOf('  return ('));
+
+if (startIndex === -1) {
+  console.log('Could not find start index in History.js');
+  process.exit(1);
+}
+
+const endString = 'export default History;';
+const endIndex = code.lastIndexOf(endString);
+
+if (endIndex === -1) {
+  console.log('Could not find end index in History.js');
+  process.exit(1);
+}
+
+// Check imports
+if (!code.includes('SearchIcon')) {
+  code = code.replace('import { getPatients, getReports } from', `import {
   Search as SearchIcon,
   GetApp as DownloadIcon,
   Visibility as VisibilityIcon
-} from '@mui/icons-material';
-import { Avatar, InputAdornment, OutlinedInput, Chip } from '@mui/material';
-import { getPatients, getReports } from '../api';
-import { saveAs } from 'file-saver';
-import PDFPreview from './PDFPreview';
-import { ReportDocument } from './CreateReport';
-import { pdf } from '@react-pdf/renderer';
+} from '@mui/icons-material';\nimport { Avatar, InputAdornment, OutlinedInput, Chip } from '@mui/material';\nimport { getPatients, getReports } from`);
+}
 
-const getReportForPatient = (reports, patientId) => {
-  return reports.find(r => r.patient && r.patient._id === patientId);
-};
+const prefix = code.substring(0, startIndex);
+const suffix = '\n\n' + endString + '\n';
 
-const getTestNames = (patient) => {
-  if (!patient.selectedTests) return '';
-  return patient.selectedTests.map(t => t.test?.name || '').join(', ');
-};
-
-const getRefName = (p) => {
-  if (p.refDoctor && p.refDoctor.name) return p.refDoctor.name;
-  if (p.refAgent && p.refAgent.name) return p.refAgent.name;
-  return '-';
-};
-
-// ── Framer Motion Variants ───────────────────────────────────────────────────
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
-  }
-};
-
-const rowVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }
-};
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
-
-const History = () => {
-  const prefersReduced = useReducedMotion();
-  const [patients, setPatients] = useState([]);
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState('date');
-  const [sortOrder, setSortOrder] = useState('desc');
-  // Search/filter states
-  const [searchPatient, setSearchPatient] = useState('');
-  const [searchRef, setSearchRef] = useState('');
-  const [searchTest, setSearchTest] = useState('');
-  const [searchStartDate, setSearchStartDate] = useState('');
-  const [searchEndDate, setSearchEndDate] = useState('');
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
-
-  const fetchData = async () => {
-    setLoading(true);
-    const patientsData = await getPatients();
-    const reportsData = await getReports({ printed: true });
-    setPatients(patientsData || []);
-    setReports(reportsData || []);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchData();
-    const handleReportUpdate = () => fetchData();
-    window.addEventListener('reportUpdated', handleReportUpdate);
-    return () => window.removeEventListener('reportUpdated', handleReportUpdate);
-  }, []);
-
-  const handleView = (report) => {
-    setSelectedReport(report);
-    setPreviewOpen(true);
-  };
-  const handleClosePreview = () => {
-    setPreviewOpen(false);
-    setTimeout(() => setSelectedReport(null), 300);
-  };
-  
-  const handleDownloadPDF = async (report) => {
-    if (!report || !report.reportDisplayData) return;
-    const doc = (
-      <ReportDocument 
-        patient={report.reportDisplayData.patient} 
-        testTables={report.reportDisplayData.testTables} 
-        isPrinting={true}
-        removedImages={new Set(report.reportDisplayData.removedImages || [])}
-        tableNotes={report.reportDisplayData.tableNotes || {}}
-      />
-    );
-    const blob = await pdf(doc).toBlob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `report-${report._id}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  };
-
-  // Filtering logic
-  const filteredPatients = patients.filter((p) => {
-    const patientNameMatch = p.name.toLowerCase().includes(searchPatient.toLowerCase());
-    const refNameMatch = getRefName(p).toLowerCase().includes(searchRef.toLowerCase());
-    const testNameMatch = getTestNames(p).toLowerCase().includes(searchTest.toLowerCase());
-    const date = new Date(p.sampleCollectionDate);
-    const startDateMatch = searchStartDate ? date >= new Date(searchStartDate) : true;
-    const endDateMatch = searchEndDate ? date <= new Date(searchEndDate) : true;
-    return patientNameMatch && refNameMatch && testNameMatch && startDateMatch && endDateMatch;
-  });
-
-  const sortedPatients = [...filteredPatients].sort((a, b) => {
-    let aValue, bValue;
-    switch (sortBy) {
-      case 'name':
-        aValue = a.name?.toLowerCase() || ''; bValue = b.name?.toLowerCase() || ''; break;
-      case 'ref':
-        aValue = getRefName(a).toLowerCase(); bValue = getRefName(b).toLowerCase(); break;
-      case 'date':
-        aValue = new Date(a.sampleCollectionDate); bValue = new Date(b.sampleCollectionDate); break;
-      case 'test':
-        aValue = getTestNames(a).toLowerCase(); bValue = getTestNames(b).toLowerCase(); break;
-      default:
-        aValue = ''; bValue = '';
-    }
-    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -  // Calculate stats for the summary cards
+const newUI = `  // Calculate stats for the summary cards
   const totalRecords = filteredPatients.length;
   const recentRecords = filteredPatients.filter(p => new Date(p.sampleCollectionDate) > new Date(Date.now() - 30*24*60*60*1000)).length;
   const matchCount = sortedPatients.length;
@@ -404,3 +293,7 @@ const History = () => {
 }
 
 export default History;
+`;
+
+fs.writeFileSync('src/components/History.js', code.substring(0, startIndex) + newUI);
+console.log('Done History.js!');

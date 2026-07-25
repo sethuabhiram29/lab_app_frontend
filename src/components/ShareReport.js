@@ -28,6 +28,16 @@ import {
   TableRow,
   Link
 } from '@mui/material';
+import {
+  Search as SearchIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  Event as EventIcon,
+  RadioButtonUnchecked as RadioButtonUncheckedIcon,
+  CloudQueue as CloudQueueIcon,
+  WhatsApp as WhatsAppIcon,
+  Email as EmailIcon
+} from '@mui/icons-material';
+import { Avatar, InputAdornment, OutlinedInput, Chip } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { pdf } from '@react-pdf/renderer';
 import { getReports, updateReport, saveUpdationLinks } from '../api';
@@ -1238,522 +1248,359 @@ Your Diagnostic Center`;
   const filteredReports = reports
     .filter(r => {
       const reportDate = new Date(r.reportDisplayData?.patient?.sampleCollectionDate || r.createdAt);
-      const reportDateString = `${reportDate.getFullYear()}-${String(reportDate.getMonth() + 1).padStart(2, '0')}-${String(reportDate.getDate()).padStart(2, '0')}`;
-      return reportDateString === selectedDate;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.reportDisplayData?.patient?.sampleCollectionDate || a.createdAt);
-      const dateB = new Date(b.reportDisplayData?.patient?.sampleCollectionDate || b.createdAt);
-      return dateB - dateA;
-    });
+      const reportDateString = `${reportDate.getFullYear()}-${String(reportDate.getMonth() + 1).padStart(2, '0')}-${String(reportDate.getDa  // Calculate stats for the summary cards
+  const totalReports = filteredReports.length;
+  const withLinks = filteredReports.filter(r => r.patient?.updationLinks?.viewLink || r.patient?.updationLinks?.downloadLink).length;
+  const pendingLinks = totalReports - withLinks;
+
+  // Animation variants
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } }
+  };
+  const fadeUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+  };
+  const scaleUp = {
+    hidden: { opacity: 0, scale: 0.96 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+  };
 
   return (
-    <Box p={3}>
-      <motion.div initial={prefersReduced ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, color: 'var(--text-primary)', mb: 3 }}>
-          Share Report
-        </Typography>
-      </motion.div>
+    <Box sx={{ minHeight: '100vh', background: 'var(--surface-light)', pb: 8 }}>
+      {/* Top Header Background Gradient */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0, left: 0, right: 0, height: '40vh',
+        background: 'linear-gradient(135deg, rgba(139,92,246,0.05) 0%, rgba(124,58,237,0.1) 100%)',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }} />
 
-      {/* Date Picker */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <TextField
-          type="date"
-          label="Select Date"
-          value={selectedDate}
-          onChange={e => setSelectedDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-        <Button 
-          variant="outlined" 
-          size="small" 
-          onClick={() => setSelectedDate(getLocalTodayString())}
-        >
-          Today
-        </Button>
-      </Box>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, pt: { xs: 4, md: 8 } }}>
+        <AnimatePresence>
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible">
+            
+            {/* Header Section */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 6, gap: 3 }}>
+              <motion.div variants={fadeUp}>
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '0.1em', mb: 1, textTransform: 'uppercase' }}>
+                  DISPATCH
+                </Typography>
+                <Typography variant="h2" sx={{ fontWeight: 900, color: '#0F172A', mb: 1, fontSize: { xs: '2rem', md: '2.5rem' }, letterSpacing: '-0.02em', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+                  Share Report
+                </Typography>
+                <Typography sx={{ color: 'var(--text-secondary)', maxWidth: 500, fontSize: '0.95rem', lineHeight: 1.6 }}>
+                  Distribute patient reports securely via WhatsApp, Email, or direct links. Connect Google Drive to enable cloud sharing.
+                </Typography>
+              </motion.div>
 
-
-      {driveAuthChecked && !driveAuthorized && (
-        <Paper sx={{ p: 2, mb: 2, backgroundColor: '#f5f5f5' }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Typography variant="body1" color="warning.main">
-              Google Drive is not connected. Please sign in to enable report uploads.
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleDriveAuth}
-              disabled={!tokenClient}
-            >
-              Sign in to Google Drive
-            </Button>
-          </Box>
-          {driveAuthError && (
-            <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
-              {driveAuthError}
-            </Typography>
-          )}
-        </Paper>
-      )}
-
-      {driveAuthChecked && driveAuthorized && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          Connected to Google Drive
-        </Alert>
-      )}
-
-      {filteredReports.length === 0 ? (
-        <Alert severity="info">No reports found for this date. Please create a report first or select another date.</Alert>
-      ) : (
-        <>
-          {/* Only render the table if there are standard reports */}
-          {filteredReports.some(r => r.reportDisplayData && Object.keys(r.reportDisplayData).length > 0) && (
-            <TableContainer component={Paper} sx={{ mt: 2, borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-light)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
-              <Table>
-                <TableHead sx={{ background: 'var(--surface-light)' }}>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Patient ID</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Patient Name</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Links</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody component={motion.tbody} variants={prefersReduced ? false : containerVariants} initial="hidden" animate="visible">
-                  {filteredReports.filter(report => {
-                    const hasDisplay = !!report.reportDisplayData && Object.keys(report.reportDisplayData).length > 0;
-                    return hasDisplay;
-                  }).map(report => {
-                    const patient = report.patient;
-                    const patientName = patient?.name || 'Unknown Patient';
-                    const patientId = patient?.regNo || '-';
-                    const patientMongoId = patient?._id;
-                    
-                    const reportDate = report.patient?.sampleCollectionDate || report.createdAt
-                      ? new Date(report.reportDisplayData.patient?.sampleCollectionDate || report.createdAt).toLocaleDateString()
-                      : '-';
-                    
-                    return (
-                      <TableRow 
-                        component={motion.tr} variants={prefersReduced ? false : rowVariants}
-                        key={report._id}
-                        hover
-                        sx={{ 
-                          transition: 'all 0.2s',
-                          '&:hover': { background: 'var(--surface-light) !important', transform: 'translateY(-1px)', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', zIndex: 1, position: 'relative' }
-                        }}
-                      >
-                        <TableCell sx={{ color: 'var(--text-secondary)' }}>{patientId}</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                          {patientName}
-                        </TableCell>
-                        <TableCell sx={{ color: 'var(--text-secondary)' }}>{reportDate}</TableCell>
-                        <TableCell>
-                          {patient?.updationLinks ? (
-                            <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
-                              {patient.updationLinks.viewLink && (
-                                <Link 
-                                  href={patient.updationLinks.viewLink} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  sx={{ fontSize: '0.8rem', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-                                >
-                                  <LinkIcon sx={{ fontSize: '0.9rem', mr: 0.5 }} />
-                                  View
-                                </Link>
-                              )}
-                              {patient.updationLinks.downloadLink && (
-                                <Link 
-                                  href={patient.updationLinks.downloadLink}
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  sx={{ fontSize: '0.8rem', color: 'var(--color-secondary)', display: 'flex', alignItems: 'center', ml: 1, fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-                                >
-                                  <DownloadIcon sx={{ fontSize: '0.9rem', mr: 0.5 }} />
-                                  Download
-                                </Link>
-                              )}
-                            </Box>
-                          ) : (
-                            <Typography variant="caption" sx={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                              No links available
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                              <Button 
-                                variant="outlined" 
-                                size="small" 
-                                onClick={() => handleShareWhatsApp(report)} 
-                                startIcon={uploadingToDrive ? <CircularProgress size={14} /> : null}
-                                sx={{ borderRadius: 'var(--radius-md)', textTransform: 'none', fontWeight: 600, borderColor: '#22c55e', color: '#22c55e', '&:hover': { borderColor: '#16a34a', bgcolor: 'rgba(34,197,94,0.05)' } }}
-                              >
-                                {uploadingToDrive ? 'Preparing...' : 'WhatsApp'}
-                              </Button>
-                            </motion.div>
-                            <Box display="flex" gap={1}>
-                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  onClick={() => handleViewPdf(report)}
-                                  startIcon={<PreviewIcon />}
-                                  sx={{ borderRadius: 'var(--radius-md)', textTransform: 'none', fontWeight: 600, borderColor: 'rgba(15,110,86,0.3)', color: 'var(--color-primary)' }}
-                                >
-                                  View
-                                </Button>
-                              </motion.div>
-                              {report.patient?.updationLinks?.viewLink ? (
-                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => handleUpdatePdf(report)}
-                                    disabled={!report.reportDisplayData || !driveAuthorized}
-                                    startIcon={report.updating ? <CircularProgress size={14} /> : <UpdateIcon />}
-                                    sx={{ borderRadius: 'var(--radius-md)', textTransform: 'none', fontWeight: 600, borderColor: '#f59e0b', color: '#f59e0b', '&:hover': { borderColor: '#d97706', bgcolor: 'rgba(245,158,11,0.05)' } }}
-                                  >
-                                    {report.updating ? 'Updating...' : 'Update PDF'}
-                                  </Button>
-                                </motion.div>
-                              ) : (
-                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                  <Button
-                                    variant="contained"
-                                    size="small"
-                                    onClick={() => handleUploadToDrive(report)}
-                                    disabled={!report.reportDisplayData || !driveAuthorized}
-                                    startIcon={report.uploading ? <CircularProgress size={14} /> : <CloudUploadIcon />}
-                                    sx={{ borderRadius: 'var(--radius-md)', textTransform: 'none', fontWeight: 600, background: 'var(--color-secondary)', boxShadow: 'none' }}
-                                  >
-                                    {report.uploading ? 'Uploading...' : 'Upload to Drive'}
-                                  </Button>
-                                </motion.div>
-                              )}
-                            </Box>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-
-          {/* Print all note-only messages as plain text after the table */}
-          {filteredReports.filter(r => r.note && (!r.reportDisplayData || Object.keys(r.reportDisplayData).length === 0)).map((report) => (
-            <div key={report._id} style={{ marginTop: 8, marginBottom: 8, fontSize: '1rem', color: '#333' }}>
-              {report.note}
-            </div>
-          ))}
-        </>
-      )}
-      
-      {/* Email Dialog */}
-      {/* PDF Preview Dialog */}
-      <Dialog
-        open={previewOpen}
-        onClose={handlePreviewClose}
-        maxWidth="lg"
-        fullWidth
-        TransitionComponent={Transition}
-        PaperProps={{ sx: { borderRadius: 'var(--radius-2xl)', overflow: 'hidden', minHeight: '80vh' } }}
-        sx={{ backdropFilter: 'blur(8px)' }}
-      >
-        <DialogTitle sx={{ px: 3, py: 2, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface-light)', fontWeight: 800, color: 'var(--text-primary)' }}>
-          Report Preview
-          <IconButton onClick={handlePreviewClose} sx={{ color: 'var(--text-secondary)' }}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          {selectedReport && (
-            <PDFPreview 
-              document={
-                <ReportDocument 
-                  patient={selectedReport.reportDisplayData.patient}
-                  testTables={selectedReport.reportDisplayData.testTables || []}
-                  isPrinting={false}
-                  removedImages={new Set(selectedReport.reportDisplayData.removedImages || [])}
-                  tableNotes={selectedReport.reportDisplayData.tableNotes || {}}
-                />
-              }
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Email Dialog */}
-      <Dialog open={emailDialogOpen} onClose={() => setEmailDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Share Report via Email</DialogTitle>
-        <DialogContent>
-          <FormControl component="fieldset" sx={{ mb: 2 }}>
-            <FormLabel component="legend">Send to</FormLabel>
-            <RadioGroup
-              value={emailRecipient}
-              onChange={e => setEmailRecipient(e.target.value)}
-            >
-              <FormControlLabel value="patient" control={<Radio />} label="Patient" />
-              <FormControlLabel value="doctor" control={<Radio />} label="Doctor" />
-              <FormControlLabel value="custom" control={<Radio />} label="Custom Email" />
-            </RadioGroup>
-          </FormControl>
-          {emailRecipient === 'custom' && (
-            <TextField
-              fullWidth
-              label="Email Username"
-              value={customEmail.replace(/@gmail\.com$/, '')} // Remove @gmail.com when displaying
-              onChange={(e) => {
-                const username = e.target.value.trim().replace(/@gmail\.com$/, '');
-                // Store the complete email
-                setCustomEmail(username ? `${username}@gmail.com` : '');
-              }}
-              onBlur={(e) => {
-                const username = e.target.value.trim().replace(/@gmail\.com$/, '');
-                if (username && !/^[a-zA-Z0-9._-]+$/.test(username)) {
-                  setSnackbar({
-                    open: true,
-                    message: 'Please enter a valid Gmail username (letters, numbers, dots, and dashes only)',
-                    severity: 'warning'
-                  });
-                }
-              }}
-              error={customEmail && !/^[a-zA-Z0-9._-]+@gmail\.com$/.test(customEmail)}
-              helperText={(customEmail && !/^[a-zA-Z0-9._-]+@gmail\.com$/.test(customEmail)) ? 
-                "Please enter a valid Gmail username" : 
-                `Will be sent to: ${customEmail || 'username@gmail.com'}`}
-              sx={{ mb: 2 }}
-              placeholder="Enter Gmail username (e.g., username)"
-              InputProps={{
-                endAdornment: <span style={{color: 'rgba(0, 0, 0, 0.6)'}}>@gmail.com</span>,
-              }}
-            />
-          )}
-          {(sharingLoading || uploadingToDrive) && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              {uploadingToDrive ? 'Uploading PDF to Google Drive...' : 'Sending email...'}
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEmailDialogOpen(false)} disabled={sharingLoading || uploadingToDrive}>Cancel</Button>
-          <Button 
-            onClick={handleEmailSend} 
-            variant="contained" 
-            disabled={sharingLoading || uploadingToDrive}
-            startIcon={(sharingLoading || uploadingToDrive) ? <CircularProgress size={20} /> : null}
-          >
-            {uploadingToDrive ? 'Uploading to Drive...' : sharingLoading ? 'Sending...' : 'Send Email'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* WhatsApp Dialog */}
-      <Dialog open={whatsAppDialogOpen} onClose={() => setWhatsAppDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Share Report via WhatsApp</DialogTitle>
-        <DialogContent>
-          <FormControl component="fieldset" sx={{ mb: 2 }}>
-            <FormLabel component="legend">Share with</FormLabel>
-            <RadioGroup
-              value={whatsAppRecipient}
-              onChange={e => setWhatsAppRecipient(e.target.value)}
-            >
-              <FormControlLabel value="patient" control={<Radio />} label="Patient" />
-              <FormControlLabel value="doctor" control={<Radio />} label="Doctor" />
-              <FormControlLabel value="custom" control={<Radio />} label="Custom Phone" />
-            </RadioGroup>
-          </FormControl>
-          {whatsAppRecipient === 'custom' && (
-            <TextField
-              fullWidth
-              label="Phone Number"
-              value={customPhone}
-              onChange={(e) => setCustomPhone(e.target.value)}
-              placeholder="e.g., 1234567890"
-              sx={{ mb: 2 }}
-            />
-          )}
-          {(sharingLoading || uploadingToDrive) && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              {uploadingToDrive ? 'Uploading PDF to Google Drive...' : 'Preparing WhatsApp message...'}
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setWhatsAppDialogOpen(false)} disabled={sharingLoading || uploadingToDrive}>Cancel</Button>
-          <Button 
-            onClick={handleWhatsAppSend} 
-            variant="contained" 
-            disabled={sharingLoading || uploadingToDrive}
-            startIcon={(sharingLoading || uploadingToDrive) ? <CircularProgress size={20} /> : null}
-          >
-            {uploadingToDrive ? 'Uploading to Drive...' : sharingLoading ? 'Opening...' : 'Open WhatsApp'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
-      {/* Upload Preview Dialog */}
-      <Dialog open={uploadPreviewOpen} onClose={() => setUploadPreviewOpen(false)} maxWidth="lg" fullWidth>
-        <DialogTitle>
-          Content Being Uploaded
-          <IconButton
-            onClick={() => setUploadPreviewOpen(false)}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
-            ×
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          {selectedReport && selectedReport.reportDisplayData && (
-            <PDFPreview
-              document={
-                <ReportDocument 
-                  patient={selectedReport.reportDisplayData.patient} 
-                  testTables={selectedReport.reportDisplayData.testTables} 
-                  isPrinting={false}
-                  removedImages={new Set(selectedReport.reportDisplayData.removedImages || [])} 
-                  tableNotes={selectedReport.reportDisplayData.tableNotes || {}}
-                  qrImage={selectedReport.reportDisplayData.qrImage}
-                  key={`upload-preview-${Date.now()}`}
-                />
-              }
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setUploadPreviewOpen(false)} color="primary">Close</Button>
-          <Button onClick={() => {
-            setUploadPreviewOpen(false);
-            handleConfirmUpload();
-          }} color="primary" variant="contained">
-            Proceed with Upload
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* PDF Preview Dialog */}
-      <Dialog open={previewOpen} onClose={handleClosePreview} maxWidth="lg" fullWidth>
-        <DialogTitle>
-          Report Preview
-          <IconButton
-            onClick={handleClosePreview}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
-            ×
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          {selectedReport && selectedReport.reportDisplayData && (
-            <>
-              {/* Drive Link Status */}
-              {selectedReport.driveViewLink && (
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  <Typography variant="body2" gutterBottom>
-                    Drive Link: {selectedReport.driveViewLink}
-                  </Typography>
-                  <Typography variant="body2">
-                    File ID: {selectedReport.driveFileId || extractFileIdFromDriveLink(selectedReport.driveViewLink)}
-                  </Typography>
-                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                    Report {selectedReport._id} - {selectedReport.reportDisplayData.patient?.name} 
-                    ({new Date(selectedReport.reportDate).toLocaleString()})
-                  </Typography>
-                </Alert>
-              )}
-              
-              <Box sx={{ position: 'relative' }}>
-                <PDFPreview 
-                  document={
-                    <ReportDocument 
-                      patient={selectedReport.reportDisplayData.patient} 
-                      testTables={selectedReport.reportDisplayData.testTables}
-                      isPrinting={false}
-                      removedImages={new Set(selectedReport.reportDisplayData.removedImages || [])} 
-                      tableNotes={selectedReport.reportDisplayData.tableNotes || {}}
-                      qrImage={selectedReport.reportDisplayData.qrImage}
-                      key={`preview-${selectedReport._id}-${Date.now()}`}
-                    />
-                  } 
-                />
-                {uploadingToDrive && (
-                  <Box 
-                    sx={{ 
-                      position: 'absolute', 
-                      top: 0, 
-                      left: 0, 
-                      right: 0, 
-                      bottom: 0, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      backgroundColor: 'rgba(255,255,255,0.8)' 
-                    }}
-                  >
-                    <Box 
-                      sx={{ 
-                        textAlign: 'center',
-                        backgroundColor: 'white',
-                        p: 3,
-                        borderRadius: 1,
-                        boxShadow: 1
+              <motion.div variants={scaleUp}>
+                {driveAuthChecked && (
+                  driveAuthorized ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip
+                        icon={<CheckCircleOutlineIcon sx={{ color: '#8B5CF6 !important' }} />}
+                        label="Google Drive Connected"
+                        sx={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', fontWeight: 700, borderRadius: '100px', border: '1px solid rgba(139,92,246,0.2)' }}
+                      />
+                    </Box>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      startIcon={<CloudQueueIcon />}
+                      onClick={handleDriveAuth}
+                      disabled={!tokenClient}
+                      sx={{
+                        background: '#8B5CF6', color: '#fff', fontWeight: 700, px: 4, py: 1.5,
+                        borderRadius: '100px', textTransform: 'none', fontSize: '0.95rem',
+                        boxShadow: '0 8px 24px rgba(139,92,246,0.3)',
+                        '&:hover': { background: '#7C3AED', boxShadow: '0 12px 32px rgba(139,92,246,0.4)' },
                       }}
                     >
-                      <CircularProgress size={40} sx={{ mb: 2 }} />
-                      <Typography variant="h6">
-                        Updating in Drive...
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        This may take a few moments
-                      </Typography>
-                    </Box>
+                      Connect Google Drive
+                    </Button>
+                  )
+                )}
+              </motion.div>
+            </Box>
+
+            {/* Stats Cards Section */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 6 }}>
+              {[
+                { title: 'TOTAL REPORTS', value: totalReports, delay: 0 },
+                { title: 'WITH LINKS', value: withLinks, delay: 0.1 },
+                { title: 'PENDING UPLOAD', value: pendingLinks, delay: 0.2 },
+                { title: 'SHARED TODAY', value: '-', delay: 0.3 }
+              ].map((stat, idx) => (
+                <motion.div key={idx} variants={scaleUp} custom={stat.delay}>
+                  <Box sx={{
+                    p: 3, borderRadius: '24px', background: 'rgba(255,255,255,0.7)',
+                    backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.8)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)', position: 'relative', overflow: 'hidden'
+                  }}>
+                    <Box sx={{
+                      position: 'absolute', top: 0, right: 0, bottom: 0, left: '50%',
+                      background: 'radial-gradient(circle at center right, rgba(139,92,246,0.1) 0%, transparent 70%)', zIndex: 0
+                    }} />
+                    <Typography sx={{ position: 'relative', zIndex: 1, fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em', textTransform: 'uppercase', mb: 1 }}>
+                      {stat.title}
+                    </Typography>
+                    <Typography sx={{ position: 'relative', zIndex: 1, fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', fontFamily: '"Plus Jakarta Sans", sans-serif', lineHeight: 1 }}>
+                      {stat.value}
+                    </Typography>
+                  </Box>
+                </motion.div>
+              ))}
+            </Box>
+
+            {/* Main Table Container */}
+            <motion.div variants={fadeUp}>
+              <Box sx={{
+                borderRadius: '32px', background: '#fff', boxShadow: '0 24px 64px rgba(0,0,0,0.06)',
+                border: '1px solid rgba(30,41,59,0.05)', overflow: 'hidden', mb: 4
+              }}>
+                {/* Table Toolbar */}
+                <Box sx={{ p: 3, px: 4, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(30,41,59,0.05)', gap: 3 }}>
+                  
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: { xs: '100%', md: 'auto' } }}>
+                    <TextField
+                      type="date"
+                      size="small"
+                      value={selectedDate}
+                      onChange={e => setSelectedDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '100px', background: '#F8FAFC', fontWeight: 600, width: 160 } }}
+                    />
+                    <Button 
+                      onClick={() => setSelectedDate(getLocalTodayString())}
+                      sx={{ borderRadius: '100px', px: 3, color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.3)', fontWeight: 600, '&:hover': { background: 'rgba(139,92,246,0.05)' } }}
+                    >
+                      Today
+                    </Button>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: { xs: '100%', md: 'auto' } }}>
+                    <OutlinedInput
+                      size="small"
+                      placeholder="Search patient..."
+                      startAdornment={<InputAdornment position="start"><SearchIcon sx={{ color: 'var(--text-secondary)' }} /></InputAdornment>}
+                      sx={{ borderRadius: '100px', width: { xs: '100%', md: 240 }, background: '#F8FAFC' }}
+                    />
+                  </Box>
+
+                </Box>
+
+                {/* Table Content */}
+                {filteredReports.length === 0 ? (
+                  <Box p={6} textAlign="center">
+                    <Typography color="textSecondary">No reports found for this date.</Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <Table sx={{ minWidth: 800 }}>
+                      <TableHead>
+                        <TableRow sx={{ '& th': { borderBottom: 'none', py: 3 } }}>
+                          <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em', pl: 5 }}>ID</TableCell>
+                          <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em' }}>PATIENT</TableCell>
+                          <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em' }}>DATE</TableCell>
+                          <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em' }}>DRIVE LINKS</TableCell>
+                          <TableCell sx={{ color: 'var(--text-secondary)', fontWeight: 800, fontSize: '0.7rem', letterSpacing: '0.1em', align: 'right', pr: 5 }}>ACTIONS</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <AnimatePresence>
+                          {filteredReports.filter(report => {
+                            const hasDisplay = !!report.reportDisplayData && Object.keys(report.reportDisplayData).length > 0;
+                            return hasDisplay;
+                          }).map((report, idx) => {
+                            const patient = report.patient;
+                            const patientName = patient?.name || 'Unknown Patient';
+                            const patientId = patient?.regNo || '-';
+                            const simpleId = (patientId || '').toString().replace(/^0+/, '');
+                            const reportDate = patient?.sampleCollectionDate || report.createdAt
+                              ? new Date(report.reportDisplayData.patient?.sampleCollectionDate || report.createdAt).toLocaleDateString()
+                              : '-';
+                            
+                            const hasLinks = !!(patient?.updationLinks?.viewLink || patient?.updationLinks?.downloadLink);
+
+                            return (
+                              <motion.tr
+                                key={report._id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                transition={{ duration: 0.4, delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                                whileHover={{ 
+                                  scale: 1.005,
+                                  backgroundColor: 'rgba(139,92,246,0.03)',
+                                  boxShadow: 'inset 4px 0 0 #8B5CF6'
+                                }}
+                                style={{ 
+                                  borderBottom: '1px solid rgba(30,41,59,0.03)',
+                                  transition: 'background-color 0.2s ease, box-shadow 0.2s ease'
+                                }}
+                              >
+                                <TableCell sx={{ pl: 5, borderBottom: 'none' }}>
+                                  <Typography sx={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}># {simpleId || idx+1}</Typography>
+                                </TableCell>
+                                <TableCell sx={{ borderBottom: 'none' }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Avatar sx={{ bgcolor: 'rgba(139,92,246,0.15)', color: '#8B5CF6', fontWeight: 800, fontSize: '0.9rem', width: 40, height: 40 }}>
+                                      {patientName.substring(0,2).toUpperCase()}
+                                    </Avatar>
+                                    <Box>
+                                      <Typography sx={{ fontWeight: 800, color: '#0F172A' }}>{patientName}</Typography>
+                                      <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Patient ID • {patientId}</Typography>
+                                    </Box>
+                                  </Box>
+                                </TableCell>
+                                <TableCell sx={{ borderBottom: 'none' }}>
+                                  <Typography sx={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{reportDate}</Typography>
+                                </TableCell>
+                                <TableCell sx={{ borderBottom: 'none' }}>
+                                  {hasLinks ? (
+                                    <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
+                                      {patient.updationLinks.viewLink && (
+                                        <Link 
+                                          href={patient.updationLinks.viewLink} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          sx={{ fontSize: '0.75rem', color: '#10B981', display: 'flex', alignItems: 'center', fontWeight: 800, textDecoration: 'none', background: 'rgba(16,185,129,0.1)', px: 1.5, py: 0.5, borderRadius: '100px' }}
+                                        >
+                                          <LinkIcon sx={{ fontSize: '0.9rem', mr: 0.5 }} /> View
+                                        </Link>
+                                      )}
+                                      {patient.updationLinks.downloadLink && (
+                                        <Link 
+                                          href={patient.updationLinks.downloadLink}
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          sx={{ fontSize: '0.75rem', color: '#3B82F6', display: 'flex', alignItems: 'center', fontWeight: 800, textDecoration: 'none', background: 'rgba(59,130,246,0.1)', px: 1.5, py: 0.5, borderRadius: '100px' }}
+                                        >
+                                          <DownloadIcon sx={{ fontSize: '0.9rem', mr: 0.5 }} /> Download
+                                        </Link>
+                                      )}
+                                    </Box>
+                                  ) : (
+                                    <Chip
+                                      icon={<RadioButtonUncheckedIcon sx={{ color: 'var(--text-muted) !important' }} />}
+                                      label="No links"
+                                      size="small"
+                                      sx={{ background: 'transparent', color: 'var(--text-secondary)', fontWeight: 600, borderRadius: '100px', border: '1px solid var(--border-light)' }}
+                                    />
+                                  )}
+                                </TableCell>
+                                <TableCell align="right" sx={{ pr: 5, borderBottom: 'none' }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      startIcon={<PreviewIcon sx={{ fontSize: '1rem' }} />}
+                                      onClick={() => handleViewPdf(report)}
+                                      sx={{ borderRadius: '100px', color: 'var(--text-secondary)', borderColor: 'var(--border-light)', fontWeight: 700, textTransform: 'none', '&:hover': { background: '#F8FAFC' } }}
+                                    >
+                                      View
+                                    </Button>
+                                    <Button 
+                                      variant="contained" 
+                                      size="small" 
+                                      onClick={() => handleShareWhatsApp(report)} 
+                                      startIcon={<WhatsAppIcon sx={{ fontSize: '1rem' }} />}
+                                      sx={{ borderRadius: '100px', background: '#22C55E', color: '#fff', fontWeight: 700, textTransform: 'none', boxShadow: 'none', '&:hover': { background: '#16A34A', boxShadow: '0 4px 12px rgba(34,197,94,0.3)' } }}
+                                    >
+                                      WhatsApp
+                                    </Button>
+                                    <Button
+                                      variant="contained"
+                                      size="small"
+                                      onClick={() => handleEmailShare(report)}
+                                      startIcon={<EmailIcon sx={{ fontSize: '1rem' }} />}
+                                      sx={{ borderRadius: '100px', background: '#8B5CF6', color: '#fff', fontWeight: 700, textTransform: 'none', boxShadow: 'none', '&:hover': { background: '#7C3AED', boxShadow: '0 4px 12px rgba(139,92,246,0.3)' } }}
+                                    >
+                                      Email
+                                    </Button>
+                                  </Box>
+                                </TableCell>
+                              </motion.tr>
+                            );
+                          })}
+                        </AnimatePresence>
+                      </TableBody>
+                    </Table>
                   </Box>
                 )}
               </Box>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          {selectedReport?.driveViewLink && (
-            <>
-              <Button
-                onClick={() => window.open(selectedReport.driveViewLink, '_blank')}
-                startIcon={<LinkIcon />}
-                sx={{ mr: 'auto' }}
-              >
-                Open in Drive
-              </Button>
-              <Button
-                onClick={handleUpdateCurrentPreview}
-                variant="contained"
-                color="primary"
-                disabled={uploadingToDrive || !driveAuthorized}
-                startIcon={uploadingToDrive ? <CircularProgress size={20} /> : null}
-                sx={{ mr: 1 }}
-              >
-                {uploadingToDrive ? 'Updating...' : 'Update in Drive'}
-              </Button>
-            </>
-          )}
-          <Button onClick={handleClosePreview}>Close</Button>
-        </DialogActions>
-      </Dialog>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Dialogs */}
+        <Dialog open={whatsAppDialogOpen} onClose={() => setWhatsAppDialogOpen(false)} PaperProps={{ sx: { borderRadius: '24px' } }}>
+          <DialogTitle sx={{ fontWeight: 800 }}>Share via WhatsApp</DialogTitle>
+          <DialogContent sx={{ p: 3 }}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend" sx={{ fontWeight: 700, mb: 1 }}>Select Recipient</FormLabel>
+              <RadioGroup value={whatsAppRecipient} onChange={(e) => { setWhatsAppRecipient(e.target.value); setCustomPhone(''); }}>
+                <FormControlLabel value="patient" control={<Radio color="primary" />} label={`Patient (${whatsAppReport?.reportDisplayData.patient?.mobileNumber || 'N/A'})`} />
+                <FormControlLabel value="doctor" control={<Radio color="primary" />} label={`Doctor (${whatsAppReport?.reportDisplayData.patient?.refDoctor?.contact || 'N/A'})`} />
+                <FormControlLabel value="custom" control={<Radio color="primary" />} label="Custom Number" />
+              </RadioGroup>
+            </FormControl>
+            {whatsAppRecipient === 'custom' && (
+              <TextField fullWidth margin="normal" label="Custom Phone Number (10 digits)" value={customPhone} onChange={(e) => setCustomPhone(e.target.value)} placeholder="Enter 10 digit mobile number" size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} />
+            )}
+          </DialogContent>
+          <DialogActions sx={{ p: 3, pt: 0 }}>
+            <Button onClick={() => setWhatsAppDialogOpen(false)} sx={{ borderRadius: '100px', fontWeight: 700 }}>Cancel</Button>
+            <Button onClick={handleWhatsAppSend} variant="contained" disabled={sharingLoading} sx={{ background: '#22C55E', color: '#fff', borderRadius: '100px', fontWeight: 700, '&:hover': { background: '#16A34A' } }}>
+              {sharingLoading ? 'Preparing...' : 'Open WhatsApp'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={emailDialogOpen} onClose={() => setEmailDialogOpen(false)} PaperProps={{ sx: { borderRadius: '24px' } }}>
+          <DialogTitle sx={{ fontWeight: 800 }}>Share via Email</DialogTitle>
+          <DialogContent sx={{ p: 3 }}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend" sx={{ fontWeight: 700, mb: 1 }}>Select Recipient</FormLabel>
+              <RadioGroup value={emailRecipient} onChange={(e) => { setEmailRecipient(e.target.value); setCustomEmail(''); }}>
+                <FormControlLabel value="patient" control={<Radio color="primary" />} label={`Patient (${emailReport?.reportDisplayData.patient?.email || 'N/A'})`} />
+                <FormControlLabel value="doctor" control={<Radio color="primary" />} label={`Doctor (${emailReport?.reportDisplayData.patient?.refDoctor?.email || 'N/A'})`} />
+                <FormControlLabel value="custom" control={<Radio color="primary" />} label="Custom Email" />
+              </RadioGroup>
+            </FormControl>
+            {emailRecipient === 'custom' && (
+              <TextField fullWidth margin="normal" label="Custom Email Address" value={customEmail} onChange={(e) => setCustomEmail(e.target.value)} placeholder="Enter email address" size="small" type="email" sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} />
+            )}
+          </DialogContent>
+          <DialogActions sx={{ p: 3, pt: 0 }}>
+            <Button onClick={() => setEmailDialogOpen(false)} sx={{ borderRadius: '100px', fontWeight: 700 }}>Cancel</Button>
+            <Button onClick={handleEmailSend} variant="contained" disabled={sharingLoading} sx={{ background: '#8B5CF6', color: '#fff', borderRadius: '100px', fontWeight: 700, '&:hover': { background: '#7C3AED' } }}>
+              {sharingLoading ? 'Preparing...' : 'Open Email Client'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {previewOpen && (
+          <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="lg" fullWidth PaperProps={{ sx: { borderRadius: '24px' } }}>
+            <DialogTitle sx={{ fontWeight: 800 }}>Report Preview <IconButton onClick={() => setPreviewOpen(false)} sx={{ float: 'right' }}><CloseIcon /></IconButton></DialogTitle>
+            <DialogContent>
+              {selectedReport && getReportDocumentFor(selectedReport, false) && (
+                <PDFPreview document={getReportDocumentFor(selectedReport, false)} />
+              )}
+            </DialogContent>
+          </Dialog>
+        )}
+
+        <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+          <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
+        </Snackbar>
+
+      </Container>
     </Box>
   );
-};
+}
 
 export default ShareReport;
