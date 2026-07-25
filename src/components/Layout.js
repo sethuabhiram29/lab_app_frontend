@@ -62,6 +62,7 @@ function Layout() {
   const prefersReduced = useReducedMotion();
 
   const isHome = location.pathname === '/';
+  const isFullBleed = location.pathname === '/patient-entry';
   const currentDrawerWidth = isSidebarCollapsed ? drawerWidthCollapsed : drawerWidthExpanded;
 
   useEffect(() => {
@@ -454,11 +455,11 @@ function Layout() {
           display: 'flex',
           flexDirection: 'column',
           minHeight: '100vh',
-          background: 'var(--surface-light)',
+          background: isFullBleed ? 'transparent' : 'var(--surface-light)',
           transition: 'width 0.2s, margin-left 0.2s',
         }}
       >
-        <Box sx={{ flex: 1, p: isHome ? 0 : { xs: 2, sm: 3, md: 4 } }}>
+        <Box sx={{ flex: 1, p: isHome || isFullBleed ? 0 : { xs: 2, sm: 3, md: 4 } }}>
           <motion.div
             key={location.pathname}
             variants={prefersReduced ? {} : pageVariants}
