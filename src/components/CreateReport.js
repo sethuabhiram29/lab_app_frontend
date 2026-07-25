@@ -1870,7 +1870,7 @@ function CreateReport() {
       <Box sx={{
         position: 'fixed',
         top: 0, left: 0, right: 0, bottom: 0,
-        backgroundImage: 'url(/patient_entry_bg_light.png)',
+        backgroundImage: 'url(/report_bg_light.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         opacity: 1,
@@ -2233,12 +2233,12 @@ function CreateReport() {
                 </Box>
               </Box>
 
-              <Box sx={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '24px', p: { xs: 3, md: 5 }, boxShadow: '0 12px 40px rgba(0,0,0,0.04)' }}>
+              <Box sx={glassCardSx}>
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 4, color: '#334155' }}>Enter Test Results</Typography>
                 
                 <Box component="form" onSubmit={handleSubmit}>
                   {testResults.map((table, tableIndex) => (
-                    <Box key={tableIndex} sx={{ mb: 4, background: '#fff', p: { xs: 3, md: 4 }, borderRadius: '16px', border: '1px solid var(--border-light)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                    <Box key={tableIndex} sx={{ mb: 4, background: 'rgba(255,255,255,0.4)', p: { xs: 3, md: 4 }, borderRadius: 'var(--radius-xl)', border: '1px solid rgba(255,255,255,0.6)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)' }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                         <Typography sx={{ fontWeight: 800, color: '#0F6E56', fontSize: '1.25rem' }}>
                           {table.test.name}
@@ -2258,15 +2258,16 @@ function CreateReport() {
 
                       {/* Direct Subtests */}
                       {table.direct.map((sub, subIndex) => (
-                        <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center', p: 2, bgcolor: '#F8FAFC', borderRadius: '12px' }}>
-                          <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{sub.name}</Typography>
+                        <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center' }}>
+                          <Typography sx={fieldLabelSx}>{sub.name}</Typography>
                           <TextField
                             fullWidth
-                            size="small"
+                            variant="filled"
+                            InputProps={{ disableUnderline: true }}
                             value={sub.result}
                             onChange={(e) => handleResultChange(tableIndex, 'direct', null, subIndex, e.target.value)}
                             placeholder="Enter result..."
-                            sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#fff', borderRadius: '8px' } }}
+                            sx={glassFieldSx}
                           />
                           <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: { xs: 'left', md: 'right' } }}>{sub.range} {sub.unit}</Typography>
                         </Box>
@@ -2275,11 +2276,12 @@ function CreateReport() {
                       {table.direct.length > 0 && (
                         <TextField
                           fullWidth
-                          size="small"
+                          variant="filled"
+                          InputProps={{ disableUnderline: true }}
                           label="Add Note (Optional)"
                           value={tableNotes[`${tableIndex}-direct`] || ''}
                           onChange={(e) => handleNoteChange(tableIndex, 'direct', null, e.target.value)}
-                          sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: '#fff' } }}
+                          sx={{ mt: 2, ...glassFieldSx }}
                         />
                       )}
 
@@ -2304,26 +2306,28 @@ function CreateReport() {
                           </Box>
 
                           {pack.subtests.map((sub, subIndex) => (
-                            <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center', p: 2, bgcolor: '#F8FAFC', borderRadius: '12px' }}>
-                              <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{sub.name}</Typography>
+                            <Box key={subIndex} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 3fr 1fr' }, gap: 3, mb: 2, alignItems: 'center' }}>
+                              <Typography sx={fieldLabelSx}>{sub.name}</Typography>
                               <TextField
                                 fullWidth
-                                size="small"
+                                variant="filled"
+                                InputProps={{ disableUnderline: true }}
                                 value={sub.result}
                                 onChange={(e) => handleResultChange(tableIndex, 'pack', packIndex, subIndex, e.target.value)}
                                 placeholder="Enter result..."
-                                sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#fff', borderRadius: '8px' } }}
+                                sx={glassFieldSx}
                               />
                               <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: { xs: 'left', md: 'right' } }}>{sub.range} {sub.unit}</Typography>
                             </Box>
                           ))}
                           <TextField
                             fullWidth
-                            size="small"
+                            variant="filled"
+                            InputProps={{ disableUnderline: true }}
                             label="Add Note for Pack (Optional)"
                             value={tableNotes[`${tableIndex}-pack-${packIndex}`] || ''}
                             onChange={(e) => handleNoteChange(tableIndex, 'pack', packIndex, e.target.value)}
-                            sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: '#fff' } }}
+                            sx={{ mt: 2, ...glassFieldSx }}
                           />
                         </Box>
                       ))}
@@ -2398,5 +2402,61 @@ function CreateReport() {
     </Box>
   );
 }
+
+// ── Reusable Styles ──────────────────────────────────────────────────────────
+
+const glassCardSx = {
+  p: { xs: 3, md: 5 },
+  borderRadius: 'var(--radius-2xl)',
+  background: 'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%)',
+  backdropFilter: 'blur(24px)',
+  border: '1px solid rgba(255,255,255,0.8)',
+  boxShadow: '0 12px 40px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1)',
+};
+
+const glassFieldSx = {
+  '& .MuiFilledInput-root': {
+    backgroundColor: 'rgba(255,255,255,0.45)',
+    backdropFilter: 'blur(12px)',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid rgba(255,255,255,0.7)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    minHeight: '2.5rem',
+    '&:hover': {
+      backgroundColor: 'rgba(255,255,255,0.65)',
+      borderColor: 'rgba(16,185,129,0.5)',
+    },
+    '&.Mui-focused': {
+      backgroundColor: 'rgba(255,255,255,1)',
+      borderColor: '#10B981',
+      boxShadow: '0 0 0 3px rgba(16,185,129,0.15)',
+    },
+  },
+  '& .MuiFilledInput-input': {
+    color: '#0F172A',
+    fontWeight: 600,
+    fontSize: '0.85rem',
+    padding: '12px 14px',
+    '&::placeholder': { color: '#64748B', opacity: 1 },
+  },
+  '& .MuiInputLabel-root': {
+    color: '#475569',
+    fontWeight: 600,
+    fontSize: '0.85rem',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: '#10B981',
+    fontWeight: 700,
+  }
+};
+
+const fieldLabelSx = {
+  fontSize: '0.7rem',
+  fontWeight: 700,
+  color: '#475569',
+  letterSpacing: '0.05em',
+  textTransform: 'uppercase',
+  mb: 0.4,
+};
 
 export default CreateReport;
