@@ -55,6 +55,14 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
+const getLocalTodayString = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const History = () => {
   const prefersReduced = useReducedMotion();
   const [patients, setPatients] = useState([]);
@@ -66,7 +74,7 @@ const History = () => {
   const [searchPatient, setSearchPatient] = useState('');
   const [searchTest, setSearchTest] = useState('');
   const [searchStartDate, setSearchStartDate] = useState('');
-  const [searchEndDate, setSearchEndDate] = useState('');
+  const [searchEndDate, setSearchEndDate] = useState(getLocalTodayString());
   const [displayedPatients, setDisplayedPatients] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
