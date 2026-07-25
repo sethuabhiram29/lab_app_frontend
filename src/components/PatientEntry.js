@@ -281,17 +281,17 @@ function PatientEntry() {
         backgroundImage: 'url(/patient_entry_bg.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        opacity: 0.25,
+        opacity: 0.55,
         zIndex: 0,
         '&::after': {
           content: '""',
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, rgba(10,22,40,0.4) 0%, rgba(10,22,40,0.85) 50%, rgba(10,22,40,0.95) 100%)',
+          background: 'linear-gradient(180deg, rgba(10,22,40,0.2) 0%, rgba(10,22,40,0.55) 60%, rgba(10,22,40,0.8) 100%)',
         }
       }} />
 
-      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1, pt: 3, pb: 6 }}>
+      <Box sx={{ position: 'relative', zIndex: 1, pt: 2, pb: 6, px: { xs: 2, md: 3 } }}>
         
         {/* ── Alerts ──────────────────────────────────────────────── */}
         <AnimatePresence>
@@ -330,31 +330,44 @@ function PatientEntry() {
         </motion.div>
 
         <Box component="form" onSubmit={handleSubmit}>
-          <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
+
+          {/* ── Hero Row ── */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={7}>
+              <motion.div variants={heroTextReveal} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
+                <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#10B981', letterSpacing: '0.15em', textTransform: 'uppercase', mb: 0.5 }}>
+                  ◆ WORKSPACE · PATIENT ENTRY
+                </Typography>
+                <Typography sx={{ fontSize: { xs: '1.6rem', md: '2.2rem' }, fontWeight: 800, color: '#F8FAFC', lineHeight: 1.15, letterSpacing: '-0.03em' }}>
+                  A new <span style={{ fontStyle: 'italic', background: 'linear-gradient(135deg, #10B981, #0D9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>patient</span>,{' '}
+                  captured in seconds.
+                </Typography>
+                <Typography sx={{ fontSize: '0.8rem', color: 'rgba(148,163,184,0.7)', mt: 1 }}>
+                  Every field flows into reports, invoices and lab dispatch — instantly.
+                </Typography>
+              </motion.div>
+            </Grid>
+            <Grid item xs={12} md={5}>
+              <motion.div variants={heroTextReveal} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
+                <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#475569', letterSpacing: '0.15em', textTransform: 'uppercase', mb: 0.5 }}>
+                  ─── THE PANEL
+                </Typography>
+                <Typography sx={{ fontSize: { xs: '1.4rem', md: '1.8rem' }, fontWeight: 800, color: '#F8FAFC', lineHeight: 1.15, letterSpacing: '-0.03em' }}>
+                  Precision <span style={{ fontStyle: 'italic', background: 'linear-gradient(135deg, #10B981, #0D9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>diagnostics</span>,{' '}
+                  elegantly composed.
+                </Typography>
+                <Typography sx={{ fontSize: '0.8rem', color: 'rgba(148,163,184,0.7)', mt: 1 }}>
+                  Your selected panel is ready for lab dispatch. Add, remove, or re-order without leaving the entry flow.
+                </Typography>
+              </motion.div>
+            </Grid>
+          </Grid>
+
+          {/* ── Main Two-Column Layout ── */}
+          <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
 
             {/* ═══════ LEFT COLUMN ═══════ */}
-            <Grid item xs={12} lg={7}>
-
-              {/* ── Hero Text Left ── */}
-              <motion.div
-                variants={heroTextReveal}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-              >
-                <Box sx={{ mb: 4 }}>
-                  <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#10B981', letterSpacing: '0.15em', textTransform: 'uppercase', mb: 1 }}>
-                    ◆ WORKSPACE · PATIENT ENTRY
-                  </Typography>
-                  <Typography sx={{ fontSize: { xs: '2rem', md: '2.8rem' }, fontWeight: 800, color: '#F8FAFC', lineHeight: 1.15, letterSpacing: '-0.03em' }}>
-                    A new <span style={{ fontStyle: 'italic', background: 'linear-gradient(135deg, #10B981, #0D9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>patient</span>,
-                    <br />captured in seconds.
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.9rem', color: 'rgba(148,163,184,0.8)', mt: 1.5, maxWidth: 480 }}>
-                    Every field flows into reports, invoices and lab dispatch — instantly.
-                  </Typography>
-                </Box>
-              </motion.div>
+            <Grid item xs={12} md={7} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 
               {/* ── Patient Information Card ── */}
               <motion.div
@@ -575,28 +588,7 @@ function PatientEntry() {
             </Grid>
 
             {/* ═══════ RIGHT COLUMN: Test Panel ═══════ */}
-            <Grid item xs={12} lg={5}>
-
-              {/* ── Hero Text Right ── */}
-              <motion.div
-                variants={heroTextReveal}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-              >
-                <Box sx={{ mb: 4 }}>
-                  <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569', letterSpacing: '0.15em', textTransform: 'uppercase', mb: 1 }}>
-                    ─── THE PANEL
-                  </Typography>
-                  <Typography sx={{ fontSize: { xs: '1.8rem', md: '2.4rem' }, fontWeight: 800, color: '#F8FAFC', lineHeight: 1.15, letterSpacing: '-0.03em' }}>
-                    Precision <span style={{ fontStyle: 'italic', background: 'linear-gradient(135deg, #10B981, #0D9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>diagnostics</span>,
-                    <br />elegantly composed.
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.85rem', color: 'rgba(148,163,184,0.8)', mt: 1.5 }}>
-                    Your selected panel is ready for lab dispatch. Add, remove, or re-order without leaving the entry flow.
-                  </Typography>
-                </Box>
-              </motion.div>
+            <Grid item xs={12} md={5} sx={{ display: 'flex' }}>
 
               {/* ── Selected Tests Card ── */}
               <motion.div
@@ -607,9 +599,10 @@ function PatientEntry() {
               >
                 <Paper elevation={0} sx={{
                   ...darkCardSx,
-                  minHeight: { lg: 'calc(100% - 180px)' },
+                  flex: 1,
                   display: 'flex',
                   flexDirection: 'column',
+                  width: '100%',
                 }}>
                   {/* Header */}
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
@@ -835,7 +828,7 @@ function PatientEntry() {
             </Box>
           </motion.div>
         </Box>
-      </Container>
+      </Box>
 
       {/* ── Test Selection Modal ────────────────────────────────────── */}
       <Dialog
