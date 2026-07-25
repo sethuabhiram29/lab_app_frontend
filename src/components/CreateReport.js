@@ -2046,11 +2046,19 @@ function CreateReport() {
                           return (
                             <motion.tr
                               key={patient._id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95 }}
-                              transition={{ duration: 0.3, delay: idx * 0.05 }}
-                              style={{ borderBottom: '1px solid rgba(30,41,59,0.03)' }}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: 20 }}
+                              transition={{ duration: 0.4, delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                              whileHover={{ 
+                                scale: 1.005,
+                                backgroundColor: 'rgba(16,185,129,0.03)',
+                                boxShadow: 'inset 4px 0 0 #0F6E56'
+                              }}
+                              style={{ 
+                                borderBottom: '1px solid rgba(30,41,59,0.03)',
+                                transition: 'background-color 0.2s ease, box-shadow 0.2s ease'
+                              }}
                             >
                               <TableCell sx={{ pl: 5, borderBottom: 'none' }}>
                                 <Typography sx={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}># {simpleId || idx+1}</Typography>
