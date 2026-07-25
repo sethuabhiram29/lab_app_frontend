@@ -18,7 +18,7 @@ import {
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { getDoctors, getAgents, getDoctorAnalysis, getAgentAnalysis } from '../api';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import gsap from 'gsap';
 
 const CountUp = ({ value, prefix = '₹', decimals = 2 }) => {
@@ -31,6 +31,7 @@ const CountUp = ({ value, prefix = '₹', decimals = 2 }) => {
       ease: "power2.out",
       onUpdate: () => setDisplayValue(obj.val)
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
   return <>{prefix}{displayValue.toFixed(decimals)}</>;
 };

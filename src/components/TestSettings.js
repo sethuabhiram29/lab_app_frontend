@@ -16,15 +16,13 @@ import {
   TextField,
   Grid,
   Alert,
-  Tabs,
-  Tab,
   FormControlLabel,
   RadioGroup,
   Radio,
   Switch,
   Slide
 } from '@mui/material';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
