@@ -291,11 +291,14 @@ function PatientEntry() {
               <Paper
                 elevation={0}
                 sx={{
-                  p: { xs: 3, sm: 4 },
-                  borderRadius: 'var(--radius-2xl)',
-                  background: 'var(--surface-paper)',
-                  border: '1px solid var(--border-light)',
-                  boxShadow: 'var(--shadow-sm)',
+                  p: { xs: 3, sm: 5 },
+                  borderRadius: 'var(--radius-3xl)',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255,255,255,0.6)',
+                  boxShadow: '0 24px 48px rgba(11,31,58,0.05), inset 0 2px 4px rgba(255,255,255,0.8)',
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}
               >
                 {/* ── Section Label ── */}
@@ -475,17 +478,10 @@ function PatientEntry() {
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 5 }}>
                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       <Button
-                        type="submit" variant="contained" disabled={loading}
-                        sx={{
-                          background: 'var(--gradient-brand)',
-                          color: '#fff',
-                          borderRadius: 'var(--radius-pill)',
-                          px: 4, py: 1.5,
-                          fontWeight: 700,
-                          fontSize: '1rem',
-                          boxShadow: '0 8px 24px rgba(15,110,86,0.35)',
-                          '&:hover': { background: 'linear-gradient(135deg, #0F6E56 0%, #0D4A7A 100%)' }
-                        }}
+                        type="submit" 
+                        disabled={loading}
+                        className="btn-primary"
+                        sx={{ px: 4, py: 1.5 }}
                       >
                         {loading ? 'Saving...' : 'Save Patient Entry'}
                       </Button>
@@ -509,10 +505,11 @@ function PatientEntry() {
                 elevation={0}
                 sx={{
                   p: 3,
-                  borderRadius: 'var(--radius-2xl)',
-                  background: 'linear-gradient(180deg, var(--surface-paper) 0%, rgba(255,255,255,0.4) 100%)',
-                  border: '1px solid var(--border-light)',
-                  boxShadow: 'var(--shadow-sm)',
+                  borderRadius: 'var(--radius-3xl)',
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255,255,255,0.5)',
+                  boxShadow: '0 24px 48px rgba(11,31,58,0.05), inset 0 2px 4px rgba(255,255,255,0.6)',
                   height: { xs: 'auto', lg: 'calc(100vh - 140px)' },
                   maxHeight: { xs: '600px', lg: 'none' },
                   display: 'flex', flexDirection: 'column'
@@ -528,17 +525,11 @@ function PatientEntry() {
                 </Box>
 
                 <Button
-                  variant="outlined" fullWidth
+                  className="btn-outline"
+                  fullWidth
                   startIcon={<AddIcon />}
                   onClick={() => setShowTestSelection(true)}
-                  sx={{
-                    mb: 3, py: 1.2,
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px dashed var(--color-primary)',
-                    color: 'var(--color-primary)',
-                    fontWeight: 600,
-                    '&:hover': { background: 'rgba(15,110,86,0.05)', border: '1px solid var(--color-primary)' }
-                  }}
+                  sx={{ mb: 3 }}
                 >
                   Add / Edit Tests
                 </Button>
@@ -636,10 +627,10 @@ function PatientEntry() {
             <CloseIcon />
           </IconButton>
         </Box>
-        <DialogContent sx={{ p: 0, display: 'flex', bgcolor: 'var(--surface-light)' }}>
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: 'var(--surface-light)' }}>
           
           {/* Col 1: Tests */}
-          <Box sx={{ width: '33.33%', borderRight: '1px solid var(--border-light)', bgcolor: '#fff' }}>
+          <Box sx={{ flex: 1, width: '100%', borderRight: { xs: 'none', md: '1px solid var(--border-light)' }, borderBottom: { xs: '1px solid var(--border-light)', md: 'none' }, bgcolor: '#fff' }}>
             <Box sx={{ p: 2, borderBottom: '1px solid var(--border-light)', bgcolor: 'rgba(0,0,0,0.02)' }}>
               <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>1. Select a Test</Typography>
             </Box>
@@ -685,7 +676,7 @@ function PatientEntry() {
           </Box>
 
           {/* Col 2: Subtests & Packs */}
-          <Box sx={{ width: '33.33%', borderRight: '1px solid var(--border-light)', bgcolor: '#fff' }}>
+          <Box sx={{ flex: 1, width: '100%', borderRight: { xs: 'none', md: '1px solid var(--border-light)' }, borderBottom: { xs: '1px solid var(--border-light)', md: 'none' }, bgcolor: '#fff', minHeight: { xs: '300px', md: 'auto' } }}>
             {activeTestId ? (
               <>
                 <Box sx={{ p: 2, borderBottom: '1px solid var(--border-light)', bgcolor: 'rgba(0,0,0,0.02)' }}>
@@ -771,7 +762,7 @@ function PatientEntry() {
           </Box>
 
           {/* Col 3: Pack Subtests */}
-          <Box sx={{ width: '33.34%', bgcolor: 'rgba(0,0,0,0.01)' }}>
+          <Box sx={{ flex: 1, width: '100%', bgcolor: 'rgba(0,0,0,0.01)', minHeight: { xs: '300px', md: 'auto' } }}>
             {activeTestId && activePackId ? (() => {
               const test = tests.find(t => t._id === activeTestId);
               const pack = test && test.packs ? test.packs.find(p => p._id === activePackId) : null;
@@ -821,7 +812,7 @@ function PatientEntry() {
           </Box>
         </DialogContent>
         <Box sx={{ p: 2, borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'flex-end', bgcolor: '#fff' }}>
-          <Button variant="contained" onClick={() => setShowTestSelection(false)} sx={{ borderRadius: 'var(--radius-pill)', px: 4, background: 'var(--gradient-brand)', color: '#fff' }}>
+          <Button className="btn-primary" onClick={() => setShowTestSelection(false)}>
             Done
           </Button>
         </Box>
@@ -833,26 +824,32 @@ function PatientEntry() {
 // ── Reusable Styles ──────────────────────────────────────────────────────────
 const glassFieldSx = {
   '& .MuiFilledInput-root': {
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderRadius: 'var(--radius-md)',
-    border: '1px solid var(--border-light)',
-    transition: 'all 0.2s',
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    backdropFilter: 'blur(12px)',
+    borderRadius: 'var(--radius-lg)',
+    border: '1px solid rgba(255,255,255,0.4)',
+    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.02)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:hover': {
-      backgroundColor: '#fff',
-      borderColor: 'var(--color-primary)',
+      backgroundColor: 'rgba(255,255,255,0.8)',
+      borderColor: 'rgba(15,110,86,0.3)',
+      boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 12px rgba(15,110,86,0.08)',
     },
     '&.Mui-focused': {
       backgroundColor: '#fff',
       borderColor: 'var(--color-primary)',
-      boxShadow: '0 0 0 3px rgba(15,110,86,0.15)',
+      boxShadow: '0 0 0 4px rgba(15,110,86,0.15)',
     },
   },
   '& .MuiInputLabel-root': {
-    color: 'var(--text-muted)',
+    color: 'var(--text-secondary)',
+    fontWeight: 500,
     fontSize: '0.9rem',
+    transition: 'all 0.2s',
   },
   '& .MuiInputLabel-root.Mui-focused': {
     color: 'var(--color-primary)',
+    fontWeight: 700,
   },
 };
 

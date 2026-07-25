@@ -378,7 +378,7 @@ const Equipment = () => {
           Equipment & Kits Management
         </Typography>
         <Button
-          variant="contained"
+          className="btn-primary"
           startIcon={<AddIcon />}
           onClick={handleAddEquipment}
         >
@@ -568,10 +568,10 @@ const Equipment = () => {
             </FormControl>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained">
-            {selectedEquipment ? 'Update' : 'Add'}
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button className="btn-outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button className="btn-primary" onClick={handleSubmit}>
+            {selectedEquipment ? 'Update' : 'Add'} Equipment
           </Button>
         </DialogActions>
       </Dialog>
@@ -601,10 +601,10 @@ const Equipment = () => {
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setStockDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleAddStockSubmit} variant="contained">
-            Add Stock
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button className="btn-outline" onClick={() => setStockDialogOpen(false)}>Cancel</Button>
+          <Button className="btn-primary" onClick={handleAddStockSubmit}>
+            Update Stock
           </Button>
         </DialogActions>
       </Dialog>
