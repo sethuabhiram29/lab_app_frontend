@@ -409,6 +409,7 @@ function Layout() {
           </Box>
         </Toolbar>
       </AppBar>
+      )}
 
       {/* ── Sidebar ────────────────────────────────────────────────────── */}
       {!isHome && (
