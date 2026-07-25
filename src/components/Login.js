@@ -308,7 +308,7 @@ function Login() {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <TextField
                       fullWidth
                       name="username"
@@ -317,9 +317,12 @@ function Login() {
                       onChange={handleChange}
                       required
                       variant="outlined"
+                      inputProps={{
+                        sx: { py: 2 } // Make input taller
+                      }}
                       InputProps={{
                         sx: { 
-                          borderRadius: '16px', background: 'rgba(253,251,247,0.8)',
+                          borderRadius: '20px', background: 'rgba(253,251,247,0.8)',
                           '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' },
                           '&:hover fieldset': { borderColor: 'rgba(211,28,61,0.2)' },
                           '&.Mui-focused fieldset': { borderColor: '#D31C3D', borderWidth: '1px' },
@@ -336,9 +339,12 @@ function Login() {
                       onChange={handleChange}
                       required
                       variant="outlined"
+                      inputProps={{
+                        sx: { py: 2 } // Make input taller
+                      }}
                       InputProps={{
                         sx: { 
-                          borderRadius: '16px', background: 'rgba(253,251,247,0.8)',
+                          borderRadius: '20px', background: 'rgba(253,251,247,0.8)',
                           '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' },
                           '&:hover fieldset': { borderColor: 'rgba(211,28,61,0.2)' },
                           '&.Mui-focused fieldset': { borderColor: '#D31C3D', borderWidth: '1px' },
@@ -364,9 +370,12 @@ function Login() {
                           onChange={handleChange}
                           required
                           variant="outlined"
+                          inputProps={{
+                            sx: { py: 2 } // Make input taller
+                          }}
                           InputProps={{
                             sx: { 
-                              borderRadius: '16px', background: 'rgba(253,251,247,0.8)',
+                              borderRadius: '20px', background: 'rgba(253,251,247,0.8)',
                               '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' },
                               '&:hover fieldset': { borderColor: 'rgba(211,28,61,0.2)' },
                               '&.Mui-focused fieldset': { borderColor: '#D31C3D', borderWidth: '1px' },
@@ -382,8 +391,8 @@ function Login() {
                       disabled={loading}
                       endIcon={!loading && <ArrowIcon />}
                       sx={{
-                        mt: 2, py: 2, borderRadius: '100px', textTransform: 'none',
-                        fontSize: '1rem', fontWeight: 700, color: '#fff',
+                        mt: 2, py: 2.5, borderRadius: '100px', textTransform: 'none',
+                        fontSize: '1.1rem', fontWeight: 700, color: '#fff',
                         background: 'linear-gradient(135deg, #E12A45 0%, #B8152F 100%)',
                         boxShadow: '0 12px 24px rgba(211,28,61,0.25)',
                         transition: 'all 0.3s ease',
