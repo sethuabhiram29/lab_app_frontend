@@ -275,6 +275,7 @@ function PatientEntry() {
       flexDirection: 'column',
       position: 'relative',
       overflow: 'hidden',
+      bgcolor: '#0A1628',
     }}>
       {/* ── Background Image ─────────────────────────────────── */}
       <Box sx={{
@@ -293,7 +294,7 @@ function PatientEntry() {
         }
       }} />
 
-      <Box sx={{ position: 'relative', zIndex: 1, pt: 4, pb: 6 }}>
+      <Box sx={{ position: 'relative', zIndex: 1, pt: 4, pb: 6, width: '100%' }}>
         
         {/* ── Alerts ──────────────────────────────────────────────── */}
         <AnimatePresence>
@@ -331,13 +332,13 @@ function PatientEntry() {
           />
         </motion.div>
 
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
 
           {/* ── Main Two-Column Layout ── */}
-          <Box sx={{ display: 'flex', gap: 3, alignItems: 'stretch', flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr', lg: '60fr 40fr' }, gap: 3, width: '100%' }}>
 
             {/* ═══════ LEFT COLUMN ═══════ */}
-            <Box sx={{ flex: '1 1 55%', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
 
               {/* ── Patient Information Card ── */}
               <motion.div
@@ -571,7 +572,7 @@ function PatientEntry() {
             </Box>
 
             {/* ═══════ RIGHT COLUMN: Test Panel ═══════ */}
-            <Box sx={{ flex: '1 1 40%', minWidth: 0, display: 'flex' }}>
+            <Box sx={{ width: '100%' }}>
 
               {/* ── Selected Tests Card ── */}
               <motion.div
