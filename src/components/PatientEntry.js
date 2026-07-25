@@ -1078,7 +1078,7 @@ function PatientEntry() {
 // ── Reusable Styles ──────────────────────────────────────────────────────────
 
 const darkCardSx = {
-  p: { xs: 3, sm: 4 },
+  p: { xs: 2, sm: 3 },
   borderRadius: 'var(--radius-2xl)',
   background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
   backdropFilter: 'blur(24px)',
@@ -1092,6 +1092,7 @@ const darkFieldSx = {
     borderRadius: 'var(--radius-md)',
     border: '1px solid rgba(255,255,255,0.08)',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    minHeight: '2.5rem',
     '&:hover': {
       backgroundColor: 'rgba(255,255,255,0.07)',
       borderColor: 'rgba(16,185,129,0.3)',
@@ -1105,12 +1106,14 @@ const darkFieldSx = {
   '& .MuiFilledInput-input': {
     color: '#E2E8F0',
     fontWeight: 500,
+    fontSize: '0.85rem',
+    padding: '10px 14px',
     '&::placeholder': { color: '#475569', opacity: 1 },
   },
   '& .MuiInputLabel-root': {
     color: '#64748B',
     fontWeight: 500,
-    fontSize: '0.9rem',
+    fontSize: '0.85rem',
   },
   '& .MuiInputLabel-root.Mui-focused': {
     color: '#10B981',
@@ -1122,15 +1125,19 @@ const darkFieldSx = {
   '& .MuiSvgIcon-root': {
     color: '#64748B',
   },
+  '& .MuiAutocomplete-inputRoot': {
+    paddingTop: '2px !important',
+    paddingBottom: '2px !important',
+  },
 };
 
 const fieldLabelSx = {
-  fontSize: '0.65rem',
+  fontSize: '0.6rem',
   fontWeight: 700,
   color: '#64748B',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
-  mb: 0.8,
+  mb: 0.4,
 };
 
 export default PatientEntry;
