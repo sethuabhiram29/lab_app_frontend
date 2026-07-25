@@ -850,7 +850,8 @@ function PatientEntry() {
             <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
               <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>1. Select a Test</Typography>
             </Box>
-            <List sx={{ p: 0, flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+              <List sx={{ p: 0 }}>
               {tests.map((test) => {
                 const selectedTest = formData.selectedTests.find(t => t.test._id === test._id);
                 const isSelected = selectedTest && ((selectedTest.subtests && selectedTest.subtests.some(s => s.selected)) || (selectedTest.packs && selectedTest.packs.some(p => p.subtests && p.subtests.some(s => s.selected))));
@@ -890,6 +891,7 @@ function PatientEntry() {
                 );
               })}
             </List>
+            </Box>
           </Box>
 
           {/* Col 2: Subtests & Packs */}
@@ -899,7 +901,8 @@ function PatientEntry() {
                 <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
                   <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>2. Direct Subtests & Packs</Typography>
                 </Box>
-                <List sx={{ p: 0, flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                  <List sx={{ p: 0 }}>
                   {(() => {
                     const test = tests.find(t => t._id === activeTestId);
                     const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
@@ -968,7 +971,8 @@ function PatientEntry() {
                     }
                     return null;
                   })()}
-                </List>
+                  </List>
+                </Box>
               </>
             ) : (
               <Box sx={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -1000,7 +1004,8 @@ function PatientEntry() {
                         {allSelected ? 'Deselect All' : 'Select All'}
                       </Button>
                     </Box>
-                    <List sx={{ p: 0, flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                    <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                      <List sx={{ p: 0 }}>
                       {(pack.subtests || []).map((sub) => (
                         <ListItem key={sub._id} sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                           <Checkbox 
@@ -1011,7 +1016,8 @@ function PatientEntry() {
                           <ListItemText primary={sub.name + (sub.unit ? ` (${sub.unit})` : '')} primaryTypographyProps={{ fontSize: '0.85rem', color: '#CBD5E1' }} />
                         </ListItem>
                       ))}
-                    </List>
+                      </List>
+                    </Box>
                   </>
                 );
               }
