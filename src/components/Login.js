@@ -217,7 +217,7 @@ function Login() {
           display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
           p: { xs: 4, md: 8 } 
         }}>
-          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ width: '100%', maxWidth: '520px' }}>
+          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ width: '100%', maxWidth: '580px' }}>
             
             {/* Glassmorphism Card */}
             <Box sx={{
@@ -424,30 +424,48 @@ function Login() {
 
       {/* ── 3. STATS SECTION ─────────────────────────────────────────────────── */}
       <Box sx={{ maxWidth: '1200px', margin: '0 auto', px: 4, mb: 16 }}>
-        <Grid container spacing={4} justifyContent="center" textAlign="center">
+        <Grid 
+          container 
+          spacing={4} 
+          justifyContent="center" 
+          textAlign="center"
+          component={motion.div}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.15 } }
+          }}
+        >
           {[
             { value: '250k+', label: 'SAMPLES ANALYZED' },
             { value: '99.98%', label: 'REPORT ACCURACY' },
             { value: '2 hr', label: 'AVG TURNAROUND' },
             { value: '24/7', label: 'PORTAL ACCESS' }
           ].map((stat, idx) => (
-            <Grid item xs={6} md={3} key={idx}>
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.6, delay: idx * 0.1 }}>
-                <Typography sx={{ 
-                  fontFamily: '"Playfair Display", "Times New Roman", serif', 
-                  fontSize: { xs: '2.5rem', md: '3.5rem' }, 
-                  fontWeight: 700, color: '#30201D', lineHeight: 1
-                }}>
-                  {stat.value.replace(/([A-Za-z+%]+)/, '')}
-                  <span style={{ color: '#D31C3D' }}>{stat.value.match(/([A-Za-z+%]+)/)?.[0] || ''}</span>
-                </Typography>
-                <Typography sx={{ 
-                  fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.15em', 
-                  color: '#887A77', mt: 1.5, textTransform: 'uppercase'
-                }}>
-                  {stat.label}
-                </Typography>
-              </motion.div>
+            <Grid 
+              item xs={6} md={3} key={idx}
+              component={motion.div}
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+              }}
+            >
+              <Typography sx={{ 
+                fontFamily: '"Playfair Display", "Times New Roman", serif', 
+                fontSize: { xs: '2.5rem', md: '3.5rem' }, 
+                fontWeight: 700, color: '#30201D', lineHeight: 1
+              }}>
+                {stat.value.replace(/([A-Za-z+%]+)/, '')}
+                <span style={{ color: '#D31C3D' }}>{stat.value.match(/([A-Za-z+%]+)/)?.[0] || ''}</span>
+              </Typography>
+              <Typography sx={{ 
+                fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.15em', 
+                color: '#887A77', mt: 1.5, textTransform: 'uppercase'
+              }}>
+                {stat.label}
+              </Typography>
             </Grid>
           ))}
         </Grid>
