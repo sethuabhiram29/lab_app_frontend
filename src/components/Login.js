@@ -146,7 +146,7 @@ function Login() {
         zIndex: 0, pointerEvents: 'none'
       }} />
 
-      <Grid container sx={{ position: 'relative', zIndex: 1, minHeight: '100vh', maxWidth: '1440px', margin: '0 auto' }}>
+      <Grid container sx={{ position: 'relative', zIndex: 1, minHeight: '100vh', margin: '0 auto' }}>
         
         {/* ── LEFT PANEL (Branding) ──────────────────────────────────────────────── */}
         <Grid item xs={12} md={6} sx={{ 
@@ -215,9 +215,9 @@ function Login() {
         {/* ── RIGHT PANEL (Login Card) ────────────────────────────────────────────── */}
         <Grid item xs={12} md={6} sx={{ 
           display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-          p: { xs: 2, md: 4 }, pr: { md: 8 } 
+          p: { xs: 2, md: 4, lg: 8 } 
         }}>
-          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ width: '100%', maxWidth: '100%' }}>
+          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ width: '100%', maxWidth: '850px' }}>
             
             {/* Glassmorphism Card */}
             <Box sx={{
