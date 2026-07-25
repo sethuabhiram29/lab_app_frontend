@@ -916,7 +916,12 @@ function PatientEntry() {
                           }}>{test.subtests.every(sub => selectedTest.subtests.find(s => s._id === sub._id && s.selected)) ? 'Deselect All' : 'Select All'}</Button>
                         </Box>,
                         ...test.subtests.map((sub) => (
-                          <ListItem key={sub._id} sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <ListItem 
+                            button
+                            onClick={() => handleSubtestSelection(test._id, sub._id)}
+                            key={sub._id} 
+                            sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)', '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}
+                          >
                             <Checkbox 
                               checked={!!(selectedTest && selectedTest.subtests && selectedTest.subtests.find(s => s._id === sub._id && s.selected))} 
                               onChange={() => handleSubtestSelection(test._id, sub._id)} size="small" 
@@ -1007,7 +1012,12 @@ function PatientEntry() {
                     <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain' }}>
                       <List sx={{ p: 0 }}>
                       {(pack.subtests || []).map((sub) => (
-                        <ListItem key={sub._id} sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <ListItem 
+                          button
+                          onClick={() => handleSubtestSelection(activeTestId, sub._id, activePackId)}
+                          key={sub._id} 
+                          sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)', '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}
+                        >
                           <Checkbox 
                             checked={!!(selectedPack && selectedPack.subtests && selectedPack.subtests.find(s => s._id === sub._id && s.selected))} 
                             onChange={() => handleSubtestSelection(activeTestId, sub._id, activePackId)} size="small" 
