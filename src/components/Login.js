@@ -151,7 +151,7 @@ function Login() {
         {/* ── LEFT PANEL (Branding) ──────────────────────────────────────────────── */}
         <Grid item xs={12} md={6} sx={{ 
           display: 'flex', flexDirection: 'column', justifyContent: 'center', 
-          p: { xs: 4, md: 8, lg: 12 } 
+          p: { xs: 4, md: 6 } 
         }}>
           <motion.div variants={prefersReduced ? false : slideLeft} initial="hidden" animate="visible" custom={0}>
             {/* Pill Badge */}
@@ -215,7 +215,7 @@ function Login() {
         {/* ── RIGHT PANEL (Login Card) ────────────────────────────────────────────── */}
         <Grid item xs={12} md={6} sx={{ 
           display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch',
-          p: { xs: 4, md: 8, lg: 12 } 
+          p: { xs: 4, md: 6 } 
         }}>
           <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ display: 'flex', flexGrow: 1 }}>
             
