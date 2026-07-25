@@ -2246,12 +2246,12 @@ function CreateReport() {
                   {testResults.map((table, tableIndex) => (
                     <Box key={tableIndex} sx={{ 
                       mb: 4, 
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 100%)',
-                      backdropFilter: 'blur(20px)',
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%)',
+                      backdropFilter: 'blur(24px)',
                       p: { xs: 3, md: 4 }, 
                       borderRadius: 'var(--radius-xl)', 
                       border: '1px solid rgba(255,255,255,0.6)', 
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)' 
+                      boxShadow: '0 12px 36px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)' 
                     }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                         <Typography sx={{ fontWeight: 800, color: '#0F6E56', fontSize: '1.25rem' }}>
@@ -2425,10 +2425,10 @@ function CreateReport() {
 const glassCardSx = {
   p: { xs: 3, md: 5 },
   borderRadius: 'var(--radius-2xl)',
-  background: 'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%)',
+  background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 100%)',
   backdropFilter: 'blur(24px)',
-  border: '1px solid rgba(255,255,255,0.8)',
-  boxShadow: '0 12px 40px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1)',
+  border: '1px solid rgba(255,255,255,0.6)',
+  boxShadow: '0 12px 40px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)',
 };
 
 const glassFieldSx = {
