@@ -62,7 +62,7 @@ function Layout() {
   const prefersReduced = useReducedMotion();
 
   const isHome = location.pathname === '/';
-  const isFullBleed = location.pathname === '/patient-entry';
+  const isFullBleed = location.pathname.includes('/patient-entry');
   const currentDrawerWidth = isSidebarCollapsed ? drawerWidthCollapsed : drawerWidthExpanded;
 
   useEffect(() => {
