@@ -217,7 +217,7 @@ function Login() {
           display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
           p: { xs: 4, md: 8 } 
         }}>
-          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ width: '100%', maxWidth: '580px' }}>
+          <motion.div variants={prefersReduced ? false : slideRight} initial="hidden" animate="visible" custom={1} style={{ width: '100%', maxWidth: '700px' }}>
             
             {/* Glassmorphism Card */}
             <Box sx={{
@@ -225,7 +225,7 @@ function Login() {
               backdropFilter: 'blur(30px)',
               border: '1px solid rgba(255, 255, 255, 0.8)',
               borderRadius: '32px',
-              p: { xs: 4, md: 6 },
+              p: { xs: 4, md: 8 }, // increased padding
               boxShadow: '0 24px 64px rgba(0,0,0,0.04)',
               position: 'relative',
               overflow: 'hidden'
