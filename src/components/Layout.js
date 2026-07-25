@@ -410,7 +410,7 @@ function Layout() {
 
       {/* ── Sidebar ────────────────────────────────────────────────────── */}
       {!isHome && (
-        <Box component="nav" sx={{ width: { sm: currentDrawerWidth }, flexShrink: { sm: 0 }, transition: 'width 0.2s' }}>
+        <Box component="nav" sx={{ width: { sm: currentDrawerWidth }, flexShrink: { sm: 0 }, transition: 'width 0.2s', background: isFullBleed ? '#0A1628' : 'transparent' }}>
           {/* Mobile drawer */}
           <Drawer
             variant="temporary"
