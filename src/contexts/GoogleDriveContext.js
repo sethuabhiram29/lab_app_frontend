@@ -28,23 +28,16 @@ export const GoogleDriveProvider = ({ children }) => {
     checkExistingAuth();
   }, []);
 
-  const handleSignIn = async (callback) => {
+  const handleSignIn = () => {
     if (!tokenClient) {
       setDriveAuthError('Token client not initialized');
       return;
     }
 
     try {
-      const response = await tokenClient.requestAccessToken({ prompt: 'select_account' });
-      if (response?.access_token) {
-        localStorage.setItem('googleDriveAccessToken', response.access_token);
-        localStorage.setItem('googleDriveTokenTimestamp', Date.now().toString());
-        localStorage.setItem('googleDriveTokenExpiry', (Date.now() + (3600 * 1000)).toString()); // 1 hour expiry
-        localStorage.setItem('googleDriveAuthState', 'true');
-        setDriveAuthorized(true);
-        setDriveAuthError('');
-        if (callback) callback(response.access_token);
-      }
+      // requestAccessToken triggers popup, it doesn't return a promise.
+      // The callback defined in initTokenClient handles the response.
+      tokenClient.requestAccessToken({ prompt: 'consent' });
     } catch (error) {
       console.error('Google Drive auth error:', error);
       setDriveAuthError(error.message || 'Failed to authorize Google Drive');
@@ -76,7 +69,7 @@ export const GoogleDriveProvider = ({ children }) => {
   const initializeTokenClient = (clientConfig) => {
     if (window.google?.accounts?.oauth2) {
       const client = window.google.accounts.oauth2.initTokenClient({
-        prompt: 'select_account',
+        prompt: 'consent',
         ...clientConfig,
         callback: (response) => {
           if (response.error) {

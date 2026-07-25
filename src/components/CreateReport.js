@@ -27,9 +27,7 @@ import {
   Slide
 } from '@mui/material';
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
+
 import GoogleIcon from '@mui/icons-material/Google';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { openDB } from 'idb';
@@ -44,6 +42,10 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import QRCode from 'qrcode';
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 // Initialize and verify IndexedDB stores
 let dbInstance = null;

@@ -21,11 +21,14 @@ import {
   FormControlLabel,
   RadioGroup,
   Radio,
-  Radio,
   Switch,
   Slide
 } from '@mui/material';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import * as api from '../api';
 
 // ── Framer Motion Variants ───────────────────────────────────────────────────
 const containerVariants = {
@@ -41,13 +44,10 @@ const rowVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }
 };
 
+
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import * as api from '../api';
 
 const TestSettings = () => {
   const prefersReduced = useReducedMotion();
@@ -1692,6 +1692,7 @@ const TestSettings = () => {
           </DialogActions>
         </Dialog>
       </Paper>
+      </motion.div>
     </Container>
   );
 };

@@ -366,6 +366,7 @@ function Analysis() {
               </TableContainer>
             </Box>
           </motion.div>
+        )}
       </Paper>
       </motion.div>
     </Container>
