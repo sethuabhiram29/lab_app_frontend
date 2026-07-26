@@ -693,9 +693,11 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
               let chunk = [];
               let chunkHeight = 0;
 
-              // On continuation pages (not the first chunk), prepend a fresh tableHeader
-              // so the column labels are repeated at the top of each continuation page
+              // On continuation pages (not the first chunk), prepend a small spacer
+              // then a fresh tableHeader so content clears the patient info / QR area
               if (!isFirstChunk) {
+                chunk.push({ type: 'spacer' });   // ~10pt gap to clear QR overlap
+                chunkHeight += 10;
                 chunk.push({ type: 'tableHeader' });
                 chunkHeight += HEADER_HEIGHT;
               }
