@@ -1718,6 +1718,7 @@ function CreateReport() {
               packName: pack.packName,
               subtests: pack.subtests.map(sub => ({
                 subTest: sub.name,
+                name: sub.name,
                 result: sub.result,
                 unit: sub.unit,
                 range: sub.range
@@ -1725,6 +1726,7 @@ function CreateReport() {
             })),
             direct: tr.direct.map(sub => ({
               subTest: sub.name,
+              name: sub.name,
               result: sub.result,
               unit: sub.unit,
               range: sub.range
@@ -1815,6 +1817,7 @@ function CreateReport() {
               packName: pack.packName,
               subtests: pack.subtests.map(sub => ({
                 subTest: sub.name,
+                name: sub.name,
                 result: sub.result,
                 unit: sub.unit,
                 range: sub.range
@@ -1822,6 +1825,7 @@ function CreateReport() {
             })),
             direct: tr.direct.map(sub => ({
               subTest: sub.name,
+              name: sub.name,
               result: sub.result,
               unit: sub.unit,
               range: sub.range
