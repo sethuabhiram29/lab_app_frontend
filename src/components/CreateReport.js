@@ -412,7 +412,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
   // --- Constants for pagination ---
   const PAGE_HEIGHT = 842;
   const PAGE_WIDTH = 595;
-  const TOP_MARGIN = 200; // safe clearance for patient info + QR on all pages
+  const TOP_MARGIN = 184; // clearance for patient info + QR section on all pages
   const BOTTOM_MARGIN = 120; // Increased from 80 to prevent footer overlap
   const HEADER_HEIGHT = 19; // table header (fixed at 19pt to match styles)
   const ROW_HEIGHT = 16; // fixed row height (matches tableRow height)
