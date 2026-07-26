@@ -1702,9 +1702,10 @@ function CreateReport() {
     }
 
     try {
-      if (id) {
+      const report = getReportForPatient(selectedPatient._id);
+      if (report) {
         // Editing existing report: keep existing QR and metadata, only update test results
-        await updateReport(id, {
+        await updateReport(report._id, {
           patient: selectedPatient._id,
           uploadStatus: 'needs_update',
           testResults: filteredTestResults.map(tr => ({
