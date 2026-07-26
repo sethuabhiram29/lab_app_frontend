@@ -943,9 +943,9 @@ function PatientEntry() {
                           <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#818CF8' }}>TEST PACKS</Typography>
                         </Box>,
                         ...test.packs.map((pack) => {
-                          const selectedPack = selectedTest?.packs?.find(p => p._id === pack._id);
+                          const selectedPack = selectedTest && selectedTest.packs && selectedTest.packs.find(p => p._id === pack._id);
                           const isActivePack = activePackId === pack._id;
-                          const hasSelectedSubs = selectedPack?.subtests?.some(s => s.selected);
+                          const hasSelectedSubs = selectedPack && selectedPack.subtests && selectedPack.subtests.some(s => s.selected);
                           return (
                             <ListItem 
                               button key={pack._id} 
@@ -992,8 +992,8 @@ function PatientEntry() {
               const test = tests.find(t => t._id === activeTestId);
               const pack = test && test.packs ? test.packs.find(p => p._id === activePackId) : null;
               const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
-              const selectedPack = selectedTest?.packs?.find(p => p._id === activePackId);
-              if (pack && selectedPack && selectedPack.selected) {
+              const selectedPack = selectedTest && selectedTest.packs && selectedTest.packs.find(p => p._id === activePackId);
+              if (pack) {
                 const allSelected = pack.subtests && pack.subtests.length > 0 && pack.subtests.every(sub => selectedPack?.subtests?.find(s => s._id === sub._id && s.selected));
                 return (
                   <>
@@ -1003,7 +1003,7 @@ function PatientEntry() {
                     <Box sx={{ p: 1.5, flexShrink: 0, display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                       <Button size="small" sx={{ color: '#94A3B8', fontSize: '0.7rem' }} onClick={() => {
                           if (allSelected) pack.subtests.forEach(sub => handleSubtestSelection(activeTestId, sub._id, activePackId));
-                          else pack.subtests.forEach(sub => { if (!selectedPack.subtests.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(activeTestId, sub._id, activePackId); });
+                          else pack.subtests.forEach(sub => { if (!selectedPack?.subtests?.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(activeTestId, sub._id, activePackId); });
                         }}
                       >
                         {allSelected ? 'Deselect All' : 'Select All'}
@@ -1019,7 +1019,7 @@ function PatientEntry() {
                           sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)', '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}
                         >
                           <Checkbox 
-                            checked={!!(selectedPack && selectedPack.subtests && selectedPack.subtests.find(s => s._id === sub._id && s.selected))} 
+                            checked={!!(selectedPack?.subtests?.find(s => s._id === sub._id && s.selected))} 
                             onChange={() => handleSubtestSelection(activeTestId, sub._id, activePackId)} size="small" 
                             sx={{ '&.Mui-checked': { color: '#818CF8' }, color: '#475569' }}
                           />
