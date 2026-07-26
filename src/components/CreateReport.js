@@ -1708,7 +1708,6 @@ function CreateReport() {
         await updateReport(report._id, {
           patient: selectedPatient._id,
           uploadStatus: 'needs_update',
-          qrCode: report.qrCode, // Keep existing QR code
           testResults: filteredTestResults.map(tr => ({
             test: tr.test._id || tr.test,
             packs: tr.packs.map(pack => ({
@@ -1730,10 +1729,10 @@ function CreateReport() {
           // Save the exact state as shown in preview
           reportDisplayData: {
             patient: selectedPatient,
-            testTables: buildDisplayData(selectedPatient, filteredTestResults, allTests, subTests, report.reportDisplayData.qrImage).testTables,
+            testTables: buildDisplayData(selectedPatient, filteredTestResults, allTests, subTests, qrImage).testTables,
             removedImages: Array.from(removedImages),
             tableNotes,
-            qrImage: report.reportDisplayData.qrImage // Keep existing QR from the report
+            qrImage // Keep existing QR from the report
           },
           printed: false
         });
