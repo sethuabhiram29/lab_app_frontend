@@ -1500,6 +1500,26 @@ function CreateReport() {
     setTestResults(results);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const inputs = Array.from(document.querySelectorAll('input[data-result-input="true"]'));
+      const index = inputs.indexOf(e.target);
+      if (index > -1 && index < inputs.length - 1) {
+        inputs[index + 1].focus();
+        inputs[index + 1].select();
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const inputs = Array.from(document.querySelectorAll('input[data-result-input="true"]'));
+      const index = inputs.indexOf(e.target);
+      if (index > 0) {
+        inputs[index - 1].focus();
+        inputs[index - 1].select();
+      }
+    }
+  };
+
   const handleResultChange = (testIndex, paramType, paramIndex, field, value) => {
     setTestResults(prev => {
       const newResults = [...prev];
@@ -2348,6 +2368,8 @@ function CreateReport() {
                             fullWidth
                             variant="filled"
                             InputProps={{ disableUnderline: true }}
+                            inputProps={{ 'data-result-input': true }}
+                            onKeyDown={handleKeyDown}
                             value={sub.result}
                             onChange={(e) => handleResultChange(tableIndex, 'direct', subIndex, 'result', e.target.value)}
                             placeholder="Enter result..."
@@ -2423,6 +2445,8 @@ function CreateReport() {
                                 fullWidth
                                 variant="filled"
                                 InputProps={{ disableUnderline: true }}
+                                inputProps={{ 'data-result-input': true }}
+                                onKeyDown={handleKeyDown}
                                 value={sub.result}
                                 onChange={(e) => handleResultChange(tableIndex, 'pack', [packIndex, subIndex], 'result', e.target.value)}
                                 placeholder="Enter result..."
