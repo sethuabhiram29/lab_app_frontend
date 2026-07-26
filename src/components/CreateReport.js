@@ -412,7 +412,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
   // --- Constants for pagination ---
   const PAGE_HEIGHT = 842;
   const PAGE_WIDTH = 595;
-  const TOP_MARGIN = 200; // increased to prevent overlap with QR code area
+  const TOP_MARGIN = 184; // space between patient info and content
   const BOTTOM_MARGIN = 120; // Increased from 80 to prevent footer overlap
   const HEADER_HEIGHT = 19; // table header (fixed at 19pt to match styles)
   const ROW_HEIGHT = 16; // fixed row height (matches tableRow height)
@@ -647,10 +647,13 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
         console.log(`  Blocks in test: ${testBlocks.length}`);
 
         // For separate page tests: ALWAYS start a new page
+        // But reuse the current last page if it is still empty (avoids a blank first page)
         if (block.requiresSeparatePage) {
-          pages.push([]);
+          if (pages[pages.length - 1].length > 0) {
+            pages.push([]); // only create a new page if the last one already has content
+          }
           pages[pages.length - 1].push(...testBlocks);
-          console.log(`  ✓ Placed on NEW page ${pages.length} (requiresSeparatePage)`);
+          console.log(`  ✓ Placed on page ${pages.length} (requiresSeparatePage)`);
         } else {
           // For regular tests: Check ALL existing pages from first to last
           let placedPageIndex = -1;
