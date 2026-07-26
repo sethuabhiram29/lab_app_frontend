@@ -1811,14 +1811,14 @@ function CreateReport() {
             packs: tr.packs.map(pack => ({
               packName: pack.packName,
               subtests: pack.subtests.map(sub => ({
-                subTest: sub._id || sub,
+                subTest: sub.name,
                 result: sub.result,
                 unit: sub.unit,
                 range: sub.range
               }))
             })),
             direct: tr.direct.map(sub => ({
-              subTest: sub._id || sub,
+              subTest: sub.name,
               result: sub.result,
               unit: sub.unit,
               range: sub.range
