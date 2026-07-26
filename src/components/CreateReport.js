@@ -1702,10 +1702,9 @@ function CreateReport() {
     }
 
     try {
-      const report = getReportForPatient(selectedPatient._id);
-      if (report) {
+      if (id) {
         // Editing existing report: keep existing QR and metadata, only update test results
-        await updateReport(report._id, {
+        await updateReport(id, {
           patient: selectedPatient._id,
           uploadStatus: 'needs_update',
           testResults: filteredTestResults.map(tr => ({
@@ -1713,14 +1712,14 @@ function CreateReport() {
             packs: tr.packs.map(pack => ({
               packName: pack.packName,
               subtests: pack.subtests.map(sub => ({
-                subTest: sub._id || sub,
+                subTest: sub.name,
                 result: sub.result,
                 unit: sub.unit,
                 range: sub.range
               }))
             })),
             direct: tr.direct.map(sub => ({
-              subTest: sub._id || sub,
+              subTest: sub.name,
               result: sub.result,
               unit: sub.unit,
               range: sub.range
