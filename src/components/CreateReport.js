@@ -1484,22 +1484,24 @@ function CreateReport() {
           // Helper to resolve subtest metadata
           const resolveSub = (sub) => {
             let subId = sub.subTest?._id || sub.subTest || sub._id || sub;
+            let subNameToMatch = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : null);
+            
             let subDef = (testObj.subtests || []).find(s =>
               (s._id?.toString() === subId?.toString()) ||
-              (s.name && sub.name && s.name.trim().toLowerCase() === sub.name.trim().toLowerCase())
+              (s.name && subNameToMatch && s.name.trim().toLowerCase() === subNameToMatch.trim().toLowerCase())
             );
             if (!subDef && testObj.packs) {
               for (const pack of testObj.packs) {
                 subDef = (pack.subtests || []).find(s =>
                   (s._id?.toString() === subId?.toString()) ||
-                  (s.name && sub.name && s.name.trim().toLowerCase() === sub.name.trim().toLowerCase())
+                  (s.name && subNameToMatch && s.name.trim().toLowerCase() === subNameToMatch.trim().toLowerCase())
                 );
                 if (subDef) break;
               }
             }
             return {
               _id: subId,
-              name: subDef?.name || sub.name || '(Unknown Subtest)',
+              name: subDef?.name || subNameToMatch || '(Unknown Subtest)',
               unit: subDef?.unit || sub.unit || '',
               range: subDef?.reference || sub.range || '',
               result: sub.result || subDef?.result || '',
@@ -1942,10 +1944,14 @@ function CreateReport() {
     // Helper to resolve subtest details from master list
       const resolveSub = (sub) => {
       let subId = sub.subTest?._id || sub.subTest || sub._id || sub;
-      let subDef = subTests.find(s => s._id?.toString() === subId?.toString());
+      let subNameToMatch = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : null);
+      let subDef = subTests.find(s => 
+        (s._id?.toString() === subId?.toString()) ||
+        (s.name && subNameToMatch && s.name.trim().toLowerCase() === subNameToMatch.trim().toLowerCase())
+      );
         return {
         _id: subId,
-        name: subDef?.name || sub.name || '',
+        name: subDef?.name || subNameToMatch || '(Unknown Subtest)',
         unit: subDef?.unit || sub.unit || '',
         range: subDef?.reference || sub.range || '',
         result: sub.result || '',
