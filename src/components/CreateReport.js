@@ -681,7 +681,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
         <Page key={pageIdx} size={[PAGE_WIDTH, PAGE_HEIGHT]} style={styles.page}>
           {/* Background image shown in preview and view modes, but not in print mode */}
           {!isPrinting && (
-            <Image src={'/test_report_converted.png'} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} />
+            <Image src={'/Letterhead.jpg'} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} />
           )}
           {/* Patient Info and Separator (now on every page) */}
           <View style={{ position: 'absolute', top: 100, left: 40, right: 40 }}>
