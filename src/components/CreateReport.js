@@ -412,7 +412,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
   // --- Constants for pagination ---
   const PAGE_HEIGHT = 842;
   const PAGE_WIDTH = 595;
-  const TOP_MARGIN = 184; // reduced space between patient info and content
+  const TOP_MARGIN = 200; // increased to prevent overlap with QR code area
   const BOTTOM_MARGIN = 120; // Increased from 80 to prevent footer overlap
   const HEADER_HEIGHT = 19; // table header (fixed at 19pt to match styles)
   const ROW_HEIGHT = 16; // fixed row height (matches tableRow height)
@@ -683,11 +683,19 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
             console.log(`  ⚠ Test too tall (${testHeight}pt > ${MAX_PAGE_CONTENT}pt) — splitting across pages`);
             let remainingBlocks = [...testBlocks];
             let targetPage = placedPageIndex;
+            let isFirstChunk = true;
 
             while (remainingBlocks.length > 0) {
               const available = getAvailableSpace(targetPage);
               let chunk = [];
               let chunkHeight = 0;
+
+              // On continuation pages (not the first chunk), prepend a fresh tableHeader
+              // so the column labels are repeated at the top of each continuation page
+              if (!isFirstChunk) {
+                chunk.push({ type: 'tableHeader' });
+                chunkHeight += HEADER_HEIGHT;
+              }
 
               // Fill chunk block-by-block until page is full
               while (remainingBlocks.length > 0) {
@@ -712,6 +720,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
 
               pages[targetPage].push(...chunk);
               console.log(`  ✓ Split: placed ${chunk.length} blocks on page ${targetPage + 1}`);
+              isFirstChunk = false;
 
               // If more blocks remain, open a new page for the next chunk
               if (remainingBlocks.length > 0) {
@@ -1574,6 +1583,23 @@ function CreateReport() {
     });
   };
 
+  // Navigate between result inputs with Enter / Arrow keys
+  const handleResultKeyDown = (e) => {
+    if (e.key !== 'Enter' && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    // MUI puts inputProps directly on the native <input>, so select by data attribute
+    const allInputs = Array.from(document.querySelectorAll('input[data-result-input="true"]'));
+    const currentIndex = allInputs.indexOf(e.target);
+    if (currentIndex === -1) return;
+    const nextIndex = e.key === 'ArrowUp'
+      ? currentIndex - 1
+      : currentIndex + 1;
+    if (nextIndex >= 0 && nextIndex < allInputs.length) {
+      allInputs[nextIndex].focus();
+      allInputs[nextIndex].select(); // select all text so user can type over it immediately
+    }
+  };
+
   const onDragEnd = (result) => {
     if (!result.destination) return;
     
@@ -2408,9 +2434,10 @@ function CreateReport() {
                           <TextField
                             fullWidth
                             variant="filled"
-                            InputProps={{ disableUnderline: true }}
+                            InputProps={{ disableUnderline: true, inputProps: { 'data-result-input': true } }}
                             value={sub.result}
                             onChange={(e) => handleResultChange(tableIndex, 'direct', subIndex, 'result', e.target.value)}
+                            onKeyDown={handleResultKeyDown}
                             placeholder="Enter result..."
                             sx={glassFieldSx}
                           />
@@ -2483,9 +2510,10 @@ function CreateReport() {
                               <TextField
                                 fullWidth
                                 variant="filled"
-                                InputProps={{ disableUnderline: true }}
+                                InputProps={{ disableUnderline: true, inputProps: { 'data-result-input': true } }}
                                 value={sub.result}
                                 onChange={(e) => handleResultChange(tableIndex, 'pack', [packIndex, subIndex], 'result', e.target.value)}
+                                onKeyDown={handleResultKeyDown}
                                 placeholder="Enter result..."
                                 sx={glassFieldSx}
                               />
