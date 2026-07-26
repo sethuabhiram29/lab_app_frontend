@@ -248,9 +248,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     padding: 4,
     marginBottom: 0,
-    marginTop: 6,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
+    marginTop: 4,
     width: '100%',
   },
   packNameHeader: {
@@ -321,10 +319,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 4, // Reduced from 10 to 4
   },
-  col1: { width: '36%', fontSize: 10, textAlign: 'left', padding: 0, margin: 0, backgroundColor: 'transparent' },
-  col2: { width: '13%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
-  col3: { width: '13%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
-  col4: { width: '38%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col1: { width: '45%', fontSize: 10, textAlign: 'left', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col2: { width: '15%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col3: { width: '15%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col4: { width: '25%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
   note: {
     marginTop: 8,
     marginBottom: 8,
@@ -684,7 +682,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
             <Image src={'/Letterhead.jpg'} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} />
           )}
           {/* Patient Info and Separator (now on every page) */}
-          <View style={{ position: 'absolute', top: 100, left: 40, right: 40 }}>
+          <View style={{ position: 'absolute', top: 100, left: 30, right: 30 }}>
             <View style={styles.patientInfoTable}>
               {/* Main column - 63% width */}
               <View style={[styles.patientInfoCol, styles.patientInfoColMain]}>
@@ -768,7 +766,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
           {/* Debug: Footer reference line is always transparent (never visible) in both preview and PDF */}
           <View style={{ position: 'absolute', top: PAGE_HEIGHT - BOTTOM_MARGIN, left: 0, right: 0, height: 2, backgroundColor: 'transparent' }} />
           {/* Table and blocks */}
-          <View style={{ position: 'absolute', top: TOP_MARGIN, left: 50, right: 50 }}>
+          <View style={{ position: 'absolute', top: TOP_MARGIN, left: 30, right: 30 }}>
             {blocks.map((block, idx) => {
               if (block.type === 'tableHeader') {
                 // Only render table header if the next block is not a note
