@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     width: '100%',
-    marginTop: 15,
+    marginTop: 25,
   },
   patientInfoCol: {
     flexDirection: 'column',
@@ -217,15 +217,15 @@ const styles = StyleSheet.create({
     display: 'flex',
   },
   patientLabel: {
-    fontSize: 11,
+    fontSize: 10,
     width: 90, // Slightly reduced for better alignment
   },
   patientSeparator: {
-    fontSize: 11,
+    fontSize: 10,
     marginRight: 3, // Slightly reduced
   },
   patientValue: {
-    fontSize: 11,
+    fontSize: 10,
     flex: 1,
   },
   qrCode: {
@@ -244,17 +244,20 @@ const styles = StyleSheet.create({
   testNameHeader: {
     backgroundColor: '#cce6ff',
     textAlign: 'center',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
-    padding: 4,
+    padding: 2,
     marginBottom: 0,
-    marginTop: 4,
+    marginTop: 0,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
     width: '100%',
+    height: 20,
   },
   packNameHeader: {
     backgroundColor: '#e6f2ff',
     textAlign: 'center',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
     padding: 4,
     marginBottom: 0,
@@ -263,13 +266,14 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    padding: 0,
+    padding: 1,
     fontSize: 10,
     fontWeight: 'bold',
+    height: 19,
   },
   tableHeaderCell: {
     backgroundColor: '#e3f1ff',
-    borderRight: '1px solid #fff',
+    borderRight: 'none',
     borderTop: '1px solid #fff',
     borderBottom: 'none',
     padding: 2,
@@ -280,11 +284,11 @@ const styles = StyleSheet.create({
   },
   tableHeaderCellLeft: {
     backgroundColor: '#e3f1ff',
-    borderRight: '1px solid #fff',
+    borderRight: 'none',
     borderTop: '1px solid #fff',
     borderBottom: 'none',
     padding: 2,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
     flexGrow: 1,
     textAlign: 'left',
@@ -297,7 +301,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     fontSize: 10,
     backgroundColor: 'transparent',
-    minHeight: 14,
+    height: 16,
   },
   packRow: {
     flexDirection: 'row',
@@ -305,7 +309,7 @@ const styles = StyleSheet.create({
     margin: 0,
     fontSize: 10,
     backgroundColor: 'transparent',
-    minHeight: 16,
+    height: 18,
     borderBottom: 'none'
   },
   packName: {
@@ -319,10 +323,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 4, // Reduced from 10 to 4
   },
-  col1: { width: '45%', fontSize: 11, textAlign: 'left', padding: 0, margin: 0, backgroundColor: 'transparent' },
-  col2: { width: '15%', fontSize: 11, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
-  col3: { width: '15%', fontSize: 11, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
-  col4: { width: '25%', fontSize: 11, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col1: { width: '42%', fontSize: 10, textAlign: 'left', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col2: { width: '22%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col3: { width: '12%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col4: { width: '24%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
   note: {
     marginTop: 8,
     marginBottom: 8,
@@ -408,12 +412,12 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
   // --- Constants for pagination ---
   const PAGE_HEIGHT = 842;
   const PAGE_WIDTH = 595;
-  const TOP_MARGIN = 185; // reduced from 200 to bring table closer to separator
-  const BOTTOM_MARGIN = 80;
-  const HEADER_HEIGHT = 36; // table header
-  const ROW_HEIGHT = 16; // updated to match actual row height (14px) + padding (1px * 2)
-  const PACK_NAME_HEIGHT = 22;
-  const TEST_NAME_HEIGHT = 28;
+  const TOP_MARGIN = 184; // reduced space between patient info and content
+  const BOTTOM_MARGIN = 120; // Increased from 80 to prevent footer overlap
+  const HEADER_HEIGHT = 19; // table header (fixed at 19pt to match styles)
+  const ROW_HEIGHT = 16; // fixed row height (matches tableRow height)
+  const PACK_NAME_HEIGHT = 16;
+  const TEST_NAME_HEIGHT = 20; // test header (fixed at 20pt to match styles)
   const IMAGE_HEIGHT = 100; // increased to handle larger images
 
   // Helper: flatten testTables into a renderable sequence of blocks (test header, pack header, rows, etc.)
@@ -427,23 +431,42 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
     // Function to process a test and return its blocks
     function processTest(tr, testIndex, isForSeparatePage = false) {
       const testBlocks = [];
+      let isFirstTable = true; // Track if this is the first table in this test
       
       // Direct subtests as their own table
       if (tr.direct && tr.direct.length > 0) {
-        testBlocks.push({ 
-          type: 'testHeader', 
-          testName: tr.test.name,
-          requiresSeparatePage: isForSeparatePage
-        });
-        testBlocks.push({ type: 'tableHeader' });
+        // Add test header only once (before first table)
+        if (isFirstTable) {
+          testBlocks.push({ 
+            type: 'testHeader', 
+            testName: tr.test.name,
+            requiresSeparatePage: isForSeparatePage
+          });
+          testBlocks.push({ type: 'tableHeader' });
+          isFirstTable = false;
+        }
+        
         tr.direct.forEach((sub) => {
-          testBlocks.push({ type: 'row', sub });
+          // Split multi-line ranges into separate rows
+          const rangeLines = (sub.range || '').split('\n').filter(line => line.trim());
+          if (rangeLines.length > 1) {
+            // First row with full data
+            testBlocks.push({ type: 'row', sub: { ...sub, range: rangeLines[0] } });
+            // Additional rows with just the range (no name/unit/result)
+            rangeLines.slice(1).forEach(rangeLine => {
+              testBlocks.push({ type: 'row', sub: { ...sub, range: rangeLine, name: '', unit: '', result: '' } });
+            });
+          } else {
+            testBlocks.push({ type: 'row', sub });
+          }
         });
+        
         // Add note if exists for this direct table
         const directNote = tableNotes[`${testIndex}-direct`];
         if (directNote && directNote.trim()) {
           testBlocks.push({ type: 'note', content: directNote });
         }
+        
         // Use testIndex for image removal key, matching UI
         if (tr.test.image && !removedImages.has(`${testIndex}-test`)) {
           testBlocks.push({ type: 'testImage', image: tr.test.image, height: IMAGE_HEIGHT });
@@ -453,20 +476,41 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
       // Each pack as its own table
       if (tr.packs && tr.packs.length > 0) {
         tr.packs.forEach((pack, packIndex) => {
-          testBlocks.push({ 
-            type: 'testHeader', 
-            testName: pack.packName,
-            requiresSeparatePage: isForSeparatePage
-          });
-          testBlocks.push({ type: 'tableHeader' });
+          // Add test header only once (before first table)
+          if (isFirstTable) {
+            testBlocks.push({ 
+              type: 'testHeader', 
+              testName: tr.test.name,
+              requiresSeparatePage: isForSeparatePage
+            });
+            testBlocks.push({ type: 'tableHeader' });
+            isFirstTable = false;
+          }
+          
+          // Add pack name for all packs (including first one)
+          testBlocks.push({ type: 'packNameRow', packName: pack.packName });
+          
           pack.subtests.forEach((sub) => {
-            testBlocks.push({ type: 'row', sub });
+            // Split multi-line ranges into separate rows
+            const rangeLines = (sub.range || '').split('\n').filter(line => line.trim());
+            if (rangeLines.length > 1) {
+              // First row with full data
+              testBlocks.push({ type: 'row', sub: { ...sub, range: rangeLines[0] } });
+              // Additional rows with just the range (no name/unit/result)
+              rangeLines.slice(1).forEach(rangeLine => {
+                testBlocks.push({ type: 'row', sub: { ...sub, range: rangeLine, name: '', unit: '', result: '' } });
+              });
+            } else {
+              testBlocks.push({ type: 'row', sub });
+            }
           });
+          
           // Add note if exists for this pack table
           const packNote = tableNotes[`${testIndex}-pack-${packIndex}`];
           if (packNote && packNote.trim()) {
             testBlocks.push({ type: 'note', content: packNote });
           }
+          
           // Use testIndex and packIndex for image removal key, matching UI
           if (pack.image && !removedImages.has(`${testIndex}-pack-${packIndex}`)) {
             testBlocks.push({ type: 'packImage', image: pack.image, height: IMAGE_HEIGHT });
@@ -502,83 +546,81 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
     return blocks;
   }
 
-  // Paginate blocks with optimized table placement
+  // Paginate blocks with optimized table placement - never overlap header/footer, split tests across pages if needed
   function paginateBlocks(blocks) {
-    // Filter out consecutive forcePage blocks
-    blocks = blocks.filter((block, index) => {
-      if (block.type === 'forcePage') {
-        // Skip if next block is also a forcePage
-        return !(blocks[index + 1]?.type === 'forcePage');
+    // Debug: Log all blocks
+    console.log('=== BLOCKS STRUCTURE ===');
+    blocks.forEach((block, idx) => {
+      if (block.type === 'testHeader') {
+        console.log(`[${idx}] TEST HEADER: ${block.testName}`);
+      } else if (block.type === 'tableHeader') {
+        console.log(`[${idx}] TABLE HEADER`);
+      } else if (block.type === 'row') {
+        console.log(`[${idx}] ROW: ${block.sub.name}`);
+      } else if (block.type === 'packNameRow') {
+        console.log(`[${idx}] PACK NAME: ${block.packName}`);
+      } else {
+        console.log(`[${idx}] ${block.type}`);
       }
-      return true;
     });
+    console.log('=== END BLOCKS ===\n');
 
-    const pages = [[]]; // Start with one empty page
+    const pages = [[]];
     let i = 0;
 
-    // Helper function to calculate space needed for a section
-    function calculateSpaceNeeded(startIndex) {
-      let height = 0;
-      let j = startIndex;
-      let blockCount = 0;
-      
-      // Calculate until we find the end of this section or reach end of blocks
-      while (j < blocks.length) {
-        const block = blocks[j];
-        if (j > startIndex && block.type === 'testHeader') break;
-        
-        if (block.type === 'testHeader') height += TEST_NAME_HEIGHT;
-        else if (block.type === 'tableHeader') height += HEADER_HEIGHT;
-        else if (block.type === 'packHeader') height += PACK_NAME_HEIGHT;
-        else if (block.type === 'row') height += ROW_HEIGHT;
-        else if (block.type === 'testImage' || block.type === 'packImage') 
-          height += (block.height || IMAGE_HEIGHT) + 12;
-        else if (block.type === 'spacer') height += 12;
-        
-        blockCount++;
-        j++;
-      }
-      
-      return { height, endIndex: j - 1, blockCount };
-    }
-
-    // Helper function to calculate remaining space on a page
-    function getRemainingSpace(pageIndex) {
+    // Helper to calculate space used on a page (excluding TOP_MARGIN which is fixed header space)
+    function getUsedSpace(pageIndex) {
       const page = pages[pageIndex];
-      let usedSpace = TOP_MARGIN;
-      
-      // Check if page contains any test that requires separate page
-      const hasSpecialTest = page.some(block => 
-        block.type === 'testHeader' && block.requiresSeparatePage
-      );
-      
-      // If page has special test, return 0 space (no more tables allowed)
-      if (hasSpecialTest) return 0;
+      let usedSpace = 0; // Only count block content, not header space
       
       for (const block of page) {
         if (block.type === 'testHeader') usedSpace += TEST_NAME_HEIGHT;
         else if (block.type === 'tableHeader') usedSpace += HEADER_HEIGHT;
-        else if (block.type === 'packHeader') usedSpace += PACK_NAME_HEIGHT;
+        else if (block.type === 'packNameRow') usedSpace += ROW_HEIGHT;
         else if (block.type === 'row') usedSpace += ROW_HEIGHT;
         else if (block.type === 'testImage' || block.type === 'packImage') 
           usedSpace += (block.height || IMAGE_HEIGHT) + 12;
+        else if (block.type === 'note') usedSpace += 16;
         else if (block.type === 'spacer') usedSpace += 12;
       }
       
-      return PAGE_HEIGHT - BOTTOM_MARGIN - usedSpace;
+      return usedSpace;
     }
 
-    // Helper to find all blocks that belong to one test
+    // Helper to calculate available space on a page
+    function getAvailableSpace(pageIndex) {
+      const usedSpace = getUsedSpace(pageIndex);
+      const contentAreaHeight = PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN;
+      const availableSpace = contentAreaHeight - usedSpace;
+      return Math.max(0, availableSpace);
+    }
+
+    // Helper to calculate height needed for blocks
+    function calculateBlockHeight(blockList) {
+      let height = 0;
+      for (const block of blockList) {
+        if (block.type === 'testHeader') height += TEST_NAME_HEIGHT;
+        else if (block.type === 'tableHeader') height += HEADER_HEIGHT;
+        else if (block.type === 'packNameRow') height += ROW_HEIGHT;
+        else if (block.type === 'row') height += ROW_HEIGHT;
+        else if (block.type === 'testImage' || block.type === 'packImage') 
+          height += (block.height || IMAGE_HEIGHT) + 12;
+        else if (block.type === 'note') height += 16;
+        else if (block.type === 'spacer') height += 12;
+      }
+      return height;
+    }
+
+    // Helper to find all blocks belonging to one test
     function findTestBlocks(startIndex) {
       const testBlocks = [];
       let j = startIndex;
       
-      // Get the test header
       const testHeader = blocks[j];
       testBlocks.push(testHeader);
       j++;
       
-      // Collect all blocks until we hit another test header
+      // Collect all blocks until next test header
       while (j < blocks.length && blocks[j].type !== 'testHeader') {
         testBlocks.push(blocks[j]);
         j++;
@@ -586,87 +628,67 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
       
       return { testBlocks, endIndex: j - 1 };
     }
-    
+
+    console.log('=== PAGINATION START ===');
+    console.log(`PAGE_HEIGHT=${PAGE_HEIGHT}, TOP_MARGIN=${TOP_MARGIN}, BOTTOM_MARGIN=${BOTTOM_MARGIN}`);
+    console.log(`Available content area: ${PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN}pt\n`);
+
     while (i < blocks.length) {
       const block = blocks[i];
-      
-      // Skip any forcePage blocks
-      if (block.type === 'forcePage') {
-        i++;
-        continue;
-      }
-      
-      // When we find a test header
+
+      // When we find a test header, get the entire test block
       if (block.type === 'testHeader') {
         const { testBlocks, endIndex } = findTestBlocks(i);
-        
+        const testHeight = calculateBlockHeight(testBlocks);
+        const testName = block.testName;
+
+        console.log(`\n→ Processing: ${testName}`);
+        console.log(`  Test height needed: ${testHeight}pt`);
+        console.log(`  Blocks in test: ${testBlocks.length}`);
+
         // For separate page tests: ALWAYS start a new page
         if (block.requiresSeparatePage) {
-          // If we already have some pages, add a new one
-          if (pages.length > 0) {
-            pages.push([]);
-          }
+          pages.push([]);
+          pages[pages.length - 1].push(...testBlocks);
+          console.log(`  ✓ Placed on NEW page ${pages.length} (requiresSeparatePage)`);
         } else {
-          // For regular tests: only start new page if current page is full
-          const spaceNeeded = testBlocks.reduce((sum, b) => {
-            if (b.type === 'testHeader') return sum + TEST_NAME_HEIGHT;
-            if (b.type === 'tableHeader') return sum + HEADER_HEIGHT;
-            if (b.type === 'row') return sum + ROW_HEIGHT;
-            if (b.type === 'testImage' || b.type === 'packImage') 
-              return sum + (b.height || IMAGE_HEIGHT) + 12;
-            if (b.type === 'spacer') return sum + 12;
-            return sum;
-          }, 0);
-          
-          const remainingSpace = getRemainingSpace(pages.length - 1);
-          
-          if (remainingSpace < spaceNeeded) {
+          // For regular tests: Check ALL existing pages from first to last
+          let placedPageIndex = -1;
+
+          // Check ALL existing pages for space, in order from first to last
+          console.log(`  Checking ${pages.length} existing pages:`);
+          for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+            const availableSpace = getAvailableSpace(pageIndex);
+            const canFit = availableSpace >= testHeight;
+            console.log(`    Page ${pageIndex + 1}: ${availableSpace}pt available, ${testHeight}pt needed ${canFit ? '✓ FITS' : '✗ NO'}`);
+            
+            // If this page has enough space, place test here and stop
+            if (canFit) {
+              placedPageIndex = pageIndex;
+              break; // Place on first page that has space
+            }
+          }
+
+          // If test doesn't fit on any existing page, create new page
+          if (placedPageIndex === -1) {
+            console.log(`  ✗ No space on existing pages - creating NEW page`);
             pages.push([]);
+            placedPageIndex = pages.length - 1;
           }
+
+          // Place entire test on selected page
+          pages[placedPageIndex].push(...testBlocks);
+          console.log(`  ✓ Placed entirely on page ${placedPageIndex + 1}`);
         }
-        
-        // Add all blocks for this test to the current page
-        pages[pages.length - 1].push(...testBlocks);
+
         i = endIndex + 1;
-        continue;
-      }
-
-      // Calculate space needed for the next section
-      const { height, endIndex } = calculateSpaceNeeded(i);
-      let bestFitPage = -1;
-      let bestRemainingSpace = Infinity;
-
-      // Check if this section contains a test that requires a separate page
-      const needsSeparatePage = blocks[i].type === 'testHeader' && blocks[i].requiresSeparatePage;
-
-      if (needsSeparatePage) {
-        // Start a new page for this test
-        bestFitPage = pages.length;
-        pages.push([]);
       } else {
-        // Try to find the best fitting page for regular tests
-        for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
-          const remainingSpace = getRemainingSpace(pageIndex);
-          if (remainingSpace >= height && remainingSpace < bestRemainingSpace) {
-            bestFitPage = pageIndex;
-            bestRemainingSpace = remainingSpace;
-          }
-        }
+        // Skip any non-test-header blocks (shouldn't happen with proper block structure)
+        i++;
       }
-
-      // If no existing page has enough space, create a new one
-      if (bestFitPage === -1) {
-        bestFitPage = pages.length;
-        pages.push([]);
-      }
-
-      // Add the blocks to the best fitting page
-      const section = blocks.slice(i, endIndex + 1);
-      pages[bestFitPage].push(...section);
-
-      // Move to the next section
-      i = endIndex + 1;
     }
+
+    console.log(`\n=== PAGINATION END: Total pages=${pages.length} ===\n`);
     return pages;
   }
 
@@ -682,7 +704,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
             <Image src={'/Letterhead.jpg'} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} />
           )}
           {/* Patient Info and Separator (now on every page) */}
-          <View style={{ position: 'absolute', top: 100, left: 30, right: 30 }}>
+          <View style={{ position: 'absolute', top: 100, left: 40, right: 40 }}>
             <View style={styles.patientInfoTable}>
               {/* Main column - 63% width */}
               <View style={[styles.patientInfoCol, styles.patientInfoColMain]}>
@@ -704,7 +726,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
                 <View style={styles.patientInfoRow}>
                   <Text style={styles.patientLabel}>Ref by Dr.</Text>
                   <Text style={styles.patientSeparator}>: </Text>
-                  <Text style={styles.patientValue}>{patient?.refDoctor?.name || '-'}</Text>
+                  <Text style={styles.patientValue}>{patient?.refDoctor?.name ? `${patient.refDoctor.name}${patient.refDoctor.specialization ? ` ${patient.refDoctor.specialization}` : ''}` : '-'}</Text>
                 </View>
               </View>
               {/* Secondary column - 30% width */}
@@ -761,12 +783,18 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
               </View>
             </View>
           </View>
-          {/* Horizontal separator line below patient info */}
-          <View style={{ position: 'absolute', top: 180, left: 30, right: 30, height: 1, backgroundColor: '#000' }} />
+          {/* Content starts right after patient info - no separator line */}
           {/* Debug: Footer reference line is always transparent (never visible) in both preview and PDF */}
           <View style={{ position: 'absolute', top: PAGE_HEIGHT - BOTTOM_MARGIN, left: 0, right: 0, height: 2, backgroundColor: 'transparent' }} />
           {/* Table and blocks */}
-          <View style={{ position: 'absolute', top: TOP_MARGIN, left: 30, right: 30 }}>
+          <View style={{ 
+            position: 'absolute', 
+            top: TOP_MARGIN, 
+            left: 30, 
+            right: 30,
+            maxHeight: PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN,
+            overflow: 'hidden'
+          }}>
             {blocks.map((block, idx) => {
               if (block.type === 'tableHeader') {
                 // Only render table header if the next block is not a note
@@ -774,53 +802,70 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
                   return null;
                 }
                 return (
-                  <View style={styles.tableHeader} key={idx}>
+                  <View style={[styles.tableHeader, isPrinting && { borderRadius: 4, overflow: 'hidden' }]} key={idx}>
                     <Text style={[
                       styles.col1, 
                       styles.tableHeaderCellLeft,
+                      { borderRight: 'none', borderLeft: 'none', borderTop: 'none', borderBottom: 'none' },
                       isPrinting && {
                         backgroundColor: '#fff',
-                        border: '1px solid #000',
-                        borderRight: '1px solid #000'
+                        borderTop: '1px solid #000',
+                        borderBottom: '1px solid #000',
+                        borderLeft: '1px solid #000',
+                        borderRight: 'none',
+                        borderTopLeftRadius: 4,
+                        borderBottomLeftRadius: 4
                       }
                     ]}>Test Description</Text>
                     <Text style={[
                       styles.col2, 
                       styles.tableHeaderCell,
+                      { borderRight: 'none', borderLeft: 'none', borderTop: 'none', borderBottom: 'none' },
                       isPrinting && {
                         backgroundColor: '#fff',
-                        border: '1px solid #000',
-                        borderLeft: 'none'
+                        borderTop: '1px solid #000',
+                        borderBottom: '1px solid #000',
+                        borderLeft: 'none',
+                        borderRight: 'none'
                       }
                     ]}>Result</Text>
                     <Text style={[
                       styles.col3, 
                       styles.tableHeaderCell,
+                      { borderRight: 'none', borderLeft: 'none', borderTop: 'none', borderBottom: 'none' },
                       isPrinting && {
                         backgroundColor: '#fff',
-                        border: '1px solid #000',
-                        borderLeft: 'none'
+                        borderTop: '1px solid #000',
+                        borderBottom: '1px solid #000',
+                        borderLeft: 'none',
+                        borderRight: 'none'
                       }
                     ]}>Units</Text>
                     <Text style={[
                       styles.col4, 
                       styles.tableHeaderCell,
+                      { borderLeft: 'none', borderRight: 'none', borderTop: 'none', borderBottom: 'none' },
                       isPrinting && {
                         backgroundColor: '#fff',
-                        border: '1px solid #000',
-                        borderLeft: 'none'
+                        borderTop: '1px solid #000',
+                        borderBottom: '1px solid #000',
+                        borderLeft: 'none',
+                        borderRight: '1px solid #000',
+                        borderTopRightRadius: 4,
+                        borderBottomRightRadius: 4
                       }
                     ]}>Biological Reference Ranges</Text>
                   </View>
                 );
               } else if (block.type === 'testHeader') {
                   return (
-                  <View key={idx} style={{ marginBottom: 4 }}>
+                  <View key={idx} style={{ marginBottom: 4, marginTop: 8 }}>
                     <Text style={[
                       styles.testNameHeader,
                       isPrinting && {
                         backgroundColor: '#fff',
-                        border: '1px solid #000'
+                        border: '1px solid #000',
+                        borderRadius: 4
                       }
                     ]}>{block.testName}</Text>
                         </View>
@@ -829,6 +874,22 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
                 return (
                   <View key={idx} style={{ marginBottom: 4 }}>
                     <Text style={styles.packNameHeader}>{block.packName}</Text>
+                  </View>
+                );
+              } else if (block.type === 'packNameRow') {
+                // Pack name displayed as a row with underline on text only
+                return (
+                  <View key={idx} style={[
+                    styles.tableRow,
+                    { flexDirection: 'row', alignItems: 'center' }
+                  ]}>
+                    <Text style={[
+                      styles.col1,
+                      { padding: 1, fontWeight: 'bold', textDecoration: 'underline' }
+                    ]}>{block.packName}</Text>
+                    <Text style={[styles.col2, { padding: 1 }]}></Text>
+                    <Text style={styles.col3}></Text>
+                    <Text style={styles.col4}></Text>
                   </View>
                 );
               } else if (block.type === 'row') {
