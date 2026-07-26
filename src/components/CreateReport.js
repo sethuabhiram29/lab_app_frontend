@@ -217,15 +217,15 @@ const styles = StyleSheet.create({
     display: 'flex',
   },
   patientLabel: {
-    fontSize: 10,
+    fontSize: 11,
     width: 90, // Slightly reduced for better alignment
   },
   patientSeparator: {
-    fontSize: 10,
+    fontSize: 11,
     marginRight: 3, // Slightly reduced
   },
   patientValue: {
-    fontSize: 10,
+    fontSize: 11,
     flex: 1,
   },
   qrCode: {
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   testNameHeader: {
     backgroundColor: '#cce6ff',
     textAlign: 'center',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 'bold',
     padding: 4,
     marginBottom: 0,
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   packNameHeader: {
     backgroundColor: '#e6f2ff',
     textAlign: 'center',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
     padding: 4,
     marginBottom: 0,
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     borderTop: '1px solid #fff',
     borderBottom: 'none',
     padding: 2,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
     flexGrow: 1,
     textAlign: 'left',
@@ -319,10 +319,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 4, // Reduced from 10 to 4
   },
-  col1: { width: '45%', fontSize: 10, textAlign: 'left', padding: 0, margin: 0, backgroundColor: 'transparent' },
-  col2: { width: '15%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
-  col3: { width: '15%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
-  col4: { width: '25%', fontSize: 10, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col1: { width: '45%', fontSize: 11, textAlign: 'left', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col2: { width: '15%', fontSize: 11, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col3: { width: '15%', fontSize: 11, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
+  col4: { width: '25%', fontSize: 11, textAlign: 'center', padding: 0, margin: 0, backgroundColor: 'transparent' },
   note: {
     marginTop: 8,
     marginBottom: 8,
