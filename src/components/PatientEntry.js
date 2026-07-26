@@ -911,9 +911,9 @@ function PatientEntry() {
                         <Box key="header-subtests" sx={{ p: 1.5, bgcolor: 'rgba(16,185,129,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#10B981' }}>DIRECT SUBTESTS</Typography>
                           <Button size="small" sx={{ fontSize: '0.7rem', color: '#94A3B8' }} onClick={() => {
-                            const allSel = test.subtests.every(sub => selectedTest.subtests.find(s => s._id === sub._id && s.selected));
-                            test.subtests.forEach(sub => { if (allSel || !selectedTest.subtests.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(test._id, sub._id); });
-                          }}>{test.subtests.every(sub => selectedTest.subtests.find(s => s._id === sub._id && s.selected)) ? 'Deselect All' : 'Select All'}</Button>
+                            const allSel = test.subtests.every(sub => selectedTest?.subtests?.find(s => s._id === sub._id && s.selected));
+                            test.subtests.forEach(sub => { if (allSel || !selectedTest?.subtests?.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(test._id, sub._id); });
+                          }}>{test.subtests.every(sub => selectedTest?.subtests?.find(s => s._id === sub._id && s.selected)) ? 'Deselect All' : 'Select All'}</Button>
                         </Box>,
                         ...test.subtests.map((sub) => (
                           <ListItem 
@@ -923,7 +923,7 @@ function PatientEntry() {
                             sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)', '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}
                           >
                             <Checkbox 
-                              checked={!!(selectedTest && selectedTest.subtests && selectedTest.subtests.find(s => s._id === sub._id && s.selected))} 
+                              checked={!!(selectedTest?.subtests?.find(s => s._id === sub._id && s.selected))} 
                               onChange={() => handleSubtestSelection(test._id, sub._id)} size="small" 
                               sx={{ '&.Mui-checked': { color: '#10B981' }, color: '#475569' }}
                             />
@@ -943,9 +943,9 @@ function PatientEntry() {
                           <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#818CF8' }}>TEST PACKS</Typography>
                         </Box>,
                         ...test.packs.map((pack) => {
-                          const selectedPack = selectedTest && selectedTest.packs && selectedTest.packs.find(p => p._id === pack._id);
+                          const selectedPack = selectedTest?.packs?.find(p => p._id === pack._id);
                           const isActivePack = activePackId === pack._id;
-                          const hasSelectedSubs = selectedPack && selectedPack.subtests && selectedPack.subtests.some(s => s.selected);
+                          const hasSelectedSubs = selectedPack?.subtests?.some(s => s.selected);
                           return (
                             <ListItem 
                               button key={pack._id} 
@@ -992,9 +992,9 @@ function PatientEntry() {
               const test = tests.find(t => t._id === activeTestId);
               const pack = test && test.packs ? test.packs.find(p => p._id === activePackId) : null;
               const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
-              const selectedPack = selectedTest && selectedTest.packs && selectedTest.packs.find(p => p._id === activePackId);
+              const selectedPack = selectedTest?.packs?.find(p => p._id === activePackId);
               if (pack && selectedPack && selectedPack.selected) {
-                const allSelected = pack.subtests && pack.subtests.length > 0 && pack.subtests.every(sub => selectedPack.subtests.find(s => s._id === sub._id && s.selected));
+                const allSelected = pack.subtests && pack.subtests.length > 0 && pack.subtests.every(sub => selectedPack?.subtests?.find(s => s._id === sub._id && s.selected));
                 return (
                   <>
                     <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
