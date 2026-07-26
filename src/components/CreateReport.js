@@ -761,7 +761,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
         <Page key={pageIdx} size={[PAGE_WIDTH, PAGE_HEIGHT]} style={styles.page}>
           {/* Background image shown in preview and view modes, but not in print mode */}
           {!isPrinting && (
-            <Image src={'/test_report_converted.png'} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} />
+            <Image src={`${window.location.origin}/test_report_converted.png`} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} />
           )}
           {/* Patient Info and Separator (now on every page) */}
           <View style={{ position: 'absolute', top: 100, left: 40, right: 40 }}>
@@ -1483,8 +1483,10 @@ function CreateReport() {
           const testObj = allTests.find(t => t._id.toString() === (tr.test._id?.toString() || tr.test?.toString() || tr.test)) || {};
           // Helper to resolve subtest metadata
           const resolveSub = (sub) => {
+            console.log('Resolving subtest:', sub);
             let subId = sub.subTest?._id || sub.subTest || sub._id || sub;
-            let subNameToMatch = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : null);
+            let subNameToMatch = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
+            console.log('Derived subNameToMatch:', subNameToMatch, 'from subId:', subId);
             
             let subDef = (testObj.subtests || []).find(s =>
               (s._id?.toString() === subId?.toString()) ||
