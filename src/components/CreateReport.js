@@ -1850,14 +1850,17 @@ function CreateReport() {
   };
 
   // Replace the old buildDisplayData function with the improved version
-  function buildDisplayData(patient, testResults, allTests, subTests, savedData = null) {
+    function buildDisplayData(patient, testResults, allTests, subTests, savedData = null) {
     const displayPatient = {
       name: patient?.name || '-',
       age: patient?.age || '-',
       gender: patient?.gender || '-',
       regNo: patient?.regNo || '-',
       sampleCollectionDate: patient?.sampleCollectionDate || '-',
-      refDoctor: patient?.refDoctor?.name ? { name: patient.refDoctor.name } : { name: '-' },
+      refDoctor: patient?.refDoctor ? { 
+        name: patient.refDoctor.name, 
+        specialization: patient.refDoctor.specialization 
+      } : { name: '-' },
       refAgent: patient?.refAgent?.name ? { name: patient.refAgent.name } : { name: '-' },
       mobileNumber: patient?.mobileNumber || '-',
     };
@@ -1867,13 +1870,40 @@ function CreateReport() {
       new Set(savedData.removedImages) : 
       new Set(Array.from(removedImages || []));
 
-    // Helper to resolve subtest details from master list
-      const resolveSub = (sub) => {
-      let subId = sub.subTest?._id || sub.subTest || sub._id || sub;
-      let subDef = subTests.find(s => s._id?.toString() === subId?.toString());
-        return {
-        _id: subId,
-        name: subDef?.name || sub.name || '',
+    // Helper to resolve subtest details from master list and test definitions
+    const resolveSub = (sub, testObj) => {
+      let subName = sub.subTest || sub.name;
+      
+      // If subTest is an object, get the name property
+      if (typeof subName !== 'string') {
+        subName = subName?.name || String(subName || '');
+      }
+      
+      subName = String(subName).trim();
+      
+      // First, try to find in the test's direct subtests
+      let subDef = (testObj?.subtests || []).find(s =>
+        String(s.name).trim().toLowerCase() === subName.toLowerCase()
+      );
+      
+      // If not found and this is a pack subtest, find in pack subtests
+      if (!subDef && testObj?.packs) {
+        for (const pack of testObj.packs) {
+          subDef = (pack.subtests || []).find(s =>
+            String(s.name).trim().toLowerCase() === subName.toLowerCase()
+          );
+          if (subDef) break;
+        }
+      }
+      
+      // Fallback to global subTests list (for independent subtests)
+      if (!subDef) {
+        subDef = subTests.find(s => String(s.name).trim().toLowerCase() === subName.toLowerCase());
+      }
+      
+      return {
+        _id: subDef?._id || sub._id,
+        name: subDef?.name || subName || '(Unknown)',
         unit: subDef?.unit || sub.unit || '',
         range: subDef?.reference || sub.range || '',
         result: sub.result || '',
@@ -1892,14 +1922,14 @@ function CreateReport() {
         return {
           packName: pack.packName,
           image: packDef?.image || pack.image || '',
-          subtests: (pack?.subtests || []).filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result).map(resolveSub)
+          subtests: (pack?.subtests || []).filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result).map(sub => resolveSub(sub, testObj))
         };
       }).filter(pack => pack.subtests.length > 0); // Remove packs with no valid subtests
       
     return {
       test: { ...testObj, image: testObj?.image || '' },
       packs: filteredPacks,
-      direct: filteredDirect.map(resolveSub)
+      direct: filteredDirect.map(sub => resolveSub(sub, testObj))
     };
   });
 
