@@ -676,9 +676,54 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
             placedPageIndex = pages.length - 1;
           }
 
-          // Place entire test on selected page
-          pages[placedPageIndex].push(...testBlocks);
-          console.log(`  ✓ Placed entirely on page ${placedPageIndex + 1}`);
+          const MAX_PAGE_CONTENT = PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN;
+
+          // NEW CASE: test is taller than a single full page — split it row-by-row across pages
+          if (testHeight > MAX_PAGE_CONTENT) {
+            console.log(`  ⚠ Test too tall (${testHeight}pt > ${MAX_PAGE_CONTENT}pt) — splitting across pages`);
+            let remainingBlocks = [...testBlocks];
+            let targetPage = placedPageIndex;
+
+            while (remainingBlocks.length > 0) {
+              const available = getAvailableSpace(targetPage);
+              let chunk = [];
+              let chunkHeight = 0;
+
+              // Fill chunk block-by-block until page is full
+              while (remainingBlocks.length > 0) {
+                const nextBlock = remainingBlocks[0];
+                let nextHeight = 0;
+                if (nextBlock.type === 'testHeader') nextHeight = TEST_NAME_HEIGHT;
+                else if (nextBlock.type === 'tableHeader') nextHeight = HEADER_HEIGHT;
+                else if (nextBlock.type === 'packNameRow') nextHeight = ROW_HEIGHT;
+                else if (nextBlock.type === 'row') nextHeight = ROW_HEIGHT;
+                else if (nextBlock.type === 'testImage' || nextBlock.type === 'packImage') nextHeight = (nextBlock.height || IMAGE_HEIGHT) + 12;
+                else if (nextBlock.type === 'note') nextHeight = 16;
+                else if (nextBlock.type === 'spacer') nextHeight = 12;
+
+                // Always take at least one block so we never get stuck in an infinite loop
+                if (chunkHeight + nextHeight <= available || chunk.length === 0) {
+                  chunk.push(remainingBlocks.shift());
+                  chunkHeight += nextHeight;
+                } else {
+                  break;
+                }
+              }
+
+              pages[targetPage].push(...chunk);
+              console.log(`  ✓ Split: placed ${chunk.length} blocks on page ${targetPage + 1}`);
+
+              // If more blocks remain, open a new page for the next chunk
+              if (remainingBlocks.length > 0) {
+                pages.push([]);
+                targetPage = pages.length - 1;
+              }
+            }
+          } else {
+            // Normal case (existing behaviour): place entire test on selected page
+            pages[placedPageIndex].push(...testBlocks);
+            console.log(`  ✓ Placed entirely on page ${placedPageIndex + 1}`);
+          }
         }
 
         i = endIndex + 1;
