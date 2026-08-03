@@ -451,7 +451,7 @@ function PatientEntry() {
                           <Typography sx={fieldLabelSx}>FULL NAME</Typography>
                           <TextField
                             name="name" value={formData.name} onChange={handleInputChange}
-                            fullWidth required variant="filled" placeholder="Mahesh Kumar"
+                            fullWidth required variant="filled" placeholder=""
                             InputProps={{ disableUnderline: true }}
                             sx={darkFieldSx}
                           />
@@ -463,7 +463,7 @@ function PatientEntry() {
                           <Typography sx={fieldLabelSx}>AGE</Typography>
                           <TextField
                             name="age" value={formData.age} onChange={handleInputChange}
-                            fullWidth required variant="filled" placeholder="24"
+                            fullWidth required variant="filled" placeholder=""
                             InputProps={{ disableUnderline: true }}
                             sx={darkFieldSx}
                           />
@@ -494,7 +494,7 @@ function PatientEntry() {
                           <Typography sx={fieldLabelSx}>MOBILE NUMBER</Typography>
                           <TextField
                             name="mobileNumber" value={formData.mobileNumber} onChange={handleInputChange}
-                            fullWidth variant="filled" placeholder="+91 98765 43210"
+                            fullWidth variant="filled" placeholder=""
                             InputProps={{ disableUnderline: true }}
                             sx={darkFieldSx}
                           />
@@ -510,7 +510,7 @@ function PatientEntry() {
                               const username = e.target.value.trim().replace(/@gmail\.com$/, '');
                               setFormData({ ...formData, emailUsername: username, email: username ? `${username}@gmail.com` : '' });
                             }}
-                            fullWidth variant="filled" placeholder="name@gmail.com"
+                            fullWidth variant="filled" placeholder=""
                             InputProps={{
                               disableUnderline: true,
                               endAdornment: <span style={{ color: '#475569', fontSize: '0.85rem' }}>@gmail.com</span>,
@@ -904,31 +904,31 @@ function PatientEntry() {
         PaperProps={{
           sx: {
             borderRadius: 'var(--radius-2xl)',
-            background: '#111827',
-            boxShadow: '0 32px 64px rgba(0,0,0,0.5)',
+            background: '#FFFFFF',
+            boxShadow: '0 32px 64px rgba(0,0,0,0.1)',
             height: '85vh',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid rgba(30,41,59,0.05)',
           }
         }}
         sx={{
           backdropFilter: 'blur(8px)',
-          '& .MuiBackdrop-root': { backgroundColor: 'rgba(0,0,0,0.7)' },
+          '& .MuiBackdrop-root': { backgroundColor: 'rgba(0,0,0,0.4)' },
         }}
       >
-        <Box sx={{ px: 4, py: 3, borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)' }}>
+        <Box sx={{ px: 4, py: 3, borderBottom: '1px solid rgba(30,41,59,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F8FAFC' }}>
           <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>Select Diagnostic Tests</Typography>
-          <IconButton onClick={() => setShowTestSelection(false)} sx={{ color: '#94A3B8', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' } }}>
+          <IconButton onClick={() => setShowTestSelection(false)} sx={{ color: '#64748B', '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' } }}>
             <CloseIcon />
           </IconButton>
         </Box>
-        <DialogContent data-lenis-prevent="true" sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: '#0F172A', overflow: { xs: 'auto', md: 'hidden' }, flex: 1, minHeight: 0 }}>
+        <DialogContent data-lenis-prevent="true" sx={{ p: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: '#FFFFFF', overflow: { xs: 'auto', md: 'hidden' }, flex: 1, minHeight: 0 }}>
           
           {/* Col 1: Tests */}
-          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, borderRight: { xs: 'none', md: '1px solid rgba(255,255,255,0.06)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.06)', md: 'none' } }}>
-            <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
+          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, borderRight: { xs: 'none', md: '1px solid rgba(30,41,59,0.05)' }, borderBottom: { xs: '1px solid rgba(30,41,59,0.05)', md: 'none' } }}>
+            <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(30,41,59,0.05)', bgcolor: '#F8FAFC' }}>
               <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>1. Select a Test</Typography>
             </Box>
             <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain' }}>
@@ -946,16 +946,16 @@ function PatientEntry() {
                       if (!formData.selectedTests.some(t => t.test._id === test._id)) handleTestSelection(test);
                     }}
                     sx={{
-                      borderBottom: '1px solid rgba(255,255,255,0.04)',
+                      borderBottom: '1px solid rgba(30,41,59,0.05)',
                       bgcolor: isActive ? 'rgba(16,185,129,0.08)' : 'transparent',
                       transition: 'all 0.2s',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' },
+                      '&:hover': { bgcolor: isActive ? 'rgba(16,185,129,0.1)' : 'rgba(0,0,0,0.02)' },
                     }}
                   >
                     <ListItemText
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Typography sx={{ fontWeight: isActive || isSelected ? 700 : 500, color: isActive ? '#10B981' : '#CBD5E1', fontSize: '0.9rem' }}>
+                          <Typography sx={{ fontWeight: isActive || isSelected ? 700 : 500, color: isActive ? '#0F6E56' : '#0F172A', fontSize: '0.9rem' }}>
                             {test.name}
                           </Typography>
                           <AnimatePresence>
@@ -976,10 +976,10 @@ function PatientEntry() {
           </Box>
 
           {/* Col 2: Subtests & Packs */}
-          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, borderRight: { xs: 'none', md: '1px solid rgba(255,255,255,0.06)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.06)', md: 'none' } }}>
+          <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, borderRight: { xs: 'none', md: '1px solid rgba(30,41,59,0.05)' }, borderBottom: { xs: '1px solid rgba(30,41,59,0.05)', md: 'none' } }}>
             {activeTestId ? (
               <>
-                <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(30,41,59,0.05)', bgcolor: '#F8FAFC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>2. Direct Subtests & Packs</Typography>
                   <Button size="small" sx={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 700 }} onClick={() => {
                     const test = tests.find(t => t._id === activeTestId);
@@ -1015,8 +1015,8 @@ function PatientEntry() {
                     if (test && Array.isArray(test.subtests) && test.subtests.length > 0) {
                       return [
                         <Box key="header-subtests" sx={{ p: 1.5, bgcolor: 'rgba(16,185,129,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#10B981' }}>DIRECT SUBTESTS</Typography>
-                          <Button size="small" sx={{ fontSize: '0.7rem', color: '#94A3B8' }} onClick={() => {
+                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#0F6E56' }}>DIRECT SUBTESTS</Typography>
+                          <Button size="small" sx={{ fontSize: '0.7rem', color: '#0F6E56' }} onClick={() => {
                             const allSel = test.subtests.every(sub => selectedTest?.subtests?.find(s => s._id === sub._id && s.selected));
                             handleSelectAllDirectSubtests(test._id, !allSel);
                           }}>{test.subtests.every(sub => selectedTest?.subtests?.find(s => s._id === sub._id && s.selected)) ? 'Deselect All' : 'Select All'}</Button>
@@ -1026,14 +1026,14 @@ function PatientEntry() {
                             button
                             onClick={() => handleSubtestSelection(test._id, sub._id)}
                             key={sub._id} 
-                            sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)', '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}
+                            sx={{ pl: 3, borderBottom: '1px solid rgba(30,41,59,0.05)', '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}
                           >
                             <Checkbox 
                               checked={!!(selectedTest?.subtests?.find(s => s._id === sub._id && s.selected))} 
                               onChange={() => handleSubtestSelection(test._id, sub._id)} size="small" 
-                              sx={{ '&.Mui-checked': { color: '#10B981' }, color: '#475569' }}
+                              sx={{ '&.Mui-checked': { color: '#0F6E56' }, color: '#94A3B8' }}
                             />
-                            <ListItemText primary={sub.name + (sub.unit ? ` (${sub.unit})` : '')} primaryTypographyProps={{ fontSize: '0.85rem', color: '#CBD5E1' }} />
+                            <ListItemText primary={sub.name + (sub.unit ? ` (${sub.unit})` : '')} primaryTypographyProps={{ fontSize: '0.85rem', color: '#0F172A' }} />
                           </ListItem>
                         ))
                       ];
@@ -1046,7 +1046,7 @@ function PatientEntry() {
                     if (test && Array.isArray(test.packs) && test.packs.length > 0) {
                       return [
                         <Box key="header-packs" sx={{ p: 1.5, bgcolor: 'rgba(99,102,241,0.06)' }}>
-                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#818CF8' }}>TEST PACKS</Typography>
+                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#4F46E5' }}>TEST PACKS</Typography>
                         </Box>,
                         ...test.packs.map((pack) => {
                           const selectedPack = selectedTest && selectedTest.packs && selectedTest.packs.find(p => p._id === pack._id);
@@ -1061,17 +1061,17 @@ function PatientEntry() {
                               }}
                               sx={{ 
                                 bgcolor: isActivePack ? 'rgba(99,102,241,0.08)' : 'transparent',
-                                borderBottom: '1px solid rgba(255,255,255,0.04)',
-                                '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' },
+                                borderBottom: '1px solid rgba(30,41,59,0.05)',
+                                '&:hover': { bgcolor: isActivePack ? 'rgba(99,102,241,0.1)' : 'rgba(0,0,0,0.02)' },
                               }}
                             >
                               <ListItemText 
                                 primary={
                                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: hasSelectedSubs ? 700 : 500, color: hasSelectedSubs ? '#818CF8' : '#CBD5E1' }}>
+                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: hasSelectedSubs ? 700 : 500, color: hasSelectedSubs ? '#4F46E5' : '#0F172A' }}>
                                       {pack.name}
                                     </Typography>
-                                    {hasSelectedSubs && <CheckCircleOutlineIcon sx={{ color: '#818CF8', fontSize: 16 }} />}
+                                    {hasSelectedSubs && <CheckCircleOutlineIcon sx={{ color: '#4F46E5', fontSize: 16 }} />}
                                   </Box>
                                 } 
                               />
@@ -1103,10 +1103,10 @@ function PatientEntry() {
                 const allSelected = pack.subtests && pack.subtests.length > 0 && pack.subtests.every(sub => selectedPack?.subtests?.find(s => s._id === sub._id && s.selected));
                 return (
                   <>
-                    <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
+                    <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(30,41,59,0.05)', bgcolor: '#F8FAFC' }}>
                       <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>3. Select in {pack.name}</Typography>
                     </Box>
-                    <Box sx={{ p: 1.5, flexShrink: 0, display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <Box sx={{ p: 1.5, flexShrink: 0, display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid rgba(30,41,59,0.05)' }}>
                       <Button size="small" sx={{ color: '#94A3B8', fontSize: '0.7rem' }} onClick={() => {
                           handleSelectAllInPack(activeTestId, activePackId, !allSelected);
                         }}
@@ -1121,14 +1121,14 @@ function PatientEntry() {
                           button
                           onClick={() => handleSubtestSelection(activeTestId, sub._id, activePackId)}
                           key={sub._id} 
-                          sx={{ pl: 3, borderBottom: '1px solid rgba(255,255,255,0.04)', '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}
+                          sx={{ pl: 3, borderBottom: '1px solid rgba(30,41,59,0.05)', '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}
                         >
                           <Checkbox 
                             checked={!!(selectedPack?.subtests?.find(s => s._id === sub._id && s.selected))} 
                             onChange={() => handleSubtestSelection(activeTestId, sub._id, activePackId)} size="small" 
-                            sx={{ '&.Mui-checked': { color: '#818CF8' }, color: '#475569' }}
+                            sx={{ '&.Mui-checked': { color: '#4F46E5' }, color: '#94A3B8' }}
                           />
-                          <ListItemText primary={sub.name + (sub.unit ? ` (${sub.unit})` : '')} primaryTypographyProps={{ fontSize: '0.85rem', color: '#CBD5E1' }} />
+                          <ListItemText primary={sub.name + (sub.unit ? ` (${sub.unit})` : '')} primaryTypographyProps={{ fontSize: '0.85rem', color: '#0F172A' }} />
                         </ListItem>
                       ))}
                       </List>
