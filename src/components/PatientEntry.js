@@ -186,6 +186,87 @@ function PatientEntry() {
     });
   };
 
+  const handleSelectAllInTest = (testId, isSelectAll) => {
+    setFormData(prev => {
+      const newSelectedTests = prev.selectedTests.map(t => {
+        if (t.test._id === testId) {
+          const testDef = tests.find(test => test._id === testId);
+          if (!testDef) return t;
+          
+          const newSubtests = testDef.subtests ? testDef.subtests.map(s => ({
+            ...(t.subtests?.find(ts => ts._id === s._id) || s),
+            selected: isSelectAll
+          })) : [];
+
+          const newPacks = testDef.packs ? testDef.packs.map(p => {
+            const packInSelected = t.packs?.find(tp => tp._id === p._id) || p;
+            return {
+              ...packInSelected,
+              selected: isSelectAll,
+              subtests: p.subtests ? p.subtests.map(s => ({
+                ...(packInSelected.subtests?.find(ts => ts._id === s._id) || s),
+                selected: isSelectAll
+              })) : []
+            };
+          }) : [];
+
+          return { ...t, subtests: newSubtests, packs: newPacks };
+        }
+        return t;
+      });
+      return { ...prev, selectedTests: newSelectedTests };
+    });
+  };
+
+  const handleSelectAllDirectSubtests = (testId, isSelectAll) => {
+    setFormData(prev => {
+      const newSelectedTests = prev.selectedTests.map(t => {
+        if (t.test._id === testId) {
+          const testDef = tests.find(test => test._id === testId);
+          if (!testDef) return t;
+          const newSubtests = testDef.subtests ? testDef.subtests.map(s => ({
+            ...(t.subtests?.find(ts => ts._id === s._id) || s),
+            selected: isSelectAll
+          })) : [];
+          return { ...t, subtests: newSubtests };
+        }
+        return t;
+      });
+      return { ...prev, selectedTests: newSelectedTests };
+    });
+  };
+
+  const handleSelectAllInPack = (testId, packId, isSelectAll) => {
+    setFormData(prev => {
+      const newSelectedTests = prev.selectedTests.map(t => {
+        if (t.test._id === testId) {
+          const testDef = tests.find(test => test._id === testId);
+          if (!testDef) return t;
+          const packDef = testDef.packs?.find(p => p._id === packId);
+          if (!packDef) return t;
+
+          const newPacks = t.packs.map(p => {
+            if (p._id === packId) {
+              return {
+                ...p,
+                selected: isSelectAll,
+                subtests: packDef.subtests ? packDef.subtests.map(s => ({
+                  ...(p.subtests?.find(ts => ts._id === s._id) || s),
+                  selected: isSelectAll
+                })) : []
+              };
+            }
+            return p;
+          });
+          return { ...t, packs: newPacks };
+        }
+        return t;
+      });
+      return { ...prev, selectedTests: newSelectedTests };
+    });
+  };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -898,8 +979,33 @@ function PatientEntry() {
           <Box sx={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, borderRight: { xs: 'none', md: '1px solid rgba(255,255,255,0.06)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.06)', md: 'none' } }}>
             {activeTestId ? (
               <>
-                <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)' }}>
+                <Box sx={{ p: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#64748B', letterSpacing: '0.05em', textTransform: 'uppercase' }}>2. Direct Subtests & Packs</Typography>
+                  <Button size="small" sx={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 700 }} onClick={() => {
+                    const test = tests.find(t => t._id === activeTestId);
+                    if (!test) return;
+                    const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
+                    
+                    const allDirectSelected = !test.subtests || test.subtests.every(sub => selectedTest?.subtests?.find(s => s._id === sub._id && s.selected));
+                    const allPacksSelected = !test.packs || test.packs.every(pack => pack.subtests.every(sub => {
+                      const selectedPack = selectedTest?.packs?.find(p => p._id === pack._id);
+                      return selectedPack?.subtests?.find(s => s._id === sub._id && s.selected);
+                    }));
+                    
+                    const isSelectAll = !(allDirectSelected && allPacksSelected);
+                    handleSelectAllInTest(activeTestId, isSelectAll);
+                  }}>
+                    {(() => {
+                      const test = tests.find(t => t._id === activeTestId);
+                      const selectedTest = formData.selectedTests.find(t => t.test._id === activeTestId);
+                      const allDirectSelected = !test?.subtests || test.subtests.every(sub => selectedTest?.subtests?.find(s => s._id === sub._id && s.selected));
+                      const allPacksSelected = !test?.packs || test.packs.every(pack => pack.subtests.every(sub => {
+                        const selectedPack = selectedTest?.packs?.find(p => p._id === pack._id);
+                        return selectedPack?.subtests?.find(s => s._id === sub._id && s.selected);
+                      }));
+                      return (allDirectSelected && allPacksSelected) ? 'Deselect All' : 'Select All in Test';
+                    })()}
+                  </Button>
                 </Box>
                 <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain' }}>
                   <List sx={{ p: 0 }}>
@@ -912,7 +1018,7 @@ function PatientEntry() {
                           <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#10B981' }}>DIRECT SUBTESTS</Typography>
                           <Button size="small" sx={{ fontSize: '0.7rem', color: '#94A3B8' }} onClick={() => {
                             const allSel = test.subtests.every(sub => selectedTest?.subtests?.find(s => s._id === sub._id && s.selected));
-                            test.subtests.forEach(sub => { if (allSel || !selectedTest?.subtests?.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(test._id, sub._id); });
+                            handleSelectAllDirectSubtests(test._id, !allSel);
                           }}>{test.subtests.every(sub => selectedTest?.subtests?.find(s => s._id === sub._id && s.selected)) ? 'Deselect All' : 'Select All'}</Button>
                         </Box>,
                         ...test.subtests.map((sub) => (
@@ -1002,8 +1108,7 @@ function PatientEntry() {
                     </Box>
                     <Box sx={{ p: 1.5, flexShrink: 0, display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                       <Button size="small" sx={{ color: '#94A3B8', fontSize: '0.7rem' }} onClick={() => {
-                          if (allSelected) pack.subtests.forEach(sub => handleSubtestSelection(activeTestId, sub._id, activePackId));
-                          else pack.subtests.forEach(sub => { if (!selectedPack?.subtests?.find(s => s._id === sub._id && s.selected)) handleSubtestSelection(activeTestId, sub._id, activePackId); });
+                          handleSelectAllInPack(activeTestId, activePackId, !allSelected);
                         }}
                       >
                         {allSelected ? 'Deselect All' : 'Select All'}
