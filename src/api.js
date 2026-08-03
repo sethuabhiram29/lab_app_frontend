@@ -164,9 +164,7 @@ export const createReport = async (reportData) => {
     const response = await api.post('/reports', reportData);
     return response.data;
   } catch (error) {
-    const backendMsg = error.response?.data?.message || error.message;
-    console.error('Error creating report:', backendMsg, error.response?.data);
-    alert('Backend Error: ' + backendMsg);
+    console.error('Error creating report:', error);
     throw error;
   }
 };
@@ -188,9 +186,7 @@ export const updateReport = async (id, reportData) => {
     console.log('Server response:', response.data);
     return response.data;
   } catch (error) {
-    const backendMsg = error.response?.data?.message || error.message;
-    console.error('Error updating report:', backendMsg, error.response?.data);
-    alert('Backend Error: ' + backendMsg);
+    console.error('Error updating report:', error);
     throw error;
   }
 };
