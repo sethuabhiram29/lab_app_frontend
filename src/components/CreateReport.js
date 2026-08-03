@@ -70,8 +70,8 @@ const initDB = async () => {
   }
   
   try {
-    // Create new database with all required stores
-    const db = await openDB('reportsDB', 2, {
+    // Version 3: ensures both stores always exist even if browser has older DB
+    const db = await openDB('reportsDB', 3, {
       upgrade(db, oldVersion, newVersion) {
         console.log(`Upgrading DB from version ${oldVersion} to ${newVersion}`);
         
@@ -93,19 +93,12 @@ const initDB = async () => {
       }
     });
 
-    // Verify stores exist
-    const storeNames = Array.from(db.objectStoreNames);
-    console.log('Available stores:', storeNames);
-    
-    if (!storeNames.includes('reports') || !storeNames.includes('updationLinks')) {
-      throw new Error('Required stores not created properly');
-    }
-
     dbInstance = db;
     return dbInstance;
   } catch (error) {
     console.error('Database initialization error:', error);
-    throw error;
+    // Don't throw - return null so safeDBOperation handles it gracefully
+    return null;
   }
 };
 
@@ -1690,14 +1683,20 @@ function CreateReport() {
       }
     }
 
-    // Filter out subtests/rows with empty result values before saving
+    // Filter out subtests/rows with empty result values or missing names before saving
     const filteredTestResults = testResults.map(tr => ({
       ...tr,
       packs: tr.packs.map(pack => ({
         ...pack,
-  subtests: pack.subtests.filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+        subtests: pack.subtests.filter(sub =>
+          sub.name && sub.name.trim() !== '' &&
+          (typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+        )
       })).filter(pack => pack.subtests.length > 0),
-  direct: tr.direct.filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+      direct: tr.direct.filter(sub =>
+        sub.name && sub.name.trim() !== '' &&
+        (typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result)
+      )
     })).filter(tr => (tr.packs.length > 0 || tr.direct.length > 0));
 
     if (filteredTestResults.length === 0) {
