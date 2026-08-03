@@ -1448,8 +1448,8 @@ function CreateReport() {
       const existingReport = getReportForPatient(patient._id);
       
       if (existingReport) {
-        // If editing, use the existing QR code
-        setQrImage(existingReport.reportDisplayData.qrImage);
+        // If editing, use the existing QR code (guard against null reportDisplayData)
+        setQrImage(existingReport.reportDisplayData?.qrImage || null);
         // For existing report, set the stored links
         const storedLinks = await getStoredLinks(patient._id);
         if (storedLinks.viewLink) {
@@ -1716,29 +1716,21 @@ function CreateReport() {
             test: tr.test._id || tr.test,
             packs: tr.packs.map(pack => ({
               packName: pack.packName,
-              subtests: pack.subtests.map(sub => {
-                const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
-                if (!finalName) return null;
-                return {
-                  subTest: finalName,
-                  name: finalName,
-                  result: sub.result,
-                  unit: sub.unit,
-                  range: sub.range
-                };
-              }).filter(Boolean)
-            })),
-            direct: tr.direct.map(sub => {
-              const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
-              if (!finalName) return null;
-              return {
-                subTest: finalName,
-                name: finalName,
+              subtests: pack.subtests.map(sub => ({
+                subTest: sub.name,
+                name: sub.name,
                 result: sub.result,
                 unit: sub.unit,
                 range: sub.range
-              };
-            }).filter(Boolean)
+              }))
+            })),
+            direct: tr.direct.map(sub => ({
+              subTest: sub.name,
+              name: sub.name,
+              result: sub.result,
+              unit: sub.unit,
+              range: sub.range
+            }))
           })),
           // Save the exact state as shown in preview
           reportDisplayData: {
@@ -1823,29 +1815,21 @@ function CreateReport() {
             test: tr.test._id || tr.test,
             packs: tr.packs.map(pack => ({
               packName: pack.packName,
-              subtests: pack.subtests.map(sub => {
-                const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
-                if (!finalName) return null; // Filter out completely empty/invalid subtests
-                return {
-                  subTest: finalName,
-                  name: finalName,
-                  result: sub.result,
-                  unit: sub.unit,
-                  range: sub.range
-                };
-              }).filter(Boolean)
-            })),
-            direct: tr.direct.map(sub => {
-              const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
-              if (!finalName) return null;
-              return {
-                subTest: finalName,
-                name: finalName,
+              subtests: pack.subtests.map(sub => ({
+                subTest: sub.name,
+                name: sub.name,
                 result: sub.result,
                 unit: sub.unit,
                 range: sub.range
-              };
-            }).filter(Boolean)
+              }))
+            })),
+            direct: tr.direct.map(sub => ({
+              subTest: sub.name,
+              name: sub.name,
+              result: sub.result,
+              unit: sub.unit,
+              range: sub.range
+            }))
           })),
           reportDisplayData: {
             ...buildDisplayData(selectedPatient, filteredTestResults, allTests, subTests, qrImage),
@@ -1894,7 +1878,7 @@ function CreateReport() {
   };
 
   const handlePrintReport = async (report) => {
-    if (!report || !report.reportDisplayData) {
+    if (!report) {
       setError('Cannot print this report');
       return;
     }
@@ -1907,15 +1891,35 @@ function CreateReport() {
         r._id === report._id ? { ...r, printed: true } : r
       ));
       const { pdf } = await import('@react-pdf/renderer');
+
+      let printPatient, printTestTables, printRemovedImages, printTableNotes, printQrImage;
+
+      if (report.reportDisplayData) {
+        // Use stored display data if available
+        printPatient = report.reportDisplayData.patient;
+        printTestTables = report.reportDisplayData.testTables;
+        printRemovedImages = new Set(report.reportDisplayData.removedImages || []);
+        printTableNotes = report.reportDisplayData.tableNotes || {};
+        printQrImage = report.reportDisplayData.qrImage;
+      } else {
+        // Rebuild from saved testResults if reportDisplayData is missing
+        const displayData = buildDisplayData(report.patient, report.testResults || [], allTests, subTests);
+        printPatient = displayData.patient;
+        printTestTables = displayData.testTables;
+        printRemovedImages = new Set();
+        printTableNotes = {};
+        printQrImage = null;
+      }
+
       // Create document with isPrinting set to true
       const printDoc = (
         <ReportDocument
-          patient={report.reportDisplayData.patient}
-          testTables={report.reportDisplayData.testTables}
+          patient={printPatient}
+          testTables={printTestTables}
           isPrinting={true}
-          removedImages={new Set(report.reportDisplayData.removedImages || [])}
-          tableNotes={report.reportDisplayData.tableNotes || {}}
-          qrImage={report.reportDisplayData.qrImage} // Use the saved QR image
+          removedImages={printRemovedImages}
+          tableNotes={printTableNotes}
+          qrImage={printQrImage}
         />
       );
       const blob = await pdf(printDoc).toBlob();
@@ -2333,29 +2337,39 @@ function CreateReport() {
                                       startIcon={<PreviewIcon sx={{ fontSize: '1rem' }} />}
                                       onClick={() => {
                                         const reportDisplayData = report.reportDisplayData;
-                                        setSelectedPatient(reportDisplayData.patient);
-                                        setQrImage(reportDisplayData.qrImage);
-                                        const savedTestTables = reportDisplayData.testTables;
-                                        setTestResults(savedTestTables.map(table => ({
-                                          test: table.test,
-                                          packs: table.packs.map(pack => ({
-                                            packName: pack.packName,
-                                            subtests: pack.subtests.map(sub => ({
+                                        if (reportDisplayData) {
+                                          setSelectedPatient(reportDisplayData.patient);
+                                          setQrImage(reportDisplayData.qrImage);
+                                          const savedTestTables = reportDisplayData.testTables;
+                                          setTestResults(savedTestTables.map(table => ({
+                                            test: table.test,
+                                            packs: table.packs.map(pack => ({
+                                              packName: pack.packName,
+                                              subtests: pack.subtests.map(sub => ({
+                                                name: sub.name,
+                                                result: sub.result,
+                                                unit: sub.unit,
+                                                range: sub.range
+                                              }))
+                                            })),
+                                            direct: table.direct.map(sub => ({
                                               name: sub.name,
                                               result: sub.result,
                                               unit: sub.unit,
                                               range: sub.range
                                             }))
-                                          })),
-                                          direct: table.direct.map(sub => ({
-                                            name: sub.name,
-                                            result: sub.result,
-                                            unit: sub.unit,
-                                            range: sub.range
-                                          }))
-                                        })));
-                                        setRemovedImages(new Set(reportDisplayData.removedImages || []));
-                                        setTableNotes(reportDisplayData.tableNotes || {});
+                                          })));
+                                          setRemovedImages(new Set(reportDisplayData.removedImages || []));
+                                          setTableNotes(reportDisplayData.tableNotes || {});
+                                        } else {
+                                          // Rebuild from testResults if reportDisplayData is missing
+                                          const rebuilt = buildDisplayData(report.patient, report.testResults || [], allTests, subTests);
+                                          setSelectedPatient(rebuilt.patient);
+                                          setQrImage(null);
+                                          setTestResults(rebuilt.testTables);
+                                          setRemovedImages(new Set());
+                                          setTableNotes({});
+                                        }
                                         setPreviewOpen(true);
                                       }}
                                       sx={{ borderRadius: '100px', color: 'var(--text-secondary)', borderColor: 'var(--border-light)', fontWeight: 700, textTransform: 'none', '&:hover': { background: '#F8FAFC' } }}
