@@ -1718,6 +1718,7 @@ function CreateReport() {
               packName: pack.packName,
               subtests: pack.subtests.map(sub => {
                 const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
+                if (!finalName) return null;
                 return {
                   subTest: finalName,
                   name: finalName,
@@ -1725,10 +1726,11 @@ function CreateReport() {
                   unit: sub.unit,
                   range: sub.range
                 };
-              })
+              }).filter(Boolean)
             })),
             direct: tr.direct.map(sub => {
               const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
+              if (!finalName) return null;
               return {
                 subTest: finalName,
                 name: finalName,
@@ -1736,7 +1738,7 @@ function CreateReport() {
                 unit: sub.unit,
                 range: sub.range
               };
-            })
+            }).filter(Boolean)
           })),
           // Save the exact state as shown in preview
           reportDisplayData: {
@@ -1823,6 +1825,7 @@ function CreateReport() {
               packName: pack.packName,
               subtests: pack.subtests.map(sub => {
                 const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
+                if (!finalName) return null; // Filter out completely empty/invalid subtests
                 return {
                   subTest: finalName,
                   name: finalName,
@@ -1830,10 +1833,11 @@ function CreateReport() {
                   unit: sub.unit,
                   range: sub.range
                 };
-              })
+              }).filter(Boolean)
             })),
             direct: tr.direct.map(sub => {
               const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
+              if (!finalName) return null;
               return {
                 subTest: finalName,
                 name: finalName,
@@ -1841,7 +1845,7 @@ function CreateReport() {
                 unit: sub.unit,
                 range: sub.range
               };
-            })
+            }).filter(Boolean)
           })),
           reportDisplayData: {
             ...buildDisplayData(selectedPatient, filteredTestResults, allTests, subTests, qrImage),
