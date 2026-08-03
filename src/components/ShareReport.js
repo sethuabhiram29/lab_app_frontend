@@ -1422,7 +1422,10 @@ Your Diagnostic Center`;
                             const patientId = patient?.regNo || '-';
                             const simpleId = (patientId || '').toString().replace(/^0+/, '');
                             const reportDate = patient?.sampleCollectionDate || report.createdAt
-                              ? new Date(report.reportDisplayData.patient?.sampleCollectionDate || report.createdAt).toLocaleDateString()
+                              ? (() => {
+                                  const d = new Date(report.reportDisplayData?.patient?.sampleCollectionDate || report.createdAt);
+                                  return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+                                })()
                               : '-';
                             
                             const hasLinks = !!(patient?.updationLinks?.viewLink || patient?.updationLinks?.downloadLink);

@@ -288,7 +288,8 @@ const History = () => {
                             if (!report) return null; // Only show patients with a printed report
 
                             const simpleId = (patient.regNo || '').toString().replace(/^0+/, '');
-                            const reportDate = new Date(patient.sampleCollectionDate).toLocaleDateString();
+                            const d = new Date(patient.sampleCollectionDate);
+                            const reportDate = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
 
                             return (
                               <motion.tr

@@ -401,7 +401,7 @@ const checkRange = (result, reference) => {
 };
 
 // PDF Document Component
-export const ReportDocument = ({ patient, testTables, isPrinting = false, removedImages = new Set(), tableNotes = {}, qrImage }) => {
+export const ReportDocument = ({ patient, testTables, isPrinting = false, removedImages = new Set(), tableNotes = {}, qrImage, reportDate }) => {
   // --- Constants for pagination ---
   const PAGE_HEIGHT = 842;
   const PAGE_WIDTH = 595;
@@ -815,7 +815,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
                   <Text style={styles.patientSeparator}>: </Text>
                   <Text style={styles.patientValue}>
                     {(() => {
-                      const d = new Date();
+                      const d = reportDate ? new Date(reportDate) : new Date();
                       return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
                     })()}
                   </Text>
@@ -1371,6 +1371,7 @@ function CreateReport() {
     return d;
   });
   const [showPatientList, setShowPatientList] = useState(true);
+  const [previewReportDate, setPreviewReportDate] = useState(null);
   const [tableNotes, setTableNotes] = useState({}); // Store notes for each table
   const [removedImages, setRemovedImages] = useState(new Set()); // Track removed images
 
@@ -2074,7 +2075,7 @@ function CreateReport() {
 
       <Box sx={{ position: 'relative', zIndex: 1, pt: 3, pb: 6, px: { xs: 2, md: 4, lg: 6 }, width: '100%', maxWidth: '1600px', mx: 'auto' }}>
         <AnimatePresence mode="wait">
-          {!selectedPatient ? (
+          {showPatientList ? (
             <motion.div key="table-view" variants={staggerContainer} initial="hidden" animate="visible" exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}>
               
               {/* Header Section */}
@@ -2336,6 +2337,7 @@ function CreateReport() {
                                       startIcon={<PreviewIcon sx={{ fontSize: '1rem' }} />}
                                       onClick={() => {
                                         const reportDisplayData = report.reportDisplayData;
+                                        setPreviewReportDate(report.createdAt || report.updatedAt || new Date());
                                         if (reportDisplayData) {
                                           setSelectedPatient(reportDisplayData.patient);
                                           setQrImage(reportDisplayData.qrImage);
@@ -2635,6 +2637,7 @@ function CreateReport() {
                   removedImages={removedImages} 
                   tableNotes={tableNotes}
                   qrImage={qrImage}
+                  reportDate={previewReportDate}
                 />
               } 
             />
