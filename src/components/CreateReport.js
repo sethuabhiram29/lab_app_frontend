@@ -1716,21 +1716,27 @@ function CreateReport() {
             test: tr.test._id || tr.test,
             packs: tr.packs.map(pack => ({
               packName: pack.packName,
-              subtests: pack.subtests.map(sub => ({
-                subTest: sub.name,
-                name: sub.name,
+              subtests: pack.subtests.map(sub => {
+                const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
+                return {
+                  subTest: finalName,
+                  name: finalName,
+                  result: sub.result,
+                  unit: sub.unit,
+                  range: sub.range
+                };
+              })
+            })),
+            direct: tr.direct.map(sub => {
+              const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
+              return {
+                subTest: finalName,
+                name: finalName,
                 result: sub.result,
                 unit: sub.unit,
                 range: sub.range
-              }))
-            })),
-            direct: tr.direct.map(sub => ({
-              subTest: sub.name,
-              name: sub.name,
-              result: sub.result,
-              unit: sub.unit,
-              range: sub.range
-            }))
+              };
+            })
           })),
           // Save the exact state as shown in preview
           reportDisplayData: {
@@ -1815,21 +1821,27 @@ function CreateReport() {
             test: tr.test._id || tr.test,
             packs: tr.packs.map(pack => ({
               packName: pack.packName,
-              subtests: pack.subtests.map(sub => ({
-                subTest: sub.name,
-                name: sub.name,
+              subtests: pack.subtests.map(sub => {
+                const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
+                return {
+                  subTest: finalName,
+                  name: finalName,
+                  result: sub.result,
+                  unit: sub.unit,
+                  range: sub.range
+                };
+              })
+            })),
+            direct: tr.direct.map(sub => {
+              const finalName = sub.name || (typeof sub.subTest === 'string' ? sub.subTest : (sub.subTest?.name || null));
+              return {
+                subTest: finalName,
+                name: finalName,
                 result: sub.result,
                 unit: sub.unit,
                 range: sub.range
-              }))
-            })),
-            direct: tr.direct.map(sub => ({
-              subTest: sub.name,
-              name: sub.name,
-              result: sub.result,
-              unit: sub.unit,
-              range: sub.range
-            }))
+              };
+            })
           })),
           reportDisplayData: {
             ...buildDisplayData(selectedPatient, filteredTestResults, allTests, subTests, qrImage),
