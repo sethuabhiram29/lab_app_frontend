@@ -1957,7 +1957,7 @@ function CreateReport() {
       gender: patient?.gender || '-',
       regNo: patient?.regNo || '-',
       sampleCollectionDate: patient?.sampleCollectionDate || '-',
-      refDoctor: patient?.refDoctor?.name ? { name: patient.refDoctor.name } : { name: '-' },
+      refDoctor: patient?.refDoctor?.name ? { name: patient.refDoctor.name, specialization: patient.refDoctor.specialization || '' } : { name: '-' },
       refAgent: patient?.refAgent?.name ? { name: patient.refAgent.name } : { name: '-' },
       mobileNumber: patient?.mobileNumber || '-',
     };
