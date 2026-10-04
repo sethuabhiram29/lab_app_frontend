@@ -455,7 +455,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
         });
         
         // Add note if exists for this direct table
-        const directNote = tableNotes[`${testIndex}-direct`];
+        const directNote = tableNotes[`${testIndex}-direct`] || tr.test?.defaultNotes;
         if (directNote && directNote.trim()) {
           testBlocks.push({ type: 'note', content: directNote });
         }
@@ -499,7 +499,8 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
           });
           
           // Add note if exists for this pack table
-          const packNote = tableNotes[`${testIndex}-pack-${packIndex}`];
+          const packDef = (tr.test?.packs || []).find(p => p.name === pack.packName);
+          const packNote = tableNotes[`${testIndex}-pack-${packIndex}`] || pack.defaultNotes || packDef?.defaultNotes;
           if (packNote && packNote.trim()) {
             testBlocks.push({ type: 'note', content: packNote });
           }
@@ -1513,6 +1514,22 @@ function CreateReport() {
 
     const report = getReportForPatient(patient._id);
     if (report) {
+      const existingNotes = report.reportDisplayData?.tableNotes || {};
+      const initialNotes = { ...existingNotes };
+      (report.testResults || []).forEach((tr, tIdx) => {
+        const testObj = allTests.find(t => t._id.toString() === (tr.test._id?.toString() || tr.test?.toString() || tr.test)) || {};
+        if ((initialNotes[`${tIdx}-direct`] === undefined || initialNotes[`${tIdx}-direct`].trim() === '') && testObj.defaultNotes) {
+          initialNotes[`${tIdx}-direct`] = testObj.defaultNotes;
+        }
+        (tr.packs || []).forEach((pack, pIdx) => {
+          const packDef = (testObj.packs || []).find(p => p.name === pack.packName);
+          if ((initialNotes[`${tIdx}-pack-${pIdx}`] === undefined || initialNotes[`${tIdx}-pack-${pIdx}`].trim() === '') && (packDef?.defaultNotes || pack.defaultNotes)) {
+            initialNotes[`${tIdx}-pack-${pIdx}`] = packDef?.defaultNotes || pack.defaultNotes;
+          }
+        });
+      });
+      setTableNotes(initialNotes);
+
       setTestResults(
         (report.testResults || []).map(tr => {
           // Find the test definition from allTests
@@ -1555,6 +1572,7 @@ function CreateReport() {
               const packDef = (testObj.packs || []).find(p => p.name === pack.packName);
               return {
                 packName: pack.packName,
+                defaultNotes: packDef?.defaultNotes || pack.defaultNotes || '',
                 image: packDef?.image || '',
                 subtests: (pack.subtests || []).map(resolveSub)
               };
@@ -1566,10 +1584,14 @@ function CreateReport() {
       return;
     }
     // No report exists, load blank form
-    const results = (patient.selectedTests || []).map(selTest => {
+    const initialNotes = {};
+    const results = (patient.selectedTests || []).map((selTest, tableIndex) => {
       const testId = (selTest.test?._id || selTest.test).toString();
       const testSetting = allTests.find(t => t._id.toString() === testId);
       if (!testSetting) return null;
+      if (testSetting.defaultNotes && testSetting.defaultNotes.trim()) {
+        initialNotes[`${tableIndex}-direct`] = testSetting.defaultNotes.trim();
+      }
       // Map selected subtests (by name) from selTest.subtests
       const selectedDirect = (selTest.subtests || []).map(selSub => {
         // Find by name in testSetting.subtests
@@ -1585,9 +1607,12 @@ function CreateReport() {
         };
       }).filter(Boolean);
       // Map selected packs (by name) from selTest.packs
-      const selectedPacks = (selTest.packs || []).map(selPack => {
+      const selectedPacks = (selTest.packs || []).map((selPack, packIndex) => {
         const packDef = (testSetting.packs || []).find(p => p.name === selPack.name || p.name === selPack.packName);
         if (!packDef) return null;
+        if (packDef.defaultNotes && packDef.defaultNotes.trim()) {
+          initialNotes[`${tableIndex}-pack-${packIndex}`] = packDef.defaultNotes.trim();
+        }
         // Map selected subtests in this pack (by name)
         const selectedPackSubtests = (selPack.subtests || []).map(selSub => {
           const subDef = (packDef.subtests || []).find(s => s.name === selSub.name);
@@ -1603,6 +1628,7 @@ function CreateReport() {
         }).filter(Boolean);
         return {
           packName: packDef.name,
+          defaultNotes: packDef.defaultNotes || '',
           image: packDef.image || '',
           subtests: selectedPackSubtests
         };
@@ -1613,6 +1639,7 @@ function CreateReport() {
         direct: selectedDirect
       };
     }).filter(Boolean);
+    setTableNotes(initialNotes);
     setTestResults(results);
   };
 
@@ -2040,13 +2067,14 @@ function CreateReport() {
         const packDef = (testObj.packs || []).find(p => p.name === pack.packName);
         return {
           packName: pack.packName,
+          defaultNotes: packDef?.defaultNotes || pack.defaultNotes || '',
           image: packDef?.image || pack.image || '',
           subtests: (pack?.subtests || []).filter(sub => typeof sub.result === 'string' ? sub.result.trim() !== '' : !!sub.result).map(resolveSub)
         };
       }).filter(pack => pack.subtests.length > 0); // Remove packs with no valid subtests
       
     return {
-      test: { ...testObj, image: testObj?.image || '' },
+      test: { ...testObj, image: testObj?.image || '', defaultNotes: testObj?.defaultNotes || tr.test?.defaultNotes || '' },
       packs: filteredPacks,
       direct: filteredDirect.map(resolveSub)
     };
@@ -2460,7 +2488,7 @@ function CreateReport() {
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Button onClick={() => setSelectedPatient(null)} sx={{ color: 'var(--text-secondary)', fontWeight: 700, borderRadius: '100px', px: 4, background: '#fff', border: '1px solid var(--border-light)', '&:hover': { background: '#F8FAFC' } }}>
+                  <Button onClick={() => { setSelectedPatient(null); setTableNotes({}); }} sx={{ color: 'var(--text-secondary)', fontWeight: 700, borderRadius: '100px', px: 4, background: '#fff', border: '1px solid var(--border-light)', '&:hover': { background: '#F8FAFC' } }}>
                     Cancel
                   </Button>
                   <Button 

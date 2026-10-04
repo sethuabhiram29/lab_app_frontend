@@ -107,6 +107,7 @@ const TestSettings = () => {
     name: '',
     code: '',
     description: '',
+    defaultNotes: '',
     image: '',
     subtests: [],
     packs: [],
@@ -292,6 +293,7 @@ const TestSettings = () => {
         name: testFormData.name.trim(),
         code: testFormData.code.trim(),
         description: testFormData.description.trim(),
+        defaultNotes: testFormData.defaultNotes ? testFormData.defaultNotes.trim() : '',
         image: testFormData.image,
         requiresSeparatePage: Boolean(testFormData.requiresSeparatePage),
         subtests: testFormData.subtests.map(sub => {
@@ -320,6 +322,7 @@ const TestSettings = () => {
         packs: testFormData.packs.map(pack => ({
           _id: pack._id && !pack._id.startsWith('temp_') ? pack._id : undefined,
           name: pack.name.trim(),
+          defaultNotes: pack.defaultNotes ? pack.defaultNotes.trim() : '',
           image: pack.image,
           requiresSeparatePage: Boolean(pack.requiresSeparatePage),
           subtests: pack.subtests.map(sub => {
@@ -364,6 +367,7 @@ const TestSettings = () => {
         name: '',
         code: '',
         description: '',
+        defaultNotes: '',
         image: '',
         subtests: [],
         packs: [],
@@ -610,7 +614,7 @@ const TestSettings = () => {
                     <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A' }}>Tests</Typography>
                     <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 0.5 }}>Diagnostic catalogue with sub-tests and packs.</Typography>
                   </Box>
-                  <Button variant="contained" color="primary" startIcon={<AddIcon />} sx={{ borderRadius: 'var(--radius-full)', px: 3, py: 1.2, fontWeight: 600, boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }} onClick={() => { setSelectedTest(null); setTestFormData({ name: '', code: '', description: '', image: '', subtests: [], packs: [], requiresSeparatePage: false }); setTestDialogOpen(true); }}>
+                  <Button variant="contained" color="primary" startIcon={<AddIcon />} sx={{ borderRadius: 'var(--radius-full)', px: 3, py: 1.2, fontWeight: 600, boxShadow: '0 8px 16px rgba(15,110,86,0.2)' }} onClick={() => { setSelectedTest(null); setTestFormData({ name: '', code: '', description: '', defaultNotes: '', image: '', subtests: [], packs: [], requiresSeparatePage: false }); setTestDialogOpen(true); }}>
                     Add test
                   </Button>
                 </Box>
@@ -634,9 +638,9 @@ const TestSettings = () => {
                           <IconButton size="small" onClick={() => {
                             setSelectedTest(test);
                             setTestFormData({
-                              name: test.name, code: test.code, description: test.description || '', image: test.image || '', requiresSeparatePage: test.requiresSeparatePage === true,
+                              name: test.name, code: test.code, description: test.description || '', defaultNotes: test.defaultNotes || '', image: test.image || '', requiresSeparatePage: test.requiresSeparatePage === true,
                               subtests: Array.isArray(test.subtests) ? test.subtests.map(sub => ({ ...sub, reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '' })) : [],
-                              packs: Array.isArray(test.packs) ? test.packs.map(pack => ({ ...pack, subtests: Array.isArray(pack.subtests) ? pack.subtests.map(sub => ({ ...sub, reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '' })) : [] })) : []
+                              packs: Array.isArray(test.packs) ? test.packs.map(pack => ({ ...pack, defaultNotes: pack.defaultNotes || '', subtests: Array.isArray(pack.subtests) ? pack.subtests.map(sub => ({ ...sub, reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '' })) : [] })) : []
                             });
                             setTestDialogOpen(true);
                           }} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', '&:hover': { background: 'rgba(15,110,86,0.2)' } }}><EditIcon fontSize="small" /></IconButton>
@@ -666,10 +670,18 @@ const TestSettings = () => {
                               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                 {test.packs.map((pack, i) => (
                                   <Box key={i} sx={{ background: '#fff', border: '1px solid rgba(15,110,86,0.2)', color: '#0F172A', px: 1.5, py: 0.5, borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600 }}>
-                                    {pack.name}
+                                    {pack.name}{pack.defaultNotes ? ` (Notes: ${pack.defaultNotes})` : ''}
                                   </Box>
                                 ))}
                               </Box>
+                            </Box>
+                          )}
+                          {test.defaultNotes && (
+                            <Box>
+                              <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5 }}>Default Notes</Typography>
+                              <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: '#fff', p: 1.5, borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                                {test.defaultNotes}
+                              </Typography>
                             </Box>
                           )}
                         </Box>
@@ -869,6 +881,7 @@ const TestSettings = () => {
               name: '',
               code: '',
               description: '',
+              defaultNotes: '',
               image: '',
               subtests: [],
               packs: [],
@@ -919,6 +932,20 @@ const TestSettings = () => {
                     onChange={(e) => setTestFormData({
                       ...testFormData,
                       description: e.target.value
+                    })}
+                    multiline
+                    rows={2}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Default Notes"
+                    placeholder="Enter default notes for this test (will auto-display on report table)..."
+                    value={testFormData.defaultNotes || ''}
+                    onChange={(e) => setTestFormData({
+                      ...testFormData,
+                      defaultNotes: e.target.value
                     })}
                     multiline
                     rows={2}
@@ -1274,6 +1301,24 @@ const TestSettings = () => {
                         <FormControlLabel value="no" control={<Radio />} label="No" />
                       </RadioGroup>
                     </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Pack Default Notes"
+                        placeholder="Enter default notes for this pack (will auto-display on report table)..."
+                        value={pack.defaultNotes || ''}
+                        onChange={e => {
+                          const newPacks = [...testFormData.packs];
+                          newPacks[pIdx] = {
+                            ...newPacks[pIdx],
+                            defaultNotes: e.target.value
+                          };
+                          setTestFormData({ ...testFormData, packs: newPacks });
+                        }}
+                        multiline
+                        rows={2}
+                      />
+                    </Grid>
                     <Grid item xs={12} sm={1}>
                       <IconButton 
                         color="error" 
@@ -1485,6 +1530,7 @@ const TestSettings = () => {
                   ...testFormData,
                   packs: [...testFormData.packs, { 
                     name: '', 
+                    defaultNotes: '',
                     image: '', 
                     requiresSeparatePage: false,
                     subtests: [],
@@ -1505,6 +1551,7 @@ const TestSettings = () => {
                 name: '',
                 code: '',
                 description: '',
+                defaultNotes: '',
                 image: '',
                 subtests: [],
                 packs: [],
