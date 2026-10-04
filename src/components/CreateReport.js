@@ -575,7 +575,11 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
         else if (block.type === 'row') usedSpace += ROW_HEIGHT;
         else if (block.type === 'testImage' || block.type === 'packImage') 
           usedSpace += (block.height || IMAGE_HEIGHT) + 12;
-        else if (block.type === 'note') usedSpace += 16;
+        else if (block.type === 'note') {
+          const lines = (block.content || '').split('\n').filter(Boolean);
+          const estLines = lines.reduce((acc, l) => acc + Math.max(1, Math.ceil(l.length / 85)), 0);
+          usedSpace += Math.max(16, estLines * 13 + 6);
+        }
         else if (block.type === 'spacer') usedSpace += 12;
       }
       
@@ -600,7 +604,11 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
         else if (block.type === 'row') height += ROW_HEIGHT;
         else if (block.type === 'testImage' || block.type === 'packImage') 
           height += (block.height || IMAGE_HEIGHT) + 12;
-        else if (block.type === 'note') height += 16;
+        else if (block.type === 'note') {
+          const lines = (block.content || '').split('\n').filter(Boolean);
+          const estLines = lines.reduce((acc, l) => acc + Math.max(1, Math.ceil(l.length / 85)), 0);
+          height += Math.max(16, estLines * 13 + 6);
+        }
         else if (block.type === 'spacer') height += 12;
       }
       return height;
@@ -1002,8 +1010,32 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
                   </View>
                 );
               } else if (block.type === 'note') {
+                const noteText = (block.content || '').trim();
+                if (!noteText) return null;
+                const lines = noteText.split('\n').map(l => l.trim()).filter(Boolean);
                 return (
-                  <Text key={idx} style={{ textAlign: 'left', padding: 2 }}>{block.content}</Text>
+                  <View key={idx} style={{ marginTop: 2, marginBottom: 4, paddingHorizontal: 1 }}>
+                    {lines.map((line, lIdx) => {
+                      const hasBullet = line.startsWith('•') || line.startsWith('●') || line.startsWith('-');
+                      const bulletLine = hasBullet ? line : `• ${line}`;
+                      return (
+                        <Text
+                          key={lIdx}
+                          style={{
+                            textAlign: 'justify',
+                            fontWeight: 'bold',
+                            fontFamily: 'Helvetica-Bold',
+                            fontSize: 9.5,
+                            lineHeight: 1.25,
+                            color: '#000000',
+                            marginTop: lIdx > 0 ? 2 : 0
+                          }}
+                        >
+                          {bulletLine}
+                        </Text>
+                      );
+                    })}
+                  </View>
                 );
               } else if (block.type === 'testImage' || block.type === 'packImage') {
                 return (
