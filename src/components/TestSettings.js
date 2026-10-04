@@ -85,6 +85,75 @@ const glassFieldSx = {
   }
 };
 
+// Helpers to ensure test and pack default notes persist across backend versions
+export const getTestDefaultNotes = (test) => {
+  if (!test) return '';
+  if (test.defaultNotes && typeof test.defaultNotes === 'string' && test.defaultNotes.trim()) {
+    return test.defaultNotes.trim();
+  }
+  if (test.description && typeof test.description === 'string') {
+    const desc = test.description.trim();
+    if (desc.startsWith('{') && desc.includes('"__notesConfig"')) {
+      try {
+        const parsed = JSON.parse(desc);
+        return parsed.direct || '';
+      } catch (e) {}
+    }
+    return desc;
+  }
+  return '';
+};
+
+export const getPackDefaultNotes = (pack, test) => {
+  if (!pack) return '';
+  if (pack.defaultNotes && typeof pack.defaultNotes === 'string' && pack.defaultNotes.trim()) {
+    return pack.defaultNotes.trim();
+  }
+  const packName = pack.name || pack.packName;
+  if (pack.description && typeof pack.description === 'string' && pack.description.trim()) {
+    return pack.description.trim();
+  }
+  if (test?.description && typeof test.description === 'string') {
+    const desc = test.description.trim();
+    if (desc.startsWith('{') && desc.includes('"__notesConfig"')) {
+      try {
+        const parsed = JSON.parse(desc);
+        return (packName && parsed.packs?.[packName]) || '';
+      } catch (e) {}
+    }
+  }
+  return '';
+};
+
+export const encodeNotesPayload = (directNotes = '', packs = []) => {
+  const direct = (directNotes || '').trim();
+  const packNotes = {};
+  (packs || []).forEach(p => {
+    const pNotes = (p.defaultNotes || '').trim();
+    const pName = p.name || p.packName;
+    if (pName && pNotes) {
+      packNotes[pName] = pNotes;
+    }
+  });
+
+  const hasPackNotes = Object.keys(packNotes).length > 0;
+  let descriptionVal = '';
+  if (hasPackNotes) {
+    descriptionVal = JSON.stringify({
+      __notesConfig: true,
+      direct: direct,
+      packs: packNotes
+    });
+  } else {
+    descriptionVal = direct;
+  }
+
+  return {
+    description: descriptionVal,
+    defaultNotes: direct
+  };
+};
+
 const TestSettings = () => {
   const prefersReduced = useReducedMotion();
   const [activeTab, setActiveTab] = useState(0);
@@ -288,12 +357,15 @@ const TestSettings = () => {
         }
       }
 
+      // Build dual-persistence payload for default notes
+      const { description: encodedDescription, defaultNotes: directNotes } = encodeNotesPayload(testFormData.defaultNotes, testFormData.packs);
+
       // Ensure all boolean values are properly set
       const testData = {
         name: testFormData.name.trim(),
         code: testFormData.code.trim(),
-        description: testFormData.description.trim(),
-        defaultNotes: testFormData.defaultNotes ? testFormData.defaultNotes.trim() : '',
+        description: encodedDescription,
+        defaultNotes: directNotes,
         image: testFormData.image,
         requiresSeparatePage: Boolean(testFormData.requiresSeparatePage),
         subtests: testFormData.subtests.map(sub => {
@@ -323,6 +395,7 @@ const TestSettings = () => {
           _id: pack._id && !pack._id.startsWith('temp_') ? pack._id : undefined,
           name: pack.name.trim(),
           defaultNotes: pack.defaultNotes ? pack.defaultNotes.trim() : '',
+          description: pack.defaultNotes ? pack.defaultNotes.trim() : '',
           image: pack.image,
           requiresSeparatePage: Boolean(pack.requiresSeparatePage),
           subtests: pack.subtests.map(sub => {
@@ -353,11 +426,29 @@ const TestSettings = () => {
 
       if (selectedTest) {
         const response = await api.updateTest(selectedTest._id, testData);
-        setTests(tests.map(test => test._id === selectedTest._id ? response.data : test));
+        const updated = {
+          ...response.data,
+          defaultNotes: directNotes,
+          description: encodedDescription,
+          packs: (response.data.packs || []).map((p, idx) => ({
+            ...p,
+            defaultNotes: testFormData.packs[idx]?.defaultNotes || ''
+          }))
+        };
+        setTests(tests.map(test => test._id === selectedTest._id ? updated : test));
         setSuccess('Test updated successfully');
       } else {
         const response = await api.createTest(testData);
-        setTests([...tests, response.data]);
+        const created = {
+          ...response.data,
+          defaultNotes: directNotes,
+          description: encodedDescription,
+          packs: (response.data.packs || []).map((p, idx) => ({
+            ...p,
+            defaultNotes: testFormData.packs[idx]?.defaultNotes || ''
+          }))
+        };
+        setTests([...tests, created]);
         setSuccess('Test added successfully');
       }
       
@@ -637,10 +728,20 @@ const TestSettings = () => {
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }} onClick={e => e.stopPropagation()}>
                           <IconButton size="small" onClick={() => {
                             setSelectedTest(test);
+                            const initialDirectNotes = getTestDefaultNotes(test);
                             setTestFormData({
-                              name: test.name, code: test.code, description: test.description || '', defaultNotes: test.defaultNotes || '', image: test.image || '', requiresSeparatePage: test.requiresSeparatePage === true,
+                              name: test.name,
+                              code: test.code,
+                              description: test.description || '',
+                              defaultNotes: initialDirectNotes,
+                              image: test.image || '',
+                              requiresSeparatePage: test.requiresSeparatePage === true,
                               subtests: Array.isArray(test.subtests) ? test.subtests.map(sub => ({ ...sub, reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '' })) : [],
-                              packs: Array.isArray(test.packs) ? test.packs.map(pack => ({ ...pack, defaultNotes: pack.defaultNotes || '', subtests: Array.isArray(pack.subtests) ? pack.subtests.map(sub => ({ ...sub, reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '' })) : [] })) : []
+                              packs: Array.isArray(test.packs) ? test.packs.map(pack => ({
+                                ...pack,
+                                defaultNotes: getPackDefaultNotes(pack, test),
+                                subtests: Array.isArray(pack.subtests) ? pack.subtests.map(sub => ({ ...sub, reference: !sub.hasGenderSpecificRanges ? (sub.reference || '') : '' })) : []
+                              })) : []
                             });
                             setTestDialogOpen(true);
                           }} sx={{ background: 'rgba(15,110,86,0.1)', color: 'var(--color-primary)', '&:hover': { background: 'rgba(15,110,86,0.2)' } }}><EditIcon fontSize="small" /></IconButton>
@@ -668,19 +769,22 @@ const TestSettings = () => {
                             <Box>
                               <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px', mb: 1 }}>Packs</Typography>
                               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {test.packs.map((pack, i) => (
-                                  <Box key={i} sx={{ background: '#fff', border: '1px solid rgba(15,110,86,0.2)', color: '#0F172A', px: 1.5, py: 0.5, borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600 }}>
-                                    {pack.name}{pack.defaultNotes ? ` (Notes: ${pack.defaultNotes})` : ''}
-                                  </Box>
-                                ))}
+                                {test.packs.map((pack, i) => {
+                                  const pNote = getPackDefaultNotes(pack, test);
+                                  return (
+                                    <Box key={i} sx={{ background: '#fff', border: '1px solid rgba(15,110,86,0.2)', color: '#0F172A', px: 1.5, py: 0.5, borderRadius: 'var(--radius-full)', fontSize: '0.85rem', fontWeight: 600 }}>
+                                      {pack.name}{pNote ? ` (Notes: ${pNote})` : ''}
+                                    </Box>
+                                  );
+                                })}
                               </Box>
                             </Box>
                           )}
-                          {test.defaultNotes && (
+                          {getTestDefaultNotes(test) && (
                             <Box>
                               <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5 }}>Default Notes</Typography>
                               <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: '#fff', p: 1.5, borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-                                {test.defaultNotes}
+                                {getTestDefaultNotes(test)}
                               </Typography>
                             </Box>
                           )}
@@ -922,19 +1026,6 @@ const TestSettings = () => {
                       code: e.target.value
                     })}
                     required
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Description"
-                    value={testFormData.description}
-                    onChange={(e) => setTestFormData({
-                      ...testFormData,
-                      description: e.target.value
-                    })}
-                    multiline
-                    rows={2}
                   />
                 </Grid>
                 <Grid item xs={12}>

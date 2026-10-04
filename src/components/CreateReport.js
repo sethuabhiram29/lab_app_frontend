@@ -39,6 +39,7 @@ import { getPatients, createReport, getTests, getSubTests, getReports, updateRep
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Document, Page, Text, View, StyleSheet, Image, pdf } from '@react-pdf/renderer';
 import PDFPreview from './PDFPreview';
+import { getTestDefaultNotes, getPackDefaultNotes } from './TestSettings';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -455,7 +456,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
         });
         
         // Add note if exists for this direct table
-        const directNote = tableNotes[`${testIndex}-direct`] || tr.test?.defaultNotes;
+        const directNote = tableNotes[`${testIndex}-direct`] || getTestDefaultNotes(tr.test);
         if (directNote && directNote.trim()) {
           testBlocks.push({ type: 'note', content: directNote });
         }
@@ -500,7 +501,7 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
           
           // Add note if exists for this pack table
           const packDef = (tr.test?.packs || []).find(p => p.name === pack.packName);
-          const packNote = tableNotes[`${testIndex}-pack-${packIndex}`] || pack.defaultNotes || packDef?.defaultNotes;
+          const packNote = tableNotes[`${testIndex}-pack-${packIndex}`] || getPackDefaultNotes(packDef || pack, tr.test);
           if (packNote && packNote.trim()) {
             testBlocks.push({ type: 'note', content: packNote });
           }
@@ -1518,13 +1519,15 @@ function CreateReport() {
       const initialNotes = { ...existingNotes };
       (report.testResults || []).forEach((tr, tIdx) => {
         const testObj = allTests.find(t => t._id.toString() === (tr.test._id?.toString() || tr.test?.toString() || tr.test)) || {};
-        if ((initialNotes[`${tIdx}-direct`] === undefined || initialNotes[`${tIdx}-direct`].trim() === '') && testObj.defaultNotes) {
-          initialNotes[`${tIdx}-direct`] = testObj.defaultNotes;
+        const testDefNote = getTestDefaultNotes(testObj);
+        if ((initialNotes[`${tIdx}-direct`] === undefined || initialNotes[`${tIdx}-direct`].trim() === '') && testDefNote) {
+          initialNotes[`${tIdx}-direct`] = testDefNote;
         }
         (tr.packs || []).forEach((pack, pIdx) => {
           const packDef = (testObj.packs || []).find(p => p.name === pack.packName);
-          if ((initialNotes[`${tIdx}-pack-${pIdx}`] === undefined || initialNotes[`${tIdx}-pack-${pIdx}`].trim() === '') && (packDef?.defaultNotes || pack.defaultNotes)) {
-            initialNotes[`${tIdx}-pack-${pIdx}`] = packDef?.defaultNotes || pack.defaultNotes;
+          const packDefNote = getPackDefaultNotes(packDef || pack, testObj);
+          if ((initialNotes[`${tIdx}-pack-${pIdx}`] === undefined || initialNotes[`${tIdx}-pack-${pIdx}`].trim() === '') && packDefNote) {
+            initialNotes[`${tIdx}-pack-${pIdx}`] = packDefNote;
           }
         });
       });
@@ -1572,7 +1575,7 @@ function CreateReport() {
               const packDef = (testObj.packs || []).find(p => p.name === pack.packName);
               return {
                 packName: pack.packName,
-                defaultNotes: packDef?.defaultNotes || pack.defaultNotes || '',
+                defaultNotes: getPackDefaultNotes(packDef || pack, testObj),
                 image: packDef?.image || '',
                 subtests: (pack.subtests || []).map(resolveSub)
               };
@@ -1589,8 +1592,9 @@ function CreateReport() {
       const testId = (selTest.test?._id || selTest.test).toString();
       const testSetting = allTests.find(t => t._id.toString() === testId);
       if (!testSetting) return null;
-      if (testSetting.defaultNotes && testSetting.defaultNotes.trim()) {
-        initialNotes[`${tableIndex}-direct`] = testSetting.defaultNotes.trim();
+      const testDefNote = getTestDefaultNotes(testSetting);
+      if (testDefNote && testDefNote.trim()) {
+        initialNotes[`${tableIndex}-direct`] = testDefNote.trim();
       }
       // Map selected subtests (by name) from selTest.subtests
       const selectedDirect = (selTest.subtests || []).map(selSub => {
@@ -1610,8 +1614,9 @@ function CreateReport() {
       const selectedPacks = (selTest.packs || []).map((selPack, packIndex) => {
         const packDef = (testSetting.packs || []).find(p => p.name === selPack.name || p.name === selPack.packName);
         if (!packDef) return null;
-        if (packDef.defaultNotes && packDef.defaultNotes.trim()) {
-          initialNotes[`${tableIndex}-pack-${packIndex}`] = packDef.defaultNotes.trim();
+        const packDefNote = getPackDefaultNotes(packDef, testSetting);
+        if (packDefNote && packDefNote.trim()) {
+          initialNotes[`${tableIndex}-pack-${packIndex}`] = packDefNote.trim();
         }
         // Map selected subtests in this pack (by name)
         const selectedPackSubtests = (selPack.subtests || []).map(selSub => {
@@ -1628,7 +1633,7 @@ function CreateReport() {
         }).filter(Boolean);
         return {
           packName: packDef.name,
-          defaultNotes: packDef.defaultNotes || '',
+          defaultNotes: packDefNote || '',
           image: packDef.image || '',
           subtests: selectedPackSubtests
         };
