@@ -35,7 +35,7 @@ import { openDB } from 'idb';
 import { calculateFormula } from '../utils/formulaCalculator';
 import PreviewIcon from '@mui/icons-material/Preview';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import { getPatients, createReport, getTests, getSubTests, getReports, updateReport, getEquipment, markEquipmentUsed, markReportPrinted, saveUpdationLinks } from '../api';
+import { getPatients, createReport, getTests, getSubTests, getReports, updateReport, getEquipment, markEquipmentUsed, markReportPrinted, saveUpdationLinks, getDoctors } from '../api';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Document, Page, Text, View, StyleSheet, Image, pdf } from '@react-pdf/renderer';
 import PDFPreview from './PDFPreview';
@@ -779,7 +779,18 @@ export const ReportDocument = ({ patient, testTables, isPrinting = false, remove
                 <View style={styles.patientInfoRow}>
                   <Text style={styles.patientLabel}>Ref by Dr.</Text>
                   <Text style={styles.patientSeparator}>: </Text>
-                  <Text style={styles.patientValue}>{patient?.refDoctor?.name ? `${patient.refDoctor.name}${patient.refDoctor.specialization ? ` ${patient.refDoctor.specialization}` : ''}` : '-'}</Text>
+                  <Text style={styles.patientValue}>
+                    {(() => {
+                      const doc = patient?.refDoctor;
+                      if (!doc) return '-';
+                      const docName = typeof doc === 'string' ? doc : (doc.name || '');
+                      if (!docName || docName === '-') return '-';
+                      const docSpec = (doc.specialization || '').trim();
+                      if (!docSpec) return docName;
+                      if (docName.toLowerCase().includes(docSpec.toLowerCase())) return docName;
+                      return `${docName} ${docSpec}`;
+                    })()}
+                  </Text>
                 </View>
               </View>
               {/* Secondary column - 30% width */}
@@ -1356,9 +1367,34 @@ function CreateReport() {
   // Regular component states
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [allDoctors, setAllDoctors] = useState([]);
   const [testResults, setTestResults] = useState([]);
   const [allTests, setAllTests] = useState([]);
   const [subTests, setSubTests] = useState([]);
+
+  // Helper to resolve doctor details and ensure specialization is present
+  const resolveDoctorInfo = (refDoctor, docList = allDoctors) => {
+    if (!refDoctor) return { name: '-' };
+    let docId = refDoctor._id || (typeof refDoctor === 'string' && refDoctor.length === 24 ? refDoctor : null);
+    let docName = typeof refDoctor === 'string' ? refDoctor : (refDoctor.name || '');
+    let docSpec = typeof refDoctor === 'object' ? (refDoctor.specialization || '') : '';
+
+    if ((!docSpec || docSpec.trim() === '') && Array.isArray(docList) && docList.length > 0) {
+      const match = docList.find(d => 
+        (docId && d._id?.toString() === docId.toString()) ||
+        (docName && d.name?.trim().toLowerCase() === docName.trim().toLowerCase())
+      );
+      if (match) {
+        if (!docName || docName === '-') docName = match.name;
+        docSpec = match.specialization || '';
+      }
+    }
+    return {
+      ...(typeof refDoctor === 'object' ? refDoctor : {}),
+      name: docName || '-',
+      specialization: docSpec
+    };
+  };
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -1408,12 +1444,14 @@ function CreateReport() {
     const init = async () => {
       try {
         await loadPendingPatientsAndReports();
-        const [testsRes, subTestsRes] = await Promise.all([
+        const [testsRes, subTestsRes, doctorsRes] = await Promise.all([
           getTests(),
-          getSubTests()
+          getSubTests(),
+          getDoctors()
         ]);
         setAllTests(testsRes.data || []);
         setSubTests(subTestsRes.data || []);
+        setAllDoctors(Array.isArray(doctorsRes?.data) ? doctorsRes.data : (Array.isArray(doctorsRes) ? doctorsRes : []));
       } catch (err) {
         console.error('Error during initialization:', err);
         setError('Failed to initialize properly');
@@ -1434,7 +1472,11 @@ function CreateReport() {
   };
 
   const handlePatientSelect = async (patient) => {
-    setSelectedPatient(patient);
+    const enrichedPatient = {
+      ...patient,
+      refDoctor: resolveDoctorInfo(patient?.refDoctor, allDoctors)
+    };
+    setSelectedPatient(enrichedPatient);
     setShowPatientList(false);
 
     try {
@@ -1896,7 +1938,10 @@ function CreateReport() {
 
       if (report.reportDisplayData) {
         // Use stored display data if available
-        printPatient = report.reportDisplayData.patient;
+        printPatient = {
+          ...report.reportDisplayData.patient,
+          refDoctor: resolveDoctorInfo(report.reportDisplayData.patient?.refDoctor, allDoctors)
+        };
         printTestTables = report.reportDisplayData.testTables;
         printRemovedImages = new Set(report.reportDisplayData.removedImages || []);
         printTableNotes = report.reportDisplayData.tableNotes || {};
@@ -1957,7 +2002,7 @@ function CreateReport() {
       gender: patient?.gender || '-',
       regNo: patient?.regNo || '-',
       sampleCollectionDate: patient?.sampleCollectionDate || '-',
-      refDoctor: patient?.refDoctor?.name ? { name: patient.refDoctor.name, specialization: patient.refDoctor.specialization || '' } : { name: '-' },
+      refDoctor: resolveDoctorInfo(patient?.refDoctor, allDoctors),
       refAgent: patient?.refAgent?.name ? { name: patient.refAgent.name } : { name: '-' },
       mobileNumber: patient?.mobileNumber || '-',
     };
@@ -2339,7 +2384,10 @@ function CreateReport() {
                                         const reportDisplayData = report.reportDisplayData;
                                         setPreviewReportDate(report.createdAt || report.updatedAt || new Date());
                                         if (reportDisplayData) {
-                                          setSelectedPatient(reportDisplayData.patient);
+                                          setSelectedPatient({
+                                            ...reportDisplayData.patient,
+                                            refDoctor: resolveDoctorInfo(reportDisplayData.patient?.refDoctor, allDoctors)
+                                          });
                                           setQrImage(reportDisplayData.qrImage);
                                           const savedTestTables = reportDisplayData.testTables;
                                           setTestResults(savedTestTables.map(table => ({
