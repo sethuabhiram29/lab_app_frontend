@@ -54,9 +54,11 @@ import {
   Edit as EditIcon,
   Event as EventIcon,
   DescriptionOutlined as DescriptionIcon,
-  RadioButtonUnchecked as RadioButtonUncheckedIcon
+  RadioButtonUnchecked as RadioButtonUncheckedIcon,
+  WhatsApp as WhatsAppIcon
 } from '@mui/icons-material';
 import { Avatar, InputAdornment, OutlinedInput } from '@mui/material';
+import WhatsAppDialog from './WhatsAppDialog';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -1444,6 +1446,8 @@ function CreateReport() {
   const [previewReportDate, setPreviewReportDate] = useState(null);
   const [tableNotes, setTableNotes] = useState({}); // Store notes for each table
   const [removedImages, setRemovedImages] = useState(new Set()); // Track removed images
+  const [whatsAppReport, setWhatsAppReport] = useState(null);
+  const [whatsAppOpen, setWhatsAppOpen] = useState(false);
 
   // Helper function to add/update note for a specific table
   const handleNoteChange = (testIndex, tableType, packIndex, note) => {
@@ -2500,6 +2504,32 @@ function CreateReport() {
                                     >
                                       Print
                                     </Button>
+                                    <Button
+                                      variant="contained"
+                                      size="small"
+                                      startIcon={<WhatsAppIcon sx={{ fontSize: '1rem' }} />}
+                                      onClick={() => {
+                                        if (report.reportDisplayData) {
+                                          setWhatsAppReport(report);
+                                        } else {
+                                          const rebuilt = buildDisplayData(report.patient, report.testResults || [], allTests, subTests);
+                                          setWhatsAppReport({
+                                            ...report,
+                                            reportDisplayData: {
+                                              patient: rebuilt.patient,
+                                              testTables: rebuilt.testTables,
+                                              removedImages: [],
+                                              tableNotes: {},
+                                              qrImage: null
+                                            }
+                                          });
+                                        }
+                                        setWhatsAppOpen(true);
+                                      }}
+                                      sx={{ borderRadius: '100px', background: '#25D366', color: '#fff', fontWeight: 700, textTransform: 'none', boxShadow: 'none', '&:hover': { background: '#1EBE5D', boxShadow: '0 4px 12px rgba(37,211,102,0.3)' } }}
+                                    >
+                                      WhatsApp
+                                    </Button>
                                   </Box>
                                 )}
                               </TableCell>
@@ -2535,6 +2565,29 @@ function CreateReport() {
                     sx={{ borderRadius: '100px', color: '#0F6E56', borderColor: 'rgba(15,110,86,0.3)', fontWeight: 700, px: 3, background: '#fff', '&:hover': { background: 'rgba(15,110,86,0.05)' } }}
                   >
                     Preview PDF
+                  </Button>
+                  <Button 
+                    variant="outlined" 
+                    startIcon={<WhatsAppIcon sx={{ color: '#25D366' }} />}
+                    onClick={() => {
+                      const currentReport = getReportForPatient(selectedPatient._id);
+                      const displayData = buildDisplayData(selectedPatient, testResults, allTests, subTests, qrImage);
+                      setWhatsAppReport({
+                        _id: currentReport?._id,
+                        patient: selectedPatient,
+                        reportDisplayData: {
+                          patient: displayData.patient,
+                          testTables: displayData.testTables,
+                          removedImages: Array.from(removedImages),
+                          tableNotes,
+                          qrImage
+                        }
+                      });
+                      setWhatsAppOpen(true);
+                    }}
+                    sx={{ borderRadius: '100px', color: '#0B5240', borderColor: 'rgba(37,211,102,0.6)', fontWeight: 700, px: 3, background: '#fff', '&:hover': { background: 'rgba(37,211,102,0.08)' } }}
+                  >
+                    WhatsApp
                   </Button>
                   <Button 
                     onClick={handleSubmit}
@@ -2769,6 +2822,18 @@ function CreateReport() {
             </Typography>
           </Box>
         </Backdrop>
+
+        <WhatsAppDialog
+          open={whatsAppOpen}
+          onClose={() => {
+            setWhatsAppOpen(false);
+            setWhatsAppReport(null);
+          }}
+          report={whatsAppReport}
+          onSentSuccess={(result) => {
+            setSuccess('Report PDF sent via WhatsApp successfully!');
+          }}
+        />
 
         {error && (
           <Snackbar open autoHideDuration={6000} onClose={() => setError('')}>

@@ -47,6 +47,7 @@ import PDFPreview from './PDFPreview';
 import LinkIcon from '@mui/icons-material/Link';
 import DownloadIcon from '@mui/icons-material/Download';
 import { ReportDocument } from './CreateReport';
+import WhatsAppDialog from './WhatsAppDialog';
 import UpdateIcon from '@mui/icons-material/Update';
 import PreviewIcon from '@mui/icons-material/Preview';
 import CloseIcon from '@mui/icons-material/Close';
@@ -1542,28 +1543,21 @@ Your Diagnostic Center`;
         </AnimatePresence>
 
         {/* Dialogs */}
-        <Dialog open={whatsAppDialogOpen} onClose={() => setWhatsAppDialogOpen(false)} PaperProps={{ sx: { borderRadius: '24px' } }}>
-          <DialogTitle sx={{ fontWeight: 800 }}>Share via WhatsApp</DialogTitle>
-          <DialogContent sx={{ p: 3 }}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend" sx={{ fontWeight: 700, mb: 1 }}>Select Recipient</FormLabel>
-              <RadioGroup value={whatsAppRecipient} onChange={(e) => { setWhatsAppRecipient(e.target.value); setCustomPhone(''); }}>
-                <FormControlLabel value="patient" control={<Radio color="primary" />} label={`Patient (${whatsAppReport?.reportDisplayData.patient?.mobileNumber || 'N/A'})`} />
-                <FormControlLabel value="doctor" control={<Radio color="primary" />} label={`Doctor (${whatsAppReport?.reportDisplayData.patient?.refDoctor?.contact || 'N/A'})`} />
-                <FormControlLabel value="custom" control={<Radio color="primary" />} label="Custom Number" />
-              </RadioGroup>
-            </FormControl>
-            {whatsAppRecipient === 'custom' && (
-              <TextField fullWidth margin="normal" label="Custom Phone Number (10 digits)" value={customPhone} onChange={(e) => setCustomPhone(e.target.value)} placeholder="Enter 10 digit mobile number" size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} />
-            )}
-          </DialogContent>
-          <DialogActions sx={{ p: 3, pt: 0 }}>
-            <Button onClick={() => setWhatsAppDialogOpen(false)} sx={{ borderRadius: '100px', fontWeight: 700 }}>Cancel</Button>
-            <Button onClick={handleWhatsAppSend} variant="contained" disabled={sharingLoading} sx={{ background: '#22C55E', color: '#fff', borderRadius: '100px', fontWeight: 700, '&:hover': { background: '#16A34A' } }}>
-              {sharingLoading ? 'Preparing...' : 'Open WhatsApp'}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <WhatsAppDialog
+          open={whatsAppDialogOpen}
+          onClose={() => {
+            setWhatsAppDialogOpen(false);
+            setWhatsAppReport(null);
+          }}
+          report={whatsAppReport}
+          onSentSuccess={(result) => {
+            setSnackbar({
+              open: true,
+              message: 'Report PDF sent successfully via WhatsApp!',
+              severity: 'success'
+            });
+          }}
+        />
 
         <Dialog open={emailDialogOpen} onClose={() => setEmailDialogOpen(false)} PaperProps={{ sx: { borderRadius: '24px' } }}>
           <DialogTitle sx={{ fontWeight: 800 }}>Share via Email</DialogTitle>

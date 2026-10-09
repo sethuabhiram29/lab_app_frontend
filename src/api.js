@@ -272,4 +272,11 @@ export const getAgentAnalysis = async (agentId, startDate, endDate) => {
   }
 };
 
-export default api; 
+// WhatsApp APIs (Baileys)
+export const getWhatsAppStatus = () => api.get('/whatsapp/status').then(res => res.data);
+export const getWhatsAppQR = () => api.get('/whatsapp/qr').then(res => res.data);
+export const sendWhatsAppReport = (payload) => api.post('/whatsapp/send-report', payload).then(res => res.data);
+export const disconnectWhatsApp = () => api.post('/whatsapp/disconnect').then(res => res.data);
+export const reconnectWhatsApp = () => api.post('/whatsapp/reconnect').then(res => res.data);
+
+export default api;
