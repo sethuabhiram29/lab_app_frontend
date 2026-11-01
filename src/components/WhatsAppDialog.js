@@ -101,9 +101,13 @@ const WhatsAppDialog = ({ open, onClose, report, onSentSuccess }) => {
       setStatusData(data);
       if (data.connected) {
         setError('');
+      } else if (data.status === 'qr_ready' && data.qr) {
+        setError('');
       }
     } catch (err) {
       console.error('Error fetching WhatsApp status:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Cannot reach backend server';
+      setError(`Backend connection error: ${errMsg}. Please ensure backend server is running.`);
     }
   };
 
@@ -117,7 +121,7 @@ const WhatsAppDialog = ({ open, onClose, report, onSentSuccess }) => {
     fetchStatus();
     pollTimerRef.current = setInterval(() => {
       fetchStatus();
-    }, 3000);
+    }, 2000);
 
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
@@ -369,10 +373,13 @@ const WhatsAppDialog = ({ open, onClose, report, onSentSuccess }) => {
                 <img src={statusData.qr} alt="WhatsApp QR Code" style={{ width: 220, height: 220, display: 'block' }} />
               </Box>
             ) : (
-              <Box sx={{ py: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                <CircularProgress size={36} sx={{ color: '#0F6E56' }} />
-                <Typography variant="caption" sx={{ color: '#64748B' }}>
-                  Generating active QR code session...
+              <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                <CircularProgress size={38} sx={{ color: '#0F6E56' }} />
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A', mt: 1 }}>
+                  Starting WhatsApp Engine...
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#64748B', maxWidth: 320, textAlign: 'center', lineHeight: 1.4 }}>
+                  Initializing browser session. The QR code will appear in a few moments.
                 </Typography>
               </Box>
             )}
