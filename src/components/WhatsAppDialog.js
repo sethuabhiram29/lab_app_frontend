@@ -280,7 +280,7 @@ const WhatsAppDialog = ({ open, onClose, report, onSentSuccess }) => {
               Send Report via WhatsApp
             </Typography>
             <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.75rem' }}>
-              Direct PDF dispatch powered by Open-WA Automation
+              Direct PDF dispatch powered by WhatsApp Multi-Device
             </Typography>
           </Box>
         </Box>
