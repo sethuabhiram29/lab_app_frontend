@@ -200,8 +200,8 @@ const WhatsAppDialog = ({ open, onClose, report, onSentSuccess }) => {
       const base64Data = await blobToBase64(pdfBlob);
 
       // Clean file name
-      const safePatientName = (patient.name || 'Patient').replace(/[^a-zA-Z0-9]/g, '_');
-      const safeRegNo = (patient.regNo || 'Report').replace(/[^a-zA-Z0-9]/g, '_');
+      const safePatientName = String(patient.name || 'Patient').replace(/[^a-zA-Z0-9]/g, '_');
+      const safeRegNo = String(patient.regNo || 'Report').replace(/[^a-zA-Z0-9]/g, '_');
       const fileName = `${safePatientName}_${safeRegNo}_Report.pdf`;
 
       // 2. Send via Backend WhatsApp Baileys Service
