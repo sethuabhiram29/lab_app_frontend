@@ -1246,8 +1246,9 @@ Your Diagnostic Center`;
     );
   }
 
-  // Filter and sort reports by selected date (show latest first)
-  const filteredReports = reports
+  // Filter and sort reports by selected date (show latest first), deduplicated by patient
+  const uniqueReportsMap = new Map();
+  reports
     .filter(r => {
       const reportDate = new Date(r.reportDisplayData?.patient?.sampleCollectionDate || r.createdAt);
       const reportDateString = `${reportDate.getFullYear()}-${String(reportDate.getMonth() + 1).padStart(2, '0')}-${String(reportDate.getDate()).padStart(2, '0')}`;
@@ -1257,7 +1258,22 @@ Your Diagnostic Center`;
       const dateA = new Date(a.reportDisplayData?.patient?.sampleCollectionDate || a.createdAt);
       const dateB = new Date(b.reportDisplayData?.patient?.sampleCollectionDate || b.createdAt);
       return dateB - dateA;
+    })
+    .forEach(r => {
+      const pKey = String(r.patient?._id || r.reportDisplayData?.patient?._id || r.patient?.regNo || r.patientId || r._id);
+      if (!uniqueReportsMap.has(pKey)) {
+        uniqueReportsMap.set(pKey, r);
+      } else {
+        const existing = uniqueReportsMap.get(pKey);
+        const hasExistingLinks = !!(existing.patient?.updationLinks?.viewLink || existing.patient?.updationLinks?.downloadLink);
+        const hasCurrentLinks = !!(r.patient?.updationLinks?.viewLink || r.patient?.updationLinks?.downloadLink);
+        if (!hasExistingLinks && hasCurrentLinks) {
+          uniqueReportsMap.set(pKey, r);
+        }
+      }
     });
+
+  const filteredReports = Array.from(uniqueReportsMap.values());
 
   // Calculate stats for the summary cards
   const totalReports = filteredReports.length;
