@@ -88,8 +88,10 @@ const WhatsAppDialog = ({ open, onClose, report, onSentSuccess }) => {
     if (report) {
       const pName = patient.name || 'Patient';
       const regNo = patient.regNo ? ` (Reg No: ${patient.regNo})` : '';
+      const viewLink = patient.updationLinks?.viewLink || report?.driveLinks?.viewLink || report?.driveViewLink || '';
+      const linkText = viewLink ? `\n\n📄 You can also view/download online:\n${viewLink}` : '';
       setCaption(
-        `Dear ${pName},\n\nYour diagnostic test report${regNo} from *Sri Sai Durga Diagnostics* is attached as a PDF.\n\nFor any queries, please feel free to reach out to our laboratory.\n\nThank you for choosing *Sri Sai Durga Diagnostics*.`
+        `Dear ${pName},\n\nYour diagnostic test report${regNo} from *Sri Sai Durga Diagnostics* is attached as a PDF.${linkText}\n\nFor any queries, please feel free to reach out to our laboratory.\n\nThank you for choosing *Sri Sai Durga Diagnostics*.`
       );
     }
   }, [report]);
@@ -328,11 +330,17 @@ const WhatsAppDialog = ({ open, onClose, report, onSentSuccess }) => {
           </Box>
 
           {statusData.connected && (
-            <Tooltip title="Unlink this WhatsApp account">
-              <IconButton size="small" onClick={handleDisconnect} disabled={loadingStatus} sx={{ color: '#EF4444' }}>
-                <LinkOffIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
+            <Button
+              size="small"
+              variant="outlined"
+              color="error"
+              startIcon={<LinkOffIcon fontSize="small" />}
+              onClick={handleDisconnect}
+              disabled={loadingStatus}
+              sx={{ borderRadius: '100px', fontSize: '0.75rem', textTransform: 'none', px: 1.5 }}
+            >
+              Unlink / Re-pair
+            </Button>
           )}
         </Box>
 
